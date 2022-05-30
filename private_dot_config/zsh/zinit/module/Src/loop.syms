@@ -1,0 +1,21 @@
+E#ifndef have_Src_loop_globals
+E#define have_Src_loop_globals
+E
+Eextern int loops;
+Xcontflag
+Eextern mod_import_variable int contflag;
+Xbreaks
+Eextern mod_import_variable int breaks;
+Eextern int execfor _((Estate state,int do_exec));
+Eextern int execselect _((Estate state,UNUSED(int do_exec)));
+Eextern size_t selectlist _((LinkList l,size_t start));
+Eextern int execwhile _((Estate state,UNUSED(int do_exec)));
+Eextern int execrepeat _((Estate state,UNUSED(int do_exec)));
+Eextern int execif _((Estate state,int do_exec));
+Eextern int execcase _((Estate state,int do_exec));
+Eextern zlong try_errflag;
+Eextern zlong try_interrupt;
+Eextern zlong try_tryflag;
+Eextern int exectry _((Estate state,int do_exec));
+E
+E#endif /* !have_Src_loop_globals */

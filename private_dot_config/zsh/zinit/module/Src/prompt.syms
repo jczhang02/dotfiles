@@ -1,0 +1,36 @@
+E#ifndef have_Src_prompt_globals
+E#define have_Src_prompt_globals
+E
+Xtxtattrmask
+Eextern mod_import_variable unsigned txtattrmask;
+Eextern unsigned char*cmdstack;
+Eextern int cmdsp;
+Xpromptexpand
+Eextern mod_import_function char*promptexpand _((char*s,int ns,char*rs,char*Rs,unsigned int*txtchangep));
+Lstatic int putpromptchar _((int doprint,int endchar,unsigned int*txtchangep));
+Lstatic void pputc _((char c));
+Lstatic void addbufspc _((int need));
+Eextern void stradd _((char*d));
+Xtsetcap
+Eextern mod_import_function void tsetcap _((int cap,int flags));
+Eextern int putstr _((int d));
+Xcountprompt
+Eextern mod_import_function void countprompt _((char*str,int*wp,int*hp,int overf));
+Lstatic int prompttrunc _((int arg,int truncchar,int doprint,int endchar,unsigned int*txtchangep));
+Eextern void cmdpush _((int cmdtok));
+Eextern void cmdpop _((void));
+Xmatch_colour
+Eextern mod_import_function int match_colour _((const char**teststrp,int is_fg,int colour));
+Xmatch_highlight
+Eextern mod_import_function void match_highlight _((const char*teststr,int*on_var));
+Xoutput_highlight
+Eextern mod_import_function int output_highlight _((int atr,char*buf));
+Eextern void set_default_colour_sequences _((void));
+Xallocate_colour_buffer
+Eextern mod_import_function void allocate_colour_buffer _((void));
+Xfree_colour_buffer
+Eextern mod_import_function void free_colour_buffer _((void));
+Xset_colour_attribute
+Eextern mod_import_function void set_colour_attribute _((int atr,int fg_bg,int flags));
+E
+E#endif /* !have_Src_prompt_globals */

@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+
+    <!-- 启用次像素平滑 -->
+    <match target="font">
+        <edit mode="assign" name="rgba">
+            <const>rgb</const>
+        </edit>
+    </match>
+
+    <!-- 设置默认字体，此处英文使用Dejavu系列字体，中文使用文泉驿雅黑 -->
+    <alias>
+        <family>serif</family>
+        <prefer>
+            <family>SF Pro</family>
+            <family>Noto Sans</family>
+			<family>Noto Sans CJK SC</family>
+			<family>Noto Sans CJK TC</family>
+			<family>Noto Sans CJK JP</family>
+        </prefer>
+    </alias>
+    <alias>
+        <family>sans-serif</family>
+        <prefer>
+		    <family>SF Pro</family>
+            <family>Noto Sans</family>
+			<family>Noto Sans CJK SC</family>
+			<family>Noto Sans CJK TC</family>
+			<family>Noto Sans CJK JP</family>
+        </prefer>
+    </alias>
+    <alias>
+        <family>monospace</family>
+        <prefer>
+            <family>DejaVu Sans Mono</family>
+			<family>JetBrainsMono Nerd Font</family>
+            <family>WenQuanYi Micro Hei Mono</family>
+        </prefer>
+    </alias>
+    <!-- 将Windows中经常使用的宋体，楷体和黑体等中文字体，用自由字体文泉驿系列替换,Arial,Times New Roman,Courier New 等英文字体已由系统配置，使用 liberation 系列字体替换 -->
+    <alias binding="same">
+        <family>宋体</family>
+        <family>新宋体</family>
+        <family>SimSun</family>
+        <accept>
+            <family>AR PL UMing CN</family>
+        </accept>
+    </alias>
+
+    <alias binding="same">
+        <family>楷体 GB2312</family>
+        <family>KaiTi</family>
+        <accept>
+            <family>AR PL UKai CN</family>
+        </accept>
+    </alias>
+
+    <alias binding="same">
+        <family>黑体</family>
+        <family>SimHei</family>
+        <accept>
+            <family>WenQuanYi Micro Hei</family>
+        </accept>
+    </alias>
+    
+    <!-- 下面的两处字体替换并非必须，是在看 pdf 文档时遇到的，将其映射为 serif 字体 -->
+    <alias>
+        <family>BookAntiqua</family>
+        <family>Georgia</family>
+        <accept>
+            <family>serif</family>
+        </accept>
+    </alias>
+
+</fontconfig>

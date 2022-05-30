@@ -1,0 +1,21 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[transfer]
+	fsckobjects = false
+[receive]
+	fsckobjects = false
+[fetch]
+	fsckobjects = false
+[pull]
+	rebase = false
+[submodule]
+	active = .
+[remote "origin"]
+	url = https://github.com/zsh-users/zsh-history-substring-search
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master

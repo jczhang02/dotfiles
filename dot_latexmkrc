@@ -1,0 +1,8 @@
+
+$pdf_mode = 1;                              # tex -> pdf
+# $pdf_mode = 2;                            # tex -> ps -> pdf
+# $pdf_mode = 5;                            # use xelatex, see `man latexmk`
+
+$pdflatex = 'pdflatex -interaction=nonstopmode -synctex=1 %O %S';
+$xelatex = 'xelatex -no-pdf -interaction=nonstopmode -synctex=1 %O %S';
+$out_dir = 'build';

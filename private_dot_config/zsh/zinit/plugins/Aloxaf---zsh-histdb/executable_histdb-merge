@@ -1,0 +1,55 @@
+#!/usr/bin/env zsh
+
+typeset -g HERE=$(dirname "${(%):-%N}")
+
+local ancestor=${1:?three databases required}; shift
+local ours=${1:?three databases required}; shift
+local theirs=${1:?three databases required}
+
+$HERE/histdb-migrate $ancestor # this is always reasonable to do
+$HERE/histdb-migrate $ours # this also seems fine
+
+V_OURS=$(sqlite3 $ours 'PRAGMA user_version')
+V_THEIRS=$(sqlite3 $theirs 'PRAGMA user_version')
+
+if [[ ${V_OURS} -lt ${V_THEIRS} ]] ; then
+    echo "Attempting to merge with a database from a future version (${V_THEIRS})."
+    echo "You need to update your histdb version to continue."
+    exit 1
+elif [[ ${V_THEIRS} -lt ${V_OURS} ]]; then
+    echo "Merging different database versions: ours ${V_OURS}, theirs ${V_THEIRS}."
+    echo "To continue merging, their database needs migrating to newer version."
+    echo "If you do this, and push the changes, then the remote version of histdb will need upgrading too."
+    
+    read -q "REPLY?Try migrating their database? [y/n] "
+    if [[ $REPLY != "y" ]]; then
+        echo "Cancelled."
+        exit 1
+    fi
+fi
+
+# for reasons I cannot use the encryption filter here.
+# most annoying.
+
+sqlite3 "${ours}" <<EOF
+ATTACH DATABASE '${theirs}' AS o;
+ATTACH DATABASE '${ancestor}' AS a;
+
+-- copy missing commands and places
+INSERT INTO commands (argv) SELECT argv FROM o.commands;
+INSERT INTO places (host, dir) SELECT host, dir FROM o.places;
+
+-- insert missing history, rewriting IDs
+-- could uniquify sessions by host in this way too
+
+INSERT INTO history (session, command_id, place_id, exit_status, start_time, duration)
+SELECT HO.session, C.id, P.id, HO.exit_status, HO.start_time, HO.duration
+FROM o.history HO
+LEFT JOIN o.places PO ON HO.place_id = PO.id
+LEFT JOIN o.commands CO ON HO.command_id = CO.id
+LEFT JOIN commands C ON C.argv = CO.argv
+LEFT JOIN places P ON (P.host = PO.host
+AND P.dir = PO.dir)
+WHERE HO.id > (SELECT MAX(id) FROM a.history)
+;
+EOF

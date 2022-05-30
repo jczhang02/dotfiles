@@ -1,0 +1,86 @@
+E#ifndef have_Src_hashtable_globals
+E#define have_Src_hashtable_globals
+E
+Xhasher
+Eextern mod_import_function unsigned hasher _((const char*str));
+Xnewhashtable
+Eextern mod_import_function HashTable newhashtable _((int size,UNUSED(char const*name),UNUSED(PrintTableStats printinfo)));
+Xdeletehashtable
+Eextern mod_import_function void deletehashtable _((HashTable ht));
+Xaddhashnode
+Eextern mod_import_function void addhashnode _((HashTable ht,char*nam,void*nodeptr));
+Eextern HashNode addhashnode2 _((HashTable ht,char*nam,void*nodeptr));
+Xgethashnode
+Eextern mod_import_function HashNode gethashnode _((HashTable ht,const char*nam));
+Xgethashnode2
+Eextern mod_import_function HashNode gethashnode2 _((HashTable ht,const char*nam));
+Xremovehashnode
+Eextern mod_import_function HashNode removehashnode _((HashTable ht,const char*nam));
+Eextern void disablehashnode _((HashNode hn,UNUSED(int flags)));
+Eextern void enablehashnode _((HashNode hn,UNUSED(int flags)));
+Lstatic int hnamcmp _((const void*ap,const void*bp));
+Xscanmatchtable
+Eextern mod_import_function int scanmatchtable _((HashTable ht,Patprog pprog,int sorted,int flags1,int flags2,ScanFunc scanfunc,int scanflags));
+Xscanhashtable
+Eextern mod_import_function int scanhashtable _((HashTable ht,int sorted,int flags1,int flags2,ScanFunc scanfunc,int scanflags));
+Lstatic void expandhashtable _((HashTable ht));
+Lstatic void resizehashtable _((HashTable ht,int newsize));
+Xemptyhashtable
+Eextern mod_import_function void emptyhashtable _((HashTable ht));
+E#ifdef ZSH_HASH_DEBUG
+L#ifdef ZSH_HASH_DEBUG
+Lstatic void printhashtabinfo _((HashTable ht));
+Eextern int bin_hashinfo _((UNUSED(char*nam),UNUSED(char**args),UNUSED(Options ops),UNUSED(int func)));
+E#endif /* ZSH_HASH_DEBUG */
+L#endif /* ZSH_HASH_DEBUG */
+Xcmdnamtab
+Eextern mod_import_variable HashTable cmdnamtab;
+Xpathchecked
+Eextern mod_import_variable char**pathchecked;
+Eextern void createcmdnamtable _((void));
+Lstatic void emptycmdnamtable _((HashTable ht));
+Eextern void hashdir _((char**dirp));
+Lstatic void fillcmdnamtable _((UNUSED(HashTable ht)));
+Lstatic void freecmdnamnode _((HashNode hn));
+Lstatic void printcmdnamnode _((HashNode hn,int printflags));
+Xshfunctab
+Eextern mod_import_variable HashTable shfunctab;
+Eextern void createshfunctable _((void));
+Lstatic HashNode removeshfuncnode _((UNUSED(HashTable ht),const char*nam));
+Lstatic void disableshfuncnode _((HashNode hn,UNUSED(int flags)));
+Lstatic void enableshfuncnode _((HashNode hn,UNUSED(int flags)));
+Lstatic void freeshfuncnode _((HashNode hn));
+Lstatic void printshfuncnode _((HashNode hn,int printflags));
+Xscanmatchshfunc
+Eextern mod_import_function int scanmatchshfunc _((Patprog pprog,int sorted,int flags1,int flags2,ScanFunc scanfunc,int scanflags,int expand));
+Xscanshfunc
+Eextern mod_import_function int scanshfunc _((int sorted,int flags1,int flags2,ScanFunc scanfunc,int scanflags,int expand));
+Xprintshfuncexpand
+Eextern mod_import_function void printshfuncexpand _((HashNode hn,int printflags,int expand));
+Xgetshfuncfile
+Eextern mod_import_function char*getshfuncfile _((Shfunc shf));
+Xreswdtab
+Eextern mod_import_variable HashTable reswdtab;
+Eextern void createreswdtable _((void));
+Lstatic void printreswdnode _((HashNode hn,int printflags));
+Xaliastab
+Eextern mod_import_variable HashTable aliastab;
+Xsufaliastab
+Eextern mod_import_variable HashTable sufaliastab;
+Eextern void createaliastable _((HashTable ht));
+Eextern void createaliastables _((void));
+Xcreatealiasnode
+Eextern mod_import_function Alias createaliasnode _((char*txt,int flags));
+Lstatic void freealiasnode _((HashNode hn));
+Lstatic void printaliasnode _((HashNode hn,int printflags));
+Eextern void createhisttable _((void));
+Eextern unsigned histhasher _((const char*str));
+Eextern void emptyhisttable _((HashTable ht));
+Eextern int histstrcmp _((const char*str1,const char*str2));
+Eextern void addhistnode _((HashTable ht,char*nam,void*nodeptr));
+Eextern void freehistnode _((HashNode nodeptr));
+Eextern void freehistdata _((Histent he,int unlink));
+Xdircache_set
+Eextern mod_import_function void dircache_set _((char**name,char*value));
+E
+E#endif /* !have_Src_hashtable_globals */

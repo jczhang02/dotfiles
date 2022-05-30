@@ -1,0 +1,74 @@
+E#ifndef have_Src_init_globals
+E#define have_Src_init_globals
+E
+Eextern int noexitct;
+Eextern char*zunderscore;
+Eextern int underscorelen;
+Eextern int underscoreused;
+Eextern int sourcelevel;
+XSHTTY
+Eextern mod_import_variable int SHTTY;
+Xshout
+Eextern mod_import_variable FILE*shout;
+Xtcstr
+Eextern mod_import_variable char*tcstr[TC_COUNT];
+Xtclen
+Eextern mod_import_variable int tclen[TC_COUNT];
+Eextern int tclines;
+Eextern int tccolumns;
+Xhasam
+Eextern mod_import_variable int hasam;
+Xhasbw
+Eextern mod_import_variable int hasbw;
+Xhasxn
+Eextern mod_import_variable int hasxn;
+Xhasye
+Eextern mod_import_variable int hasye;
+Xtccolours
+Eextern mod_import_variable int tccolours;
+Xsigchld_mask
+Eextern mod_import_variable sigset_t sigchld_mask;
+Xzshhooks
+Eextern mod_import_variable struct hookdef zshhooks[];
+Eextern enum loop_return loop _((int toplevel,int justonce));
+Lstatic void parseargs _((char*zsh_name,char**argv,char**runscript,char**cmdptr));
+Lstatic void parseopts_insert _((LinkList optlist,char*base,int optno));
+Xparseopts
+Eextern mod_import_function int parseopts _((char*nam,char***argvp,char*new_opts,char**cmdp,LinkList optlist,int flags));
+Lstatic void printhelp _((void));
+Xinit_io
+Eextern mod_import_function void init_io _((char*cmd));
+Xinit_shout
+Eextern mod_import_function void init_shout _((void));
+Xtccap_get_name
+Eextern mod_import_function char*tccap_get_name _((int cap));
+Xinit_term
+Eextern mod_import_function int init_term _((void));
+Eextern void setupvals _((char*cmd,char*runscript,char*zsh_name));
+Eextern void init_signals _((void));
+Eextern void run_init_scripts _((void));
+Eextern void init_misc _((char*cmd,char*zsh_name));
+Xsource
+Eextern mod_import_function enum source_return source _((char*s));
+Eextern void sourcehome _((char*s));
+Eextern void init_bltinmods _((void));
+Xnoop_function
+Eextern mod_import_function void noop_function _((void));
+Xnoop_function_int
+Eextern mod_import_function void noop_function_int _((UNUSED(int nothing)));
+Xzle_entry_ptr
+Eextern mod_import_variable ZleEntryPoint zle_entry_ptr;
+Xzle_load_state
+Eextern mod_import_variable int zle_load_state;
+Xzleentry
+Eextern mod_import_function char * zleentry(VA_ALIST_PROTO1(int cmd));
+Xcompctlreadptr
+Eextern mod_import_variable CompctlReadFn compctlreadptr;
+Xfallback_compctlread
+Eextern mod_import_function int fallback_compctlread _((char*name,UNUSED(char**args),UNUSED(Options ops),UNUSED(char*reply)));
+Xuse_exit_printed
+Eextern mod_import_variable int use_exit_printed;
+Xzsh_main
+Eextern mod_import_function int zsh_main _((UNUSED(int argc),char**argv));
+E
+E#endif /* !have_Src_init_globals */

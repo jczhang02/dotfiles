@@ -1,0 +1,22 @@
+output DP-1
+off
+output DP-2
+crtc 1
+mode 1920x1080
+pos 0x0
+rate 60.00
+x-prop-non_desktop 0
+output DP-0
+crtc 0
+mode 1920x1080
+pos 1920x0
+primary
+rate 60.00
+x-prop-non_desktop 0
+output HDMI-0
+crtc 2
+mode 1920x1080
+pos 3840x0
+rate 60.00
+rotate left
+x-prop-non_desktop 0

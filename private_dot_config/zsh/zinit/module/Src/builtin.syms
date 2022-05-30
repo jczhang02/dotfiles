@@ -1,0 +1,87 @@
+E#ifndef have_Src_builtin_globals
+E#define have_Src_builtin_globals
+E
+Xbuiltintab
+Eextern mod_import_variable HashTable builtintab;
+Eextern void createbuiltintable _((void));
+Lstatic void printbuiltinnode _((HashNode hn,int printflags));
+Lstatic void freebuiltinnode _((HashNode hn));
+Eextern void init_builtins _((void));
+Lstatic int new_optarg _((Options ops));
+Eextern int execbuiltin _((LinkList args,LinkList assigns,Builtin bn));
+Eextern int bin_enable _((char*name,char**argv,Options ops,int func));
+Eextern int bin_set _((char*nam,char**args,UNUSED(Options ops),UNUSED(int func)));
+Eextern int doprintdir;
+Eextern int bin_pwd _((UNUSED(char*name),UNUSED(char**argv),Options ops,UNUSED(int func)));
+Xdirstack
+Eextern mod_import_variable LinkList dirstack;
+Eextern int bin_dirs _((UNUSED(char*name),char**argv,Options ops,UNUSED(int func)));
+Eextern void set_pwd_env _((void));
+Eextern int bin_cd _((char*nam,char**argv,Options ops,int func));
+Lstatic LinkNode cd_get_dest _((char*nam,char**argv,int hard,int func));
+Lstatic char*cd_do_chdir _((char*cnam,char*dest,int hard));
+Eextern char*cd_able_vars _((char*s));
+Lstatic char*cd_try_chdir _((char*pfix,char*dest,int hard));
+Lstatic void cd_new_pwd _((int func,LinkNode dir,int quiet));
+Lstatic void printdirstack _((void));
+Eextern int fixdir _((char*src));
+Xprintqt
+Eextern mod_import_function void printqt _((char*str));
+Xprintif
+Eextern mod_import_function void printif _((char*str,int c));
+Eextern int bin_fc _((char*nam,char**argv,Options ops,int func));
+Lstatic zlong fcgetcomm _((char*s));
+Lstatic int fcsubs _((char**sp,struct asgment*sub));
+Lstatic int fclist _((FILE*f,Options ops,zlong first,zlong last,struct asgment*subs,Patprog pprog,int is_command));
+Lstatic int fcedit _((char*ename,char*fn));
+Lstatic Asgment getasg _((char***argvp,LinkList assigns));
+Lstatic Param typeset_single _((char*cname,char*pname,Param pm,UNUSED(int func),int on,int off,int roff,Asgment asg,Param altpm,Options ops,int joinchar));
+Eextern int bin_typeset _((char*name,char**argv,LinkList assigns,Options ops,int func));
+Eextern int eval_autoload _((Shfunc shf,char*name,Options ops,int func));
+Lstatic int check_autoload _((Shfunc shf,char*name,Options ops,int func));
+Eextern int bin_functions _((char*name,char**argv,Options ops,int func));
+Eextern Eprog mkautofn _((Shfunc shf));
+Eextern int bin_unset _((char*name,char**argv,Options ops,int func));
+Eextern int bin_whence _((char*nam,char**argv,Options ops,int func));
+Eextern int bin_hash _((char*name,char**argv,Options ops,UNUSED(int func)));
+Eextern int bin_unhash _((char*name,char**argv,Options ops,int func));
+Eextern int bin_alias _((char*name,char**argv,Options ops,UNUSED(int func)));
+Eextern int bin_true _((UNUSED(char*name),UNUSED(char**argv),UNUSED(Options ops),UNUSED(int func)));
+Eextern int bin_false _((UNUSED(char*name),UNUSED(char**argv),UNUSED(Options ops),UNUSED(int func)));
+Xbufstack
+Eextern mod_import_variable LinkList bufstack;
+Eextern int bin_print _((char*name,char**args,Options ops,int func));
+Eextern int bin_shift _((char*name,char**argv,Options ops,UNUSED(int func)));
+Eextern int optcind;
+Eextern int bin_getopts _((UNUSED(char*name),char**argv,UNUSED(Options ops),UNUSED(int func)));
+Xexit_pending
+Eextern mod_import_variable int exit_pending;
+Xexit_level
+Eextern mod_import_variable int exit_level;
+Eextern int bin_break _((char*name,char**argv,UNUSED(Options ops),int func));
+Xstopmsg
+Eextern mod_import_variable int stopmsg;
+Lstatic void checkjobs _((void));
+Eextern int shell_exiting;
+Xzexit
+Eextern mod_import_function void zexit _((int val,int from_where));
+Eextern int bin_dot _((char*name,char**argv,UNUSED(Options ops),UNUSED(int func)));
+Eextern int bin_emulate _((char*nam,char**argv,Options ops,UNUSED(int func)));
+Xineval
+Eextern mod_import_variable int ineval;
+Eextern int bin_eval _((UNUSED(char*nam),char**argv,UNUSED(Options ops),UNUSED(int func)));
+Eextern int bin_read _((char*name,char**args,Options ops,UNUSED(int func)));
+Lstatic int zread _((int izle,int*readchar,long izle_timeout));
+Eextern char**testargs;
+Eextern char**curtestarg;
+Eextern void testlex _((void));
+Eextern int bin_test _((char*name,char**argv,UNUSED(Options ops),int func));
+Eextern int bin_times _((UNUSED(char*name),UNUSED(char**argv),UNUSED(Options ops),UNUSED(int func)));
+Eextern int bin_trap _((char*name,char**argv,UNUSED(Options ops),UNUSED(int func)));
+Eextern int bin_ttyctl _((UNUSED(char*name),UNUSED(char**argv),Options ops,UNUSED(int func)));
+Eextern int bin_let _((UNUSED(char*name),char**argv,UNUSED(Options ops),UNUSED(int func)));
+Eextern int bin_umask _((char*nam,char**args,Options ops,UNUSED(int func)));
+Xbin_notavail
+Eextern mod_import_function int bin_notavail _((char*nam,UNUSED(char**argv),UNUSED(Options ops),UNUSED(int func)));
+E
+E#endif /* !have_Src_builtin_globals */

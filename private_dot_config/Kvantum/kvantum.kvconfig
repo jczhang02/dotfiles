@@ -1,0 +1,7 @@
+[General]
+theme=KvGlass
+
+[Applications]
+Default=QtScrcpy
+Fluent-Dark=QtScrcpy
+KvMojaveMixed=QtScrcpy

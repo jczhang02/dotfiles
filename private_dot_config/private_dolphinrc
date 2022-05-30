@@ -1,0 +1,72 @@
+[CompactMode]
+FontWeight=50
+
+[DetailsMode]
+FontWeight=50
+
+[Display]
+Fullscreen=True
+FullscreenResolution=Auto
+RenderToMain=False
+RenderWindowXPos=0
+RenderWindowYPos=0
+
+[ExtractDialog]
+HDMI-0 DP-0 DP-2 Height 1920x1080=548
+HDMI-0 DP-0 DP-2 Width 1920x1080=1280
+
+[General]
+Version=201
+ViewPropsTimestamp=2022,1,30,0,57,33.023
+
+[IconsMode]
+FontWeight=50
+PreviewSize=48
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=22
+
+[KPropertiesDialog]
+DP-0 HDMI-0 DP-2 Height 1920x1080=432
+DP-0 HDMI-0 DP-2 Width 1920x1080=462
+DP-2 Height 1920x1080=432
+DP-2 Width 1920x1080=454
+HDMI-0 DP-0 DP-2 Height 1080x1920=405
+HDMI-0 DP-0 DP-2 Height 1920x1080=432
+HDMI-0 DP-0 DP-2 Width 1080x1920=454
+HDMI-0 DP-0 DP-2 Width 1920x1080=423
+
+[MainWindow]
+DP-0 HDMI-0 DP-2 Height 1080x1920=1870
+DP-0 HDMI-0 DP-2 Height 1920x1080=1030
+DP-0 HDMI-0 DP-2 Width 1080x1920=1040
+DP-0 HDMI-0 DP-2 Width 1920x1080=1880
+DP-0 HDMI-0 DP-2 XPosition 1080x1920=3860
+DP-0 HDMI-0 DP-2 XPosition 1920x1080=1940
+DP-0 HDMI-0 DP-2 YPosition 1080x1920=30
+DP-0 HDMI-0 DP-2 YPosition 1920x1080=30
+DP-2 Height 1920x1080=1030
+DP-2 Width 1920x1080=930
+DP-2 XPosition 1920x1080=970
+DP-2 YPosition 1920x1080=30
+HDMI-0 DP-0 DP-2 Height 1080x1920=1870
+HDMI-0 DP-0 DP-2 Height 1920x1080=1030
+HDMI-0 DP-0 DP-2 Width 1080x1920=1040
+HDMI-0 DP-0 DP-2 Width 1920x1080=1880
+HDMI-0 DP-0 DP-2 XPosition 1080x1920=3860
+HDMI-0 DP-0 DP-2 XPosition 1920x1080=1940
+HDMI-0 DP-0 DP-2 YPosition 1080x1920=30
+HDMI-0 DP-0 DP-2 YPosition 1920x1080=30
+MenuBar=Disabled
+ToolBarsMovable=Disabled
+
+[Open-with settings]
+CompletionMode=1
+History=wps,mpv,typora,Docu,gw,/usr/bin/sxiv,zathu
+
+[PreviewSettings]
+Plugins=appimagethumbnail,audiothumbnail,comicbookthumbnail,cursorthumbnail,djvuthumbnail,ebookthumbnail,exrthumbnail,directorythumbnail,imagethumbnail,jpegthumbnail,windowsexethumbnail,windowsimagethumbnail,opendocumentthumbnail,svgthumbnail
+
+[Search]
+Location=Everywhere

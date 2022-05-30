@@ -1,0 +1,53 @@
+#!/bin/sh
+
+start() {
+	if ! pgrep -f $1; then
+		$@ &
+	fi
+}
+
+# music
+# start mpd
+# start mpDris2 # add playerctl support to mpd
+
+# compositor
+start picom
+
+# load X colors
+start xrdb $HOME/.Xresources
+
+# load CopyQ
+start copyq
+
+# network manager
+start nm-applet
+
+# Kde connect
+start /usr/lib/kdeconnectd
+
+# Fcitx 5
+start fcitx5
+
+sh /home/jczhang/.scripts/redshift.sh
+
+# auth
+start /usr/lib/polkit-kde-authentication-agent-1
+
+# Multiscreen support
+start autorandr --change
+
+# Blueman
+start blueman-applet
+
+# Wallpaper support
+start nitrogen --restore
+
+# Inkscape Script
+sh /home/jczhang/.scripts/inkscape_shortcut_start.sh &
+start inkscape-figures watch
+
+# Keymap support
+sh /home/jczhang/.scripts/keymap.sh
+
+# VNC Support
+start x11vnc -rfbauth ~/.vnc/passwd -display :0 -noxdamage -bg -forever

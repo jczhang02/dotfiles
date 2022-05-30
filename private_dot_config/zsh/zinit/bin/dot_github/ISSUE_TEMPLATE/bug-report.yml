@@ -1,0 +1,78 @@
+name: Report a bug
+description: Report a bug or issue with Zinit.
+labels: ["bug"]
+title: "[bug]: "
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Self Check
+        - Look for similar errors in existing [GitHub Issues](https://github.com/zdharma-continuum/zinit/issues?q=is%3Aissue) (open or closed).
+        - Try reaching out on the [Gitter server](https://gitter.im/zdharma-continuum/community/) for help.
+
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Describe the bug
+      description: A clear description of what the bug is.
+
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Steps to reproduce the problem
+      placeholder: |
+        1. Enable plugin 'foo'
+        2. Run 'foo bar' or try to complete command 'foo --widget'
+        3. See error
+
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Expected behavior
+      description: A brief description of the expected behavior should be
+
+  - type: textarea
+    attributes:
+      label: Screenshots and recordings
+      description: |
+        If applicable, add screenshots or [asciinema](https://asciinema.org) session to explain your problem
+
+  - type: input
+    validations:
+      required: true
+    attributes:
+      label: Operating System & Version
+      description: Output of `echo "$OSTYPE | $VENDOR | $MACHTYPE | $CPUTYPE | $(uname -m -p)"` 
+
+  - type: input
+    validations:
+      required: true
+    attributes:
+      label: Zsh version
+      description: Output of `zsh --version`
+
+  - type: input
+    validations:
+      required: true
+    attributes:
+      label: Terminal emulator
+      description: Terminal name & output of `echo "$TERM"`
+
+  - type: dropdown
+    attributes:
+      label: If using WSL on Windows, which version of WSL
+      description: Output `wsl -l -v`
+      options:
+        - 'WSL 1'
+        - 'WSL 2'
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem. This can be themes, plugins, custom settings, etc.

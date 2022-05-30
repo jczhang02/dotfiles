@@ -1,0 +1,6 @@
+# pack-refs with: peeled fully-peeled sorted 
+6a612b726359edfdc7b3a58234c5212a2e34ede9 refs/remotes/origin/awful-sync
+8c8aaed4a7499bf02b5223b0b9526afb62df849f refs/remotes/origin/better-sync
+869fbf6b694b7d03a4897bc2162300886497caa2 refs/remotes/origin/improve
+5d492b4d0e2638588b1520f0ff0d768c729f6565 refs/remotes/origin/master
+0f6075cee6a11bf38f61eaf842f87e2ce2bbc48f refs/remotes/origin/no_sed

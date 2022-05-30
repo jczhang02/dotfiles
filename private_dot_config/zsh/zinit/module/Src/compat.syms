@@ -1,0 +1,69 @@
+E#ifndef have_Src_compat_globals
+E#define have_Src_compat_globals
+E
+E#ifndef HAVE_STRSTR
+L#ifndef HAVE_STRSTR
+Eextern char*strstr _((const char*s,const char*t));
+E#endif
+L#endif
+E#ifndef HAVE_GETHOSTNAME
+L#ifndef HAVE_GETHOSTNAME
+Eextern int gethostname _((char*name,size_t namelen));
+E#endif
+L#endif
+E#ifndef HAVE_GETTIMEOFDAY
+L#ifndef HAVE_GETTIMEOFDAY
+Eextern int gettimeofday _((struct timeval*tv,struct timezone*tz));
+E#endif
+L#endif
+Xzgettime
+Eextern mod_import_function int zgettime _((struct timespec*ts));
+E#ifndef HAVE_DIFFTIME
+L#ifndef HAVE_DIFFTIME
+Eextern double difftime _((time_t t2,time_t t1));
+E#endif
+L#endif
+E#ifndef HAVE_STRERROR
+L#ifndef HAVE_STRERROR
+Eextern char*strerror _((int errnum));
+E#endif
+L#endif
+Xzpathmax
+Eextern mod_import_function long zpathmax _((char*dir));
+E#ifdef HAVE_SYSCONF
+L#ifdef HAVE_SYSCONF
+Xzopenmax
+Eextern mod_import_function long zopenmax _((void));
+E#endif
+L#endif
+Xzgetdir
+Eextern mod_import_function char*zgetdir _((struct dirsav*d));
+Eextern char*zgetcwd _((void));
+Xzchdir
+Eextern mod_import_function int zchdir _((char*dir));
+E#ifdef ZSH_64_BIT_TYPE
+L#ifdef ZSH_64_BIT_TYPE
+Xoutput64
+Eextern mod_import_function char*output64 _((zlong val));
+E#endif /* ZSH_64_BIT_TYPE */
+L#endif /* ZSH_64_BIT_TYPE */
+E#ifndef HAVE_STRTOUL
+L#ifndef HAVE_STRTOUL
+Eextern unsigned long strtoul(nptr;
+Eextern unsigned long endptr;
+Eextern unsigned long base)const char*nptr;
+E#endif /* HAVE_STRTOUL */
+L#endif /* HAVE_STRTOUL */
+E#ifdef ENABLE_UNICODE9
+L#ifdef ENABLE_UNICODE9
+Eextern int u9_wcwidth _((wchar_t ucs));
+Eextern int u9_iswprint _((wint_t ucs));
+E#endif	/* ENABLE_UNICODE9 */
+L#endif	/* ENABLE_UNICODE9 */
+E#if defined(__APPLE__) && defined(BROKEN_ISPRINT)
+L#if defined(__APPLE__) && defined(BROKEN_ISPRINT)
+Eextern int isprint_ascii _((int c));
+E#endif /* __APPLE__ && BROKEN_ISPRINT */
+L#endif /* __APPLE__ && BROKEN_ISPRINT */
+E
+E#endif /* !have_Src_compat_globals */

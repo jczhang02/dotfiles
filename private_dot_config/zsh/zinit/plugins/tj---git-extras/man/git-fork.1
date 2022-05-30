@@ -1,0 +1,123 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "GIT\-FORK" "1" "October 2017" "" "Git Extras"
+.
+.SH "NAME"
+\fBgit\-fork\fR \- Fork a repo on github
+.
+.SH "SYNOPSIS"
+\fBgit\-fork\fR [<github\-repo\-url>]
+.
+.SH "DESCRIPTION"
+If a github repo url is given, fork the repo\. Like clone but forks first\.
+.
+.IP "1." 4
+forks the repo on github
+.
+.IP "2." 4
+clones the repo into the current dir
+.
+.IP "3." 4
+adds the original repo as a remote called \fBupstream\fR
+.
+.IP "" 0
+.
+.P
+If a url is not given and the current dir is a github repo, fork the repo\.
+.
+.IP "1." 4
+forks the current repo
+.
+.IP "2." 4
+rename the \fBorigin\fR remote repo to \fBupstream\fR
+.
+.IP "3." 4
+adds the forked repo as a remote called \fBorigin\fR
+.
+.IP "" 0
+.
+.P
+Remotes will use ssh if you have it configured with GitHub, if not, https will be used\.
+.
+Create a fork a project on GitHub via command line\.
+.
+.P
+A personal access token is required for making the API call to create a new fork in GitHub\. API Documentation here \fIhttps://docs\.github\.com/en/rest/reference/repos#forks\fR
+.
+.P
+Make sure the personal access token has the right \fBOAuth\fR scopes for the repo(s)
+.
+.P
+Use \fBgit config \-\-global \-\-add git\-extras\.github\-personal\-access\-token <your\-personal\-access\-token>\fR
+.
+.P
+If using multiple accounts, override the global value in the specific repo using \fBgit config git\-extras\.github\-personal\-access\-token <other\-acc\-personal\-access\-token>\fR
+.
+.SH "EXAMPLE"
+Fork expect\.js:
+.
+.IP "" 4
+.
+.nf
+
+$ git fork https://github\.com/LearnBoost/expect\.js
+.
+.fi
+.
+.IP "" 0
+.
+.P
+or just:
+.
+.IP "" 4
+.
+.nf
+
+$ git fork LearnBoost/expect\.js
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Then:
+.
+.IP "" 4
+.
+.nf
+
+$ \.\.<forks into your github profile and clones repo locally to expect\.js dir>\.\.\.
+
+$ cd expect\.js && git remote \-v
+
+  origin          git@github\.com:<user>/expect\.js (fetch)
+  origin          git@github\.com:<user>/expect\.js (push)
+  upstream        git@github\.com:LearnBoost/expect\.js (fetch)
+  upstream        git@github\.com:LearnBoost/expect\.js (push)
+.
+.fi
+.
+.IP "" 0
+.
+.P
+If the current dir is a clone of expect\.js, this has the same effect:
+.
+.IP "" 4
+.
+.nf
+
+$ git fork
+.
+.fi
+.
+.IP "" 0
+.
+.SH "AUTHOR"
+Written by Andrew Griffiths <\fImail@andrewgriffithsonline\.com\fR>
+.
+.SH "REPORTING BUGS"
+<\fIhttps://github\.com/tj/git\-extras/issues\fR>
+.
+.SH "SEE ALSO"
+<\fIhttps://github\.com/tj/git\-extras\fR>

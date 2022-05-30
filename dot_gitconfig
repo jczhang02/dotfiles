@@ -1,0 +1,9 @@
+[user]
+	email = jczhang@live.it
+	name = flaviusbuffon
+
+
+[init]
+	defaultBranch = main
+[credential]
+	helper = cache

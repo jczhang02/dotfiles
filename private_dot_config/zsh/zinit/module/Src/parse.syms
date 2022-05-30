@@ -1,0 +1,116 @@
+E#ifndef have_Src_parse_globals
+E#define have_Src_parse_globals
+E
+Xincmdpos
+Eextern mod_import_variable int incmdpos;
+Eextern int aliasspaceflag;
+Xincond
+Eextern mod_import_variable int incond;
+Xinredir
+Eextern mod_import_variable int inredir;
+Eextern int incasepat;
+Eextern int isnewlin;
+Eextern int infor;
+Eextern int inrepeat_;
+Xintypeset
+Eextern mod_import_variable int intypeset;
+Eextern struct heredocs*hdocs;
+Eextern int eclen;
+Eextern int ecused;
+Eextern int ecnpats;
+Eextern Wordcode ecbuf;
+Eextern Eccstr ecstrs;
+Eextern int ecsoffs;
+Eextern int ecssub;
+Eextern int ecnfunc;
+Eextern void parse_context_save _((struct parse_stack*ps,int toplevel));
+Eextern void parse_context_restore _((const struct parse_stack*ps,int toplevel));
+Xinit_parse_status
+Eextern mod_import_function void init_parse_status _((void));
+Eextern void init_parse _((void));
+Xempty_eprog
+Eextern mod_import_function int empty_eprog _((Eprog p));
+Eextern Eprog parse_event _((int endtok));
+Eextern int par_event _((int endtok));
+Xparse_list
+Eextern mod_import_function Eprog parse_list _((void));
+Xparse_cond
+Eextern mod_import_function Eprog parse_cond _((void));
+Lstatic void set_list_code _((int p,int type,int cmplx));
+Lstatic void set_sublist_code _((int p,int type,int flags,int skip,int cmplx));
+Lstatic void par_list _((int*cmplx));
+Lstatic void par_list1 _((int*cmplx));
+Lstatic int par_sublist _((int*cmplx));
+Lstatic int par_sublist2 _((int*cmplx));
+Lstatic int par_pline _((int*cmplx));
+Lstatic int par_cmd _((int*cmplx,int zsh_construct));
+Lstatic void par_for _((int*cmplx));
+Lstatic void par_case _((int*cmplx));
+Lstatic void par_if _((int*cmplx));
+Lstatic void par_while _((int*cmplx));
+Lstatic void par_repeat _((int*cmplx));
+Lstatic void par_subsh _((int*cmplx,int zsh_construct));
+Lstatic void par_funcdef _((int*cmplx));
+Lstatic void par_time _((void));
+Lstatic void par_dinbrack _((void));
+Lstatic int par_simple _((int*cmplx,int nr));
+Lstatic int par_redir _((int*rp,char*idstring));
+Eextern void setheredoc _((int pc,int type,char*str,char*termstr,char*munged_termstr));
+Lstatic int par_wordlist _((void));
+Lstatic int par_nl_wordlist _((void));
+Eextern void(*condlex)_((void));
+Lstatic int par_cond _((void));
+Lstatic int par_cond_1 _((void));
+Lstatic int par_cond_2 _((void));
+Lstatic int par_cond_double _((char*a,char*b));
+Lstatic int get_cond_num _((char*tst));
+Lstatic int par_cond_triple _((char*a,char*b,char*c));
+Lstatic int par_cond_multi _((char*a,LinkList l));
+Lstatic void yyerror _((int noerr));
+Xdupeprog
+Eextern mod_import_function Eprog dupeprog _((Eprog p,int heap));
+Xuseeprog
+Eextern mod_import_function void useeprog _((Eprog p));
+Xfreeeprog
+Eextern mod_import_function void freeeprog _((Eprog p));
+Eextern char*ecgetstr _((Estate s,int dup,int*tokflag));
+Eextern char*ecrawstr _((Eprog p,Wordcode pc,int*tokflag));
+Eextern char**ecgetarr _((Estate s,int num,int dup,int*tokflag));
+Eextern LinkList ecgetlist _((Estate s,int num,int dup,int*tokflag));
+Eextern LinkList ecgetredirs _((Estate s));
+Eextern Eprog eccopyredirs _((Estate s));
+Xdummy_eprog
+Eextern mod_import_variable struct eprog dummy_eprog;
+Eextern void init_eprog _((void));
+Eextern int bin_zcompile _((char*nam,char**args,Options ops,UNUSED(int func)));
+Lstatic Wordcode load_dump_header _((char*nam,char*name,int err));
+Lstatic int build_dump _((char*nam,char*dump,char**files,int ali,int map,int flags));
+Lstatic int build_cur_dump _((char*nam,char*dump,char**names,int match,int map,int what));
+E#if defined(HAVE_SYS_MMAN_H) && defined(HAVE_MMAP) && defined(HAVE_MUNMAP)
+L#if defined(HAVE_SYS_MMAN_H) && defined(HAVE_MMAP) && defined(HAVE_MUNMAP)
+E#if defined(MAP_SHARED) && defined(PROT_READ)
+L#if defined(MAP_SHARED) && defined(PROT_READ)
+E#define USE_MMAP 1
+L#define USE_MMAP 1
+E#endif
+L#endif
+E#endif
+L#endif
+E#ifdef USE_MMAP
+L#ifdef USE_MMAP
+Lstatic int zwcstat _((char*filename,struct stat*buf));
+E#endif
+L#endif
+Eextern Eprog try_dump_file _((char*path,char*name,char*file,int*ksh,int test_only));
+Eextern Eprog try_source_file _((char*file));
+Lstatic Eprog check_dump_file _((char*file,struct stat*sbuf,char*name,int*ksh,int test_only));
+Eextern void incrdumpcount _((FuncDump f));
+Lstatic void freedump _((FuncDump f));
+Eextern void decrdumpcount _((FuncDump f));
+Xclosedumps
+Eextern mod_import_function void closedumps _((void));
+Xclosedumps
+Eextern mod_import_function void closedumps _((void));
+Eextern int dump_autoload _((char*nam,char*file,int on,Options ops,int func));
+E
+E#endif /* !have_Src_parse_globals */

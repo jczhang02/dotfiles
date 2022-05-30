@@ -1,0 +1,74 @@
+E#ifndef have_Src_signals_globals
+E#define have_Src_signals_globals
+E
+Xsigtrapped
+Eextern mod_import_variable int sigtrapped[VSIGCOUNT];
+Xsiglists
+Eextern mod_import_variable Eprog siglists[VSIGCOUNT];
+Xnsigtrapped
+Eextern mod_import_variable int nsigtrapped;
+Eextern int in_exit_trap;
+Lstatic int exit_trap_posix;
+Xqueueing_enabled
+Eextern mod_import_variable int queueing_enabled;
+Xqueue_front
+Eextern mod_import_variable int queue_front;
+Xqueue_rear
+Eextern mod_import_variable int queue_rear;
+Xsignal_queue
+Eextern mod_import_variable int signal_queue[MAX_QUEUE_SIZE];
+Xsignal_mask_queue
+Eextern mod_import_variable sigset_t signal_mask_queue[MAX_QUEUE_SIZE];
+Xqueue_in
+Eextern mod_import_variable int queue_in;
+Xtrap_queueing_enabled
+Eextern mod_import_variable int trap_queueing_enabled;
+Xtrap_queue_front
+Eextern mod_import_variable int trap_queue_front;
+Xtrap_queue_rear
+Eextern mod_import_variable int trap_queue_rear;
+Xtrap_queue
+Eextern mod_import_variable int trap_queue[MAX_QUEUE_SIZE];
+Xinstall_handler
+Eextern mod_import_function void install_handler _((int sig));
+Xintr
+Eextern mod_import_function void intr _((void));
+Xholdintr
+Eextern mod_import_function void holdintr _((void));
+Xnoholdintr
+Eextern mod_import_function void noholdintr _((void));
+Xsignal_mask
+Eextern mod_import_function sigset_t signal_mask _((int sig));
+E#ifndef BSD_SIGNALS
+L#ifndef BSD_SIGNALS
+Xsignal_block
+Eextern mod_import_function sigset_t signal_block _((sigset_t set));
+E#endif /* BSD_SIGNALS */
+L#endif /* BSD_SIGNALS */
+Xsignal_unblock
+Eextern mod_import_function sigset_t signal_unblock _((sigset_t set));
+Xsignal_setmask
+Eextern mod_import_function sigset_t signal_setmask _((sigset_t set));
+Eextern int signal_suspend _((UNUSED(int sig),int wait_cmd));
+Eextern int last_signal;
+Eextern void wait_for_processes _((void));
+Xzhandler
+Eextern mod_import_function void zhandler _((int sig));
+Eextern void killrunjobs _((int from_signal));
+Eextern int killjb _((Job jn,int sig));
+Xsettrap
+Eextern mod_import_function int settrap _((int sig,Eprog l,int flags));
+Eextern void unsettrap _((int sig));
+Eextern HashNode removetrap _((int sig));
+Eextern void starttrapscope _((void));
+Eextern void endtrapscope _((void));
+Lstatic int handletrap _((int sig));
+Eextern void queue_traps _((int wait_cmd));
+Eextern void unqueue_traps _((void));
+Eextern int intrap;
+Eextern int trapisfunc;
+Eextern int traplocallevel;
+Lstatic void dotrapargs _((int sig,int*sigtr,void*sigfn));
+Eextern void dotrap _((int sig));
+E
+E#endif /* !have_Src_signals_globals */

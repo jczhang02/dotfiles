@@ -1,0 +1,135 @@
+E#ifndef have_Src_exec_globals
+E#define have_Src_exec_globals
+E
+Eextern int noerrexit;
+Eextern int this_noerrexit;
+Xnoerrs
+Eextern mod_import_variable int noerrs;
+Eextern int nohistsave;
+Xerrflag
+Eextern mod_import_variable int errflag;
+Eextern int trap_state;
+Eextern int trap_return;
+Eextern int subsh;
+Xretflag
+Eextern mod_import_variable int retflag;
+Eextern long lastval2;
+Xfdtable
+Eextern mod_import_variable unsigned char*fdtable;
+Eextern int fdtable_size;
+Xmax_zsh_fd
+Eextern mod_import_variable int max_zsh_fd;
+Xcoprocin
+Eextern mod_import_variable int coprocin;
+Xcoprocout
+Eextern mod_import_variable int coprocout;
+Eextern int fdtable_flocks;
+Xzleactive
+Eextern mod_import_variable int zleactive;
+Eextern pid_t cmdoutpid;
+Xprocsubstpid
+Eextern mod_import_variable pid_t procsubstpid;
+Eextern int cmdoutval;
+Eextern int use_cmdoutval;
+Xsfcontext
+Eextern mod_import_variable int sfcontext;
+Eextern struct execstack*exstack;
+Xfuncstack
+Eextern mod_import_variable Funcstack funcstack;
+Xparse_string
+Eextern mod_import_function Eprog parse_string _((char*s,int reset_lineno));
+E#ifdef HAVE_GETRLIMIT
+L#ifdef HAVE_GETRLIMIT
+Xcurrent_limits
+Eextern mod_import_variable struct rlimit current_limits[RLIM_NLIMITS];
+Xlimits
+Eextern mod_import_variable struct rlimit limits[RLIM_NLIMITS];
+Xzsetlimit
+Eextern mod_import_function int zsetlimit _((int limnum,char*nam));
+Xsetlimits
+Eextern mod_import_function int setlimits _((char*nam));
+E#endif /* HAVE_GETRLIMIT */
+L#endif /* HAVE_GETRLIMIT */
+Lstatic pid_t zfork _((struct timeval*tv));
+Eextern int list_pipe;
+Eextern int simple_pline;
+Lstatic int execcursh _((Estate state,int do_exec));
+Lstatic int zexecve _((char*pth,char**argv,char**newenvp));
+Lstatic int isgooderr _((int e,char*dir));
+Lstatic int commandnotfound _((char*arg0,LinkList args));
+Lstatic void execute _((LinkList args,int flags,int defpath));
+Xfindcmd
+Eextern mod_import_function char*findcmd _((char*arg0,int docopy,int default_path));
+Eextern int iscom _((char*s));
+Eextern int isreallycom _((Cmdnam cn));
+Eextern int isrelative _((char*s));
+Xhashcmd
+Eextern mod_import_function Cmdnam hashcmd _((char*arg0,char**pp));
+Eextern int forklevel;
+Lstatic void entersubsh _((int flags));
+Xexecstring
+Eextern mod_import_function void execstring _((char*s,int dont_change_job,int exiting,char*context));
+Xexecode
+Eextern mod_import_function void execode _((Eprog p,int dont_change_job,int exiting,char*context));
+Lstatic int execsimple _((Estate state));
+Eextern void execlist _((Estate state,int dont_change_job,int exiting));
+Lstatic int execpline _((Estate state,wordcode slcode,int how,int last1));
+Lstatic void execpline2 _((Estate state,wordcode pcode,int how,int input,int output,int last1));
+Lstatic char**makecline _((LinkList list));
+Xuntokenize
+Eextern mod_import_function void untokenize _((char*s));
+Eextern void quote_tokenized_output _((char*str,FILE*file));
+Lstatic int clobber_open _((struct redir*f));
+Lstatic void closemn _((struct multio**mfds,int fd,int type));
+Lstatic void closemnodes _((struct multio**mfds));
+Lstatic void closeallelse _((struct multio*mn));
+Lstatic void addfd _((int forked,int*save,struct multio**mfds,int fd1,int fd2,int rflag,char*varid));
+Lstatic void addvars _((Estate state,Wordcode pc,int addflags));
+Eextern void setunderscore _((char*str));
+Eextern void execsubst _((LinkList strs));
+Lstatic HashNode resolvebuiltin _((const char*cmdarg,HashNode hn));
+Lstatic void execcmd_analyse _((Estate state,Execcmd_params eparams));
+Lstatic int execcmd_fork _((Estate state,int how,int type,Wordcode varspc,LinkList*filelistp,char*text,int oautocont,int close_if_forked));
+Lstatic void execcmd_exec _((Estate state,Execcmd_params eparams,int input,int output,int how,int last1,int close_if_forked));
+Lstatic void save_params _((Estate state,Wordcode pc,LinkList*restore_p,LinkList*remove_p));
+Lstatic void restore_params _((LinkList restorelist,LinkList removelist));
+Lstatic void fixfds _((int*save));
+Xclosem
+Eextern mod_import_function void closem _((int how,int all));
+Eextern char*gethere _((char**strp,int typ));
+Lstatic int getherestr _((struct redir*fn));
+Eextern LinkList getoutput _((char*cmd,int qt));
+Xreadoutput
+Eextern mod_import_function LinkList readoutput _((int in,int qt,int*readerror));
+Lstatic Eprog parsecmd _((char*cmd,char**eptr));
+Eextern char*getoutputfile _((char*cmd,char**eptr));
+Eextern char*getproc _((char*cmd,char**eptr));
+Lstatic int getpipe _((char*cmd,int nullexec));
+Lstatic int mpipe _((int*pp));
+Lstatic void spawnpipes _((LinkList l,int nullexec));
+Lstatic int execcond _((Estate state,UNUSED(int do_exec)));
+Lstatic int execarith _((Estate state,UNUSED(int do_exec)));
+Lstatic int exectime _((Estate state,UNUSED(int do_exec)));
+Lstatic int execfuncdef _((Estate state,Eprog redir_prog));
+Xsticky_emulation_dup
+Eextern mod_import_function Emulation_options sticky_emulation_dup _((Emulation_options src,int useheap));
+Xshfunc_set_sticky
+Eextern mod_import_function void shfunc_set_sticky _((Shfunc shf));
+Lstatic void execshfunc _((Shfunc shf,LinkList args));
+Lstatic int execautofn_basic _((Estate state,UNUSED(int do_exec)));
+Lstatic int execautofn _((Estate state,UNUSED(int do_exec)));
+Lstatic void loadautofnsetfile _((Shfunc shf,char*fdir));
+Eextern Shfunc loadautofn _((Shfunc shf,int fksh,int autol,int current_fpath));
+Eextern int sticky_emulation_differs _((Emulation_options sticky2));
+Xdoshfunc
+Eextern mod_import_function int doshfunc _((Shfunc shfunc,LinkList doshargs,int noreturnval));
+Xrunshfunc
+Eextern mod_import_function void runshfunc _((Eprog prog,FuncWrap wrap,char*name));
+Eextern Eprog getfpfunc _((char*s,int*ksh,char**fdir,char**alt_path,int test_only));
+Eextern Eprog stripkshdef _((Eprog prog,char*name));
+Lstatic char*cancd _((char*s));
+Lstatic int cancd2 _((char*s));
+Eextern void execsave _((void));
+Eextern void execrestore _((void));
+E
+E#endif /* !have_Src_exec_globals */

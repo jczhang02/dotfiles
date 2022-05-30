@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Support
+    url: https://github.com/zdharma-continuum/zinit/discussions
+    about: Ask the community for support
+  - name: Get help on Gitter
+    url: https://gitter.im/zdharma-continuum/community/
+    about: Have a quick question? Join the Gitter community and ask your question.

@@ -1,0 +1,9 @@
+auto_activate_base: false
+changeps1: false
+channel_priority: flexible
+ssl_verify: false
+
+
+channels:
+  - conda-forge
+  - defaults
