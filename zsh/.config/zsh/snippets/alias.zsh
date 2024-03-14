@@ -95,6 +95,8 @@ alias vim="nvim"
 alias clash="systemctl start clash-meta@jc.service"
 
 alias bw="BITWARDENCLI_APPDATA_DIR=~/.config/bitwarden_personal /usr/bin/bw $@"
+
+alias tree="tree -C"
 ## functions
 
 function ya() {
