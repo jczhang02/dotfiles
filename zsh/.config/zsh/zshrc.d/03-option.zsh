@@ -178,7 +178,7 @@ zstyle ':fzf-tab:complete:cd:*' popup-pad 0 3
 zstyle ':fzf-tab:*' fzf-flags --color=light
 zstyle ':fzf-tab:*' popup-min-size 100 8
 
-# zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
+zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 zstyle ':fzf-tab:*' switch-group ',' '.'
 
 zstyle ':fzf-tab:*' default-color $'\033[94m'
