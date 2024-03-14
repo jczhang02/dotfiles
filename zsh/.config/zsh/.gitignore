@@ -1,0 +1,6 @@
+.zplugin
+*.zwc
+history
+zi
+zi/*
+*zcompdump*

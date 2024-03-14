@@ -1,0 +1,16 @@
+---
+session_name: "${python_env}"
+shell_command_before: "mamba activate ${python_env}"
+start_directory: "$HOME/dev"
+windows:
+  - panes:
+      - nvim
+    window_name: editor
+  - panes:
+      - ls
+    window_name: excute
+  - layout: even-horizontal
+    panes:
+      - nvim
+      - ls
+    window_name: tests

@@ -1,0 +1,108 @@
+[manager]
+linemode = "size"
+
+[preview]
+tab_size = 2
+max_width = 1000
+max_height = 1000
+
+[opener]
+edit = [
+  { exec = '$nvim "$@"', desc = "$EDITOR", block = true },
+  { exec = 'neovide "$@"', orphan = true },
+]
+play = [
+  { exec = 'mpv "$@"' },
+  { exec = '''mediainfo "$1"; echo "Press enter to exit"; read''', block = true, desc = "Show media info" },
+]
+archive = [
+  { exec = 'extract "$1"', desc = "Extract here" },
+  { exec = 'unrar "$1"', orphan = true, desc = "unrar" },
+]
+
+[open]
+rules = [
+  { name = "*/", use = [
+    "open",
+    "edit",
+    "reveal",
+  ] },
+
+  { mime = "text/*", use = [
+    "edit",
+    "reveal",
+  ] },
+  { mime = "image/*", use = [
+    "open",
+    "reveal",
+  ] },
+  { mime = "video/*", use = [
+    "play",
+    "reveal",
+  ] },
+  { mime = "audio/*", use = [
+    "play",
+    "reveal",
+  ] },
+  { mime = "inode/x-empty", use = [
+    "edit",
+    "reveal",
+  ] },
+
+  { mime = "application/json", use = [
+    "edit",
+    "reveal",
+  ] },
+  { mime = "*/javascript", use = [
+    "edit",
+    "reveal",
+  ] },
+
+  { mime = "application/zip", use = [
+    "extract",
+    "reveal",
+    "archive",
+  ] },
+  { mime = "application/gzip", use = [
+    "extract",
+    "reveal",
+    "archive",
+  ] },
+  { mime = "application/x-tar", use = [
+    "extract",
+    "reveal",
+    "archive",
+  ] },
+  { mime = "application/x-bzip", use = [
+    "extract",
+    "reveal",
+    "archive",
+  ] },
+  { mime = "application/x-bzip2", use = [
+    "extract",
+    "reveal",
+    "archive",
+  ] },
+  { mime = "application/x-7z-compressed", use = [
+    "extract",
+    "reveal",
+    "archive",
+  ] },
+  { mime = "application/x-rar", use = [
+    "extract",
+    "reveal",
+    "archive",
+  ] },
+
+  { mime = "*", use = [
+    "open",
+    "reveal",
+  ] },
+]
+
+[plugin]
+prepend_previewers = [{ mime = "audio/*", exec = "exifaudio" }]
+append_previewers = [
+  { name = "*", exec = "hexyl" },
+  { mime = "text/csv", exec = "miller" },
+]

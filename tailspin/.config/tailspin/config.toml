@@ -1,0 +1,3 @@
+style = { fg = "color", bg = "color", italic = false, bold = false, underline = false }
+[date]
+style = { fg = "green" }
