@@ -1,0 +1,15 @@
+[submodule "awesome/.config/awesome/modules/UPower"]
+	path = awesome/.config/awesome/modules/UPower
+	url = https://github.com/Aire-One/awesome-battery_widget
+[submodule "awesome/.config/awesome/modules/bling"]
+	path = awesome/.config/awesome/modules/bling
+	url = https://github.com/BlingCorp/bling
+[submodule "awesome/.config/awesome/modules/color"]
+	path = awesome/.config/awesome/modules/color
+	url = https://github.com/andOrlando/color
+[submodule "awesome/.config/awesome/modules/collision"]
+	path = awesome/.config/awesome/modules/collision
+	url = https://github.com/Elv13/collision
+[submodule "awesome/.config/awesome/modules/revelation"]
+	path = awesome/.config/awesome/modules/revelation
+	url = https://github.com/guotsuan/awesome-revelation
