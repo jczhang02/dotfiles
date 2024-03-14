@@ -1,0 +1,21 @@
+#!/bin/bash
+
+ROUTER_UUID="
+    4b8dee9a-5576-4ec8-a6a5-4c7328a9c45e
+    3348cdf8-4863-4ac7-8911-aa6adff7b182
+    b313e05f-1a70-4a76-a2c3-358e6a7cd5f4
+    "
+#Juve: 2d959b32-b052-4fb6-a9de-07b8f1f38673
+UP_CMD="systemctl start mihomo.service"
+DOWN_CMD="systemctl stop mihomo.service"
+
+if [[ "$ROUTER_UUID" =~ "$CONNECTION_UUID" ]]; then
+	case "$2" in
+	up | vpn-up)
+		exec $UP_CMD
+		;;
+	down | vpn-down)
+		exec $DOWN_CMD
+		;;
+	esac
+fi
