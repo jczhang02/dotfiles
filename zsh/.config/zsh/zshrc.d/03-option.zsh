@@ -197,6 +197,11 @@ KEYTIMEOUT=0
 ZSHZ_DATA="$XDG_CONFIG_HOME/zsh/history/zsh_z.data"
 ZSHZ_CASE=smart
 
+## zoxide
+_ZO_CMD_PREFIX="z"
+# _ZO_DATA_DIR
+
+
 ## history
 autoload -Uz add-zsh-hook
 add-zsh-hook zshaddhistory max_history_len

@@ -1,6 +1,4 @@
-# ==== Plugin ====
-zi ice wait="0" lucid atload="zshz >/dev/null"
-zi light agkozak/zsh-z
+# ==== Plugin ===
 
 zi wait="0" lucid light-mode for \
     hlissner/zsh-autopair \
@@ -17,6 +15,9 @@ zi light-mode for \
     tj/git-extras \
     atload="zpcdreplay" atclone="./zplug.zsh" atpull='%atclone' \
     g-plane/pnpm-shell-completion
+
+zi has'zoxide' wait lucid for \
+  z-shell/zsh-zoxide
 
 zi wait="1" lucid for \
     OMZL::clipboard.zsh \
