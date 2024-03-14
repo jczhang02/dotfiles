@@ -1,0 +1,5 @@
+[General]
+theme=KvMojaveLight#
+
+[Applications]
+Default=kdeconnect-app

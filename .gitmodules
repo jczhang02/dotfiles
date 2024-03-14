@@ -13,3 +13,6 @@
 [submodule "awesome/.config/awesome/modules/revelation"]
 	path = awesome/.config/awesome/modules/revelation
 	url = https://github.com/guotsuan/awesome-revelation
+[submodule "mpv/.config/mpv/scripts/mpvDLNA"]
+	path = mpv/.config/mpv/scripts/mpvDLNA
+	url = https://github.com/chachmu/mpvDLNA

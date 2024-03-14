@@ -1,0 +1,14 @@
+[Added Associations]
+text/plain=nvim-qt.desktop;
+application/pdf=org.pwmt.zathura-pdf-poppler.desktop;firefox.desktop;okularApplication_pdf.desktop;
+inode/directory=thunar.desktop;
+application/x-zerosize=userapp-neovim-qt-LT13G2.desktop;
+text/x-bibtex=neovide.desktop;nvim-qt.desktop;
+text/x-log=neovide.desktop;
+text/markdown=neovide.desktop;
+
+[Default Applications]
+x-scheme-handler/obsidian=obsidian.desktop
+application/pdf=org.pwmt.zathura-pdf-poppler.desktop
+application/x-zerosize=userapp-neovim-qt-LT13G2.desktop
+text/markdown=neovide.desktop
