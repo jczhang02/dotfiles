@@ -1,0 +1,14 @@
+# vim: ft=bash
+
+# excute xrandr script for screen layout
+## C09
+# sh /home/jc/.config/screen_layout/c09.sh
+## Home
+# sh /home/jc/.config/screen_layout/home.sh
+## Outside
+# sh /home/jc/.config/screen_layout/laptop_screen.sh
+
+# using gpg-agent for SSH
+# export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+xset s off -dpms
+autorandr --change

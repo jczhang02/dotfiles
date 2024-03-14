@@ -1,0 +1,94 @@
+/** Import Lepton stylesheet (Chrome) *****************************************/
+@import url("css/leptonChrome.css");
+
+@import url("./simpleMenu.css");
+/** Add your custom styles below **********************************************/
+
+#titlebar #TabsToolbar {
+  padding: 6px 0px 2px 6px !important;
+  /* background:  !important; */
+  visibility: collapse;
+}
+
+/* only remove TST headers */
+#sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] #sidebar-header {
+  display: none; /* remove sidebar header */
+  /* border-color: var(--base_color2) !important; */
+}
+
+/* The default sidebar width. */
+#sidebar-box {
+  overflow: hidden !important;
+  position: relative !important;
+  transition: all 100ms !important;
+  min-width: 40px !important;
+  max-width: 300px !important;
+}
+
+/* The sidebar width when hovered. */
+#sidebar-box #sidebar,
+#sidebar-box:hover {
+  transition: all 100ms !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+}
+
+.sidebar-splitter {
+  /* display: none;  remove sidebar split line */
+  min-width: 0px !important;
+  max-width: 0px !important;
+  border-color: var(--base_color2) !important;
+}
+
+#context-inspect-a11y,
+#context-inspect,
+#context-inspect + menuseparator,
+/* #inspect-separator, */
+#context-viewsource,
+#context-savepage,
+#context-viewinfo,
+#context-sep-viewsource,
+#context-savelinktopocket,
+#context-pocket,
+#context-sendpagetodevice,
+#context-bookmarklink,
+#context-openlink,
+#adguardadblocker_adguard_com-menuitem-0,
+#tabContext > menu.menu-iconic:nth-child(113),
+#_0982b844-4f35-48b7-9811-6832d916f21c_-menuitem-8,
+#jid0-dsq67mf5kjjhiiju2dfb6kk8dfw_jetpack-menuitem-_extract-requests,
+#_b9db16a4-6edc-47ec-a1f4-b86292ed211d_-menuitem-_vdh-main,
+#context-take-screenshot,
+#extension_one-tab_com-menuitem-_I5gmcMXVFFkDN64OCakyUl,
+#adguardadblocker_adguard_com-menuitem-16,
+#context-sep-screenshots {
+  display: none !important;
+}
+
+#contentAreaContextMenu menu[label*="OneTab"] {
+  display: none !important;
+}
+#contentAreaContextMenu menu[label*="Tab Stash"] {
+  display: none !important;
+}
+#contentAreaContextMenu menu[label*="Zotero Connector"] {
+  display: none !important;
+}
+
+/* Enable option to edit bookmark URLs under Add Bookmark (blue star) menu */
+/*
+.editBMPanel_locationRow {
+  display: initial !important;
+}
+*/
+
+/* Disable Email Image/Audio/Video and Set as Desktop Background context menu items */
+/*
+#context-sendimage,
+#context-sendvideo,
+#context-sendaudio,
+#context-sep-setbackground,
+#context-setDesktopBackground {
+  display: none !important;
+}
+*/
