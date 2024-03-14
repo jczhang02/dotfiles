@@ -1,6 +1,7 @@
 .zplugin
 *.zwc
 history
+.zsh_history
 zi
 zi/*
 *zcompdump*
