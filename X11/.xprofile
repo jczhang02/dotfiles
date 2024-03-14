@@ -12,3 +12,5 @@
 # export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 xset s off -dpms
 autorandr --change
+
+export GLFW_IM_MODULE=ibus
