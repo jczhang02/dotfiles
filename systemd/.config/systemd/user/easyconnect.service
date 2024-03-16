@@ -1,0 +1,6 @@
+[Unit]
+Description=Easyconnect
+[Service]
+Type=oneshot
+ExecStart=bash /home/jc/.local/share/bin/ez_start
+ExecStop=bash /home/jc/.local/share/bin/ez_stop
