@@ -445,3 +445,4 @@ cmake -B build .       -DCMAKE_INSTALL_PREFIX=/usr       [-Dparameter=value ...]
 cat build/CMakeFiles/Makefile.cmake 
 pnpm add --global nodemod --verbose
 exut
+podman run -d     --network "$NET"     --rm     --name "$NAME"     --device /dev/net/tun     --cap-add NET_ADMIN     -ti     -v /tmp/.X11-unix:/tmp/.X11-unix     -v $HOME/.Xauthority:/root/.Xauthority     -e EXIT=1 -e DISPLAY=$DISPLAY 

@@ -113,6 +113,23 @@ ruled.client.connect_signal("request::rules", function()
 		},
 	})
 
+	ruled.client.append_rule({
+		rule_any = {
+			class = {
+				"wechat",
+			},
+			instance = {
+				"wechat",
+			},
+		},
+		properties = {
+			floating = true,
+			width = screen_width * 0.40,
+			height = screen_height * 0.60,
+			placement = helpers.client.centered_client_placement,
+		},
+	})
+
 	-- CopyQ
 	ruled.client.append_rule({
 		id = "copyq",

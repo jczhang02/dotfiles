@@ -19,7 +19,9 @@ path+=(
     $XDG_DATA_HOME/pnpm/bin
     $XDG_DATA_HOME/gem/bin
     $XDG_DATA_HOME/gomodule/bin/
+    $XDG_DATA_HOME/bin/
 )
+
 fpath+=(
     $XDG_CONFIG_HOME/zsh/completions
     $XDG_CONFIG_HOME/zsh/functions
