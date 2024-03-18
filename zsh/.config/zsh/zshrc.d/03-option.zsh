@@ -201,6 +201,18 @@ ZSHZ_CASE=smart
 _ZO_CMD_PREFIX="z"
 # _ZO_DATA_DIR
 
+## ZCOMPDUMP
+
+() {
+  emulate -L zsh
+  local -r cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/zsh
+  autoload -Uz _store_cache compinit
+  zstyle ':completion:*' use-cache true
+  zstyle ':completion:*' cache-path $cache_dir/.zcompcache
+  [[ -f $cache_dir/.zcompcache/.make-cache-dir ]] || _store_cache .make-cache-dir
+  compinit -C -d $cache_dir/.zcompdump
+}
+
 
 ## history
 autoload -Uz add-zsh-hook
