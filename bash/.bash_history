@@ -446,3 +446,30 @@ cat build/CMakeFiles/Makefile.cmake
 pnpm add --global nodemod --verbose
 exut
 podman run -d     --network "$NET"     --rm     --name "$NAME"     --device /dev/net/tun     --cap-add NET_ADMIN     -ti     -v /tmp/.X11-unix:/tmp/.X11-unix     -v $HOME/.Xauthority:/root/.Xauthority     -e EXIT=1 -e DISPLAY=$DISPLAY 
+cd .local/share/atuin/
+cd ..
+rm atuin
+rm -rf atuin
+mkdir atuin
+ls atuin
+doas mount /dev/zvol/rpool/home/atuin ~/.local/share/atuin
+doas chown -R jc: ~/.local/share/atuin
+cp -rv ~/atuin-backup/* atuin/
+cd ..
+rm -r atuin
+mkdir atuin
+doas mount /dev/zvol/rpool/home/atuin atuin
+doas umount atuin
+cd ..
+doas umount atuin
+doas zfs set mountpoint=/home/jc/.local/share/atuin/ rpool/home/atuin
+doas zfs set mountpoint=legacy rpool/home/atuin
+vim /etc/fstab
+doas mount -a
+df
+zpool list
+zpool list rpool
+zfs list
+vim /etc/fstab
+mount -a
+doas mount -a
