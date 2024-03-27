@@ -5,7 +5,6 @@ zi wait="0" lucid light-mode for \
     hchbaw/zce.zsh \
     Aloxaf/gencomp \
     Aloxaf/zsh-sqlite \
-    cloneopts="--branch zsqlite" Aloxaf/zsh-histdb \
     wfxr/forgit
 
 zi light-mode for \
@@ -16,8 +15,8 @@ zi light-mode for \
     atload="zpcdreplay" atclone="./zplug.zsh" atpull='%atclone' \
     g-plane/pnpm-shell-completion
 
-zi has'zoxide' wait lucid for \
-  z-shell/zsh-zoxide
+zi has'zoxide' ver'auto_pushd' for atload="function z() { __zoxide_z \"\$@\" }" \
+z-shell/zsh-zoxide
 
 zi wait="1" lucid for \
     OMZL::clipboard.zsh \

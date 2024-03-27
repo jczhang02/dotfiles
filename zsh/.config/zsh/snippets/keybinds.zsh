@@ -101,7 +101,7 @@ Count(*) DESC
 zle -N fz-history-widget
 # keybindings[C-r]=fz-history-widget
 # bindkey '^r' _histdb-isearch
-bindkey '^R' histdb-fzf-widget
+# bindkey '^R' histdb-fzf-widget
 
 # 搜索文件
 # 会将 * 或 ** 替换为搜索结果
@@ -129,6 +129,7 @@ keybindings[M-s]=fz-find
 # 快速跳转到指定字符
 function zce-jump-char() {
     [[ -z $BUFFER ]] && zle up-history
+    zstyle ':zce:*' keys 'asdghklqwertyuiopzxcvbnmfj;23456789'
     zstyle ':zce:*' prompt-char '%B%F{green}Jump to character:%F%b '
     zstyle ':zce:*' prompt-key '%B%F{green}Target key:%F%b '
     with-zce zce-raw zce-searchin-read

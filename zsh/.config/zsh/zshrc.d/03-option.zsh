@@ -44,7 +44,7 @@ zstyle ':completion:*:(argument-rest|files):*' matcher-list '' \
 zstyle ':completion:*' regular false
 
 # 结果样式
-zstyle ':completion:*' menu yes select # search
+zstyle ':completion:*' menu no # search
 zstyle ':completion:*' list-grouped false
 zstyle ':completion:*' list-separator ''
 zstyle ':completion:*' group-name ''
@@ -83,6 +83,11 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 # fg/bg 补全时使用 jobs id
 zstyle ':completion:*:jobs' verbose true
 zstyle ':completion:*:jobs' numbers true
+
+## MANPAGER
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANROFFOPT='-c'
+
 
 # 单词中也进行补全
 setopt complete_in_word
@@ -152,7 +157,8 @@ LIMIT 1
     typeset -g suggestion=$reply
 }
 
-ZSH_AUTOSUGGEST_STRATEGY=(histdb_top_here match_prev_cmd completion)
+# ZSH_AUTOSUGGEST_STRATEGY=(histdb_top_here match_prev_cmd completion)
+ZSH_AUTOSUGGEST_STRATEGY=(match_prev_cmd completion)
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
@@ -198,7 +204,7 @@ ZSHZ_DATA="$XDG_CONFIG_HOME/zsh/history/zsh_z.data"
 ZSHZ_CASE=smart
 
 ## zoxide
-_ZO_CMD_PREFIX="z"
+# _ZO_CMD_PREFIX="z"
 # _ZO_DATA_DIR
 
 ## ZCOMPDUMP
