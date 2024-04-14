@@ -3,7 +3,7 @@ Xft.hinting:	1
 Xft.autohint:	0
 Xft.hintstyle:	hintslight
 Xft.rgba:	rgb
-Xft.dpi:	100
+Xft.dpi:	110
 Xft.lcdfilter:	lcddefault
 Xcursor.theme: capitaine-cursors
 Xcursor.size: 10

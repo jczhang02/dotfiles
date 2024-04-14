@@ -1,0 +1,16 @@
+---
+session_name: "operator_learning"
+shell_command_before: "mamba activate lightning"
+start_directory: "$HOME/dev/"
+windows:
+  - panes:
+      - nvim
+    window_name: editor
+  - panes:
+      - ls
+    window_name: excute
+  - layout: even-horizontal
+    panes:
+      - nvim
+      - ls
+    window_name: tests
