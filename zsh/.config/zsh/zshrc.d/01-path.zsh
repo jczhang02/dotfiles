@@ -20,6 +20,7 @@ path+=(
     $XDG_DATA_HOME/gem/bin
     $XDG_DATA_HOME/gomodule/bin/
     $XDG_DATA_HOME/bin/
+    $XDG_DATA_HOME/bob/nvim-bin/
 )
 
 fpath+=(
@@ -28,7 +29,7 @@ fpath+=(
 )
 
 # ==== Application env ====
-EDITOR="/usr/bin/nvim"
+# EDITOR="/usr/bin/nvim"
 BROWSER="/usr/bin/firefox"
 TERMINFO="/usr/share/terminfo/"
 

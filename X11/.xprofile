@@ -14,3 +14,4 @@ xset s off -dpms
 autorandr --change
 
 export GLFW_IM_MODULE=ibus
+

@@ -43,6 +43,8 @@ local function autostart_apps()
 
 	awful.spawn.with_shell("xrdb /home/jc/.Xresources")
 
+	awful.spawn.with_shell("keepassxc")
+
 	--- VNC
 
 	-- awful.spawn.with_shell("start x11vnc -rfbauth ~/.vnc/passwd -display :0 -noxdamage -bg -forever")
@@ -52,6 +54,10 @@ local function autostart_apps()
 	-- awful.spawn.with_shell("inkscape-figures watch")
 
 	-- awful.spawn.with_shell("/usr/lib/pam_kwallet_init")
+
+	-- awful.spawn.with_shell(
+	-- 	"dbus-update-activation-environment --all && gnome-keyring-daemon --start --components=secrets"
+	-- )
 
 	--- Redshift
 	-- helpers.run.check_if_running("redshift", nil, function()
