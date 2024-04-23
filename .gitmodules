@@ -16,7 +16,3 @@
 [submodule "mpv/.config/mpv/scripts/mpvDLNA"]
 	path = mpv/.config/mpv/scripts/mpvDLNA
 	url = https://github.com/chachmu/mpvDLNA
-[submodule "nvim/.config/nvim"]
-	path = nvim/.config/nvim
-	url = git@github.com:jczhang02/nvimdots.git
-	branch = 0.10
