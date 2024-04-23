@@ -35,14 +35,10 @@ zi light-mode for \
     conda-incubator/conda-zsh-completion \
     endaaman/lxd-completion-zsh
 
-zi ice as"completion" svn
-zi snippet https://github.com/gentoo/gentoo-zsh-completions/trunk/src
-
 zi ice as"completion" blockf
 zi snippet https://github.com/ohmyzsh/ohmyzsh/blob/master/plugins/rust/_rustc
 
-zi light Aloxaf/fzf-tab
-zi light Freed-Wu/fzf-tab-source
+
 
 zi ice wait lucid atinit"ZI[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay"
 zi light z-shell/F-Sy-H
@@ -53,6 +49,10 @@ zi load zsh-users/zsh-autosuggestions
 zi light-mode for \
     softmoth/zsh-vim-mode \
     twang817/zsh-manydots-magic
+
+
+zi light Aloxaf/fzf-tab
+zi light Freed-Wu/fzf-tab-source
 
 zpcompinit; zpcdreplay
 

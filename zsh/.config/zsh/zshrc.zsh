@@ -31,6 +31,7 @@ fi
 typeset -A ZI=(
     BIN_DIR         $ZDOTDIR/zi/bin
     HOME_DIR        $ZDOTDIR/zi
+    CONFIG_DIR      $ZDOTDIR/zi
     COMPINIT_OPTS   -C
 )
 source "${ZI[BIN_DIR]}/zi.zsh"
