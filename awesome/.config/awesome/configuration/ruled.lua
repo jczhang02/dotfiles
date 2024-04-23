@@ -160,6 +160,21 @@ ruled.client.connect_signal("request::rules", function()
 		},
 	})
 
+	-- keepassxc
+	ruled.client.append_rule({
+		id = "keepassxc",
+		rule_any = {
+			instance = { "keepassxc" },
+			class = { "KeePassXC" },
+		},
+		properties = {
+			floating = true,
+			placement = helpers.client.centered_client_placement,
+			width = 2560 * 0.8,
+			height = 1600 * 0.8,
+		},
+	})
+
 	-- CopyQ
 	ruled.client.append_rule({
 		id = "vncviewer",
