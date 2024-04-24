@@ -39,17 +39,9 @@ zi ice as"completion" blockf
 zi snippet https://github.com/ohmyzsh/ohmyzsh/blob/master/plugins/rust/_rustc
 
 
-
-zi ice wait lucid atinit"ZI[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay"
-zi light z-shell/F-Sy-H
-
-zi ice wait lucid atload"!_zsh_autosuggest_start"
-zi load zsh-users/zsh-autosuggestions
-
 zi light-mode for \
     softmoth/zsh-vim-mode \
     twang817/zsh-manydots-magic
-
 
 zi light Aloxaf/fzf-tab
 zi light Freed-Wu/fzf-tab-source
@@ -63,3 +55,8 @@ done
 for i in $XDG_CONFIG_HOME/zsh/snippets/*.zsh; do
     source $i
 done
+
+zi ice wait lucid atinit"ZI[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay"
+zi light z-shell/F-Sy-H
+zi ice wait lucid atload"!_zsh_autosuggest_start"
+zi load zsh-users/zsh-autosuggestions

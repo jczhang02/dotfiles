@@ -357,7 +357,7 @@ tmux_conf_copy_to_os_clipboard=true
 #set -g history-limit 10000
 
 # start with mouse mode enabled
-set -g mouse off
+set -g mouse on
 
 # force Vi mode
 #   really you should export VISUAL or EDITOR environment variable, see manual
@@ -433,6 +433,7 @@ set -g @tmux_window_dir_programs "['nvim', 'vim', 'vi', 'git']"
 set -g @tmux_window_name_shells "['bash', 'fish', 'sh', 'zsh']"
 set -g @tmux_window_name_max_name_len "20"
 set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @yank_selection_mouse 'clipboard'
 # set -g @yank_action 'copy-pipe-no-clear'
 set -g @plugin 'christoomey/vim-tmux-navigator'
 set -g @plugin 'tmux-plugins/tmux-open'

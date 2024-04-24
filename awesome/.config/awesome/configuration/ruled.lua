@@ -206,6 +206,20 @@ ruled.client.connect_signal("request::rules", function()
 	})
 
 	ruled.client.append_rule({
+		id = "noisetorch",
+		rule_any = {
+			instance = { "NoiseTorch" },
+			class = { "NoiseTorch" },
+		},
+		properties = {
+			floating = true,
+			placement = helpers.client.centered_client_placement,
+			width = screen_width * 0.4,
+			height = screen_height * 0.6,
+		},
+	})
+
+	ruled.client.append_rule({
 		id = "pinentry",
 		rule_any = {
 			instance = { "pinentry" },
