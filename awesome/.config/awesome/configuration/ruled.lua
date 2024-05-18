@@ -190,6 +190,36 @@ ruled.client.connect_signal("request::rules", function()
 		},
 	})
 
+	-- Unison-gtk
+	ruled.client.append_rule({
+		id = "unison",
+		rule_any = {
+			instance = { "unison" },
+			class = { "unison" },
+		},
+		properties = {
+			floating = true,
+			placement = helpers.client.centered_client_placement,
+			width = 800,
+			height = 600,
+		},
+	})
+
+	-- Unison-gtk
+	ruled.client.append_rule({
+		id = "unison",
+		rule_any = {
+			instance = { "unison-2.53" },
+			class = { "unison-2.53" },
+		},
+		properties = {
+			floating = true,
+			placement = helpers.client.centered_client_placement,
+			width = 800,
+			height = 600,
+		},
+	})
+
 	-- Qt5ct
 	ruled.client.append_rule({
 		id = "qt5ct",

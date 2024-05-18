@@ -21,7 +21,7 @@ local function autostart_apps()
 	--- Compositor
 	helpers.run.check_if_running("picom", nil, function()
 		awful.spawn.with_shell(
-			"picom --experimental-backends --config /home/jc/.config/awesome/configuration/picom.conf > /home/jc/.config/awesome/logs/picom.log"
+			"picom --dbus --config /home/jc/.config/awesome/configuration/picom.conf > /home/jc/.config/awesome/logs/picom.log"
 		)
 	end)
 
