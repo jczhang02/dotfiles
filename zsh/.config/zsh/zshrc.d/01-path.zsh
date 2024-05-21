@@ -15,6 +15,7 @@ ZSHCONF="$XDG_CONFIG_HOME/zsh/zshrc.d"
 path+=(
     $XDG_CONFIG_HOME/zsh/commands
     $HOME/.cargo/bin
+    $HOME/.local/bin/
     $XDG_DATA_HOME/npm-global/bin
     $XDG_DATA_HOME/pnpm/bin
     $XDG_DATA_HOME/gem/bin
