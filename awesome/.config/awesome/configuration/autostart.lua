@@ -4,9 +4,6 @@ local awful = require("awful")
 local helpers = require("helpers")
 
 local function autostart_apps()
-	--- Multiscreen Support
-	-- awful.spawn.with_shell("autorandr --load home")
-
 	--- CopyQ Copyboard
 	helpers.run.run_once_grep("copyq")
 
@@ -41,30 +38,9 @@ local function autostart_apps()
 	--- Wallpapers.
 	awful.spawn.with_shell("nitrogen --restore")
 
-	awful.spawn.with_shell("xrdb /home/jc/.Xresources")
+	awful.spawn.with_shell("xrdb -override /home/jc/.Xresources")
 
-	awful.spawn.with_shell("keepassxc")
-
-	--- VNC
-
-	-- awful.spawn.with_shell("start x11vnc -rfbauth ~/.vnc/passwd -display :0 -noxdamage -bg -forever")
-
-	--- Inkscape script
-	-- awful.spawn.with_shell("sh /home/jc/.scripts/inkscape_shortcut_start.sh &")
-	-- awful.spawn.with_shell("inkscape-figures watch")
-
-	-- awful.spawn.with_shell("/usr/lib/pam_kwallet_init")
-
-	-- awful.spawn.with_shell(
-	-- 	"dbus-update-activation-environment --all && gnome-keyring-daemon --start --components=secrets"
-	-- )
-
-	--- Redshift
-	-- helpers.run.check_if_running("redshift", nil, function()
-	-- 	awful.spawn.with_shell("sh ~/.scripts/redshift.sh")
-	-- end)
-
-	-- helpers.run.run_once_grep("earbuds")
+	helpers.run.run_once_grep("keepassxc")
 end
 
 autostart_apps()

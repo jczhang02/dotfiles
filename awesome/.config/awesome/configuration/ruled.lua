@@ -155,8 +155,8 @@ ruled.client.connect_signal("request::rules", function()
 		properties = {
 			floating = true,
 			placement = helpers.client.centered_client_placement,
-			width = 2560 * 0.8,
-			height = 1600 * 0.8,
+			width = screen_width * 0.8,
+			height = screen_height * 0.8,
 		},
 	})
 
@@ -164,14 +164,15 @@ ruled.client.connect_signal("request::rules", function()
 	ruled.client.append_rule({
 		id = "keepassxc",
 		rule_any = {
-			instance = { "keepassxc" },
 			class = { "KeePassXC" },
 		},
+		except_any = { name = { "KeePassXC-Browser Confirm Access" }, type = { "dialog" } },
 		properties = {
 			floating = true,
 			placement = helpers.client.centered_client_placement,
-			width = 2560 * 0.8,
-			height = 1600 * 0.8,
+			width = screen_width * 0.8,
+			height = screen_height * 0.8,
+			minimized = true,
 		},
 	})
 
