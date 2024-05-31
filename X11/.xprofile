@@ -1,3 +1,4 @@
+#!/bin/bash
 # vim: ft=bash
 
 # excute xrandr script for screen layout
@@ -11,7 +12,8 @@
 # using gpg-agent for SSH
 # export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 xset s off -dpms
-autorandr --change
+export XDG_CURRENT_DESKTOP=awesome
+/usr/bin/autorandr -c --default default
 
 export GLFW_IM_MODULE=ibus
 
