@@ -8,16 +8,16 @@ max_height = 1000
 
 [opener]
 edit = [
-  { exec = '$nvim "$@"', desc = "$EDITOR", block = true },
-  { exec = 'neovide "$@"', orphan = true },
+  { run = '$nvim "$@"', desc = "$EDITOR", block = true },
+  { run = 'neovide "$@"', orphan = true },
 ]
 play = [
-  { exec = 'mpv "$@"' },
-  { exec = '''mediainfo "$1"; echo "Press enter to exit"; read''', block = true, desc = "Show media info" },
+  { run = 'mpv "$@"' },
+  { run = '''mediainfo "$1"; echo "Press enter to exit"; read''', block = true, desc = "Show media info" },
 ]
 archive = [
-  { exec = 'extract "$1"', desc = "Extract here" },
-  { exec = 'unrar "$1"', orphan = true, desc = "unrar" },
+  { run = 'extract "$1"', desc = "Extract here" },
+  { run = 'unrar "$1"', orphan = true, desc = "unrar" },
 ]
 
 [open]
@@ -101,8 +101,8 @@ rules = [
 ]
 
 [plugin]
-prepend_previewers = [{ mime = "audio/*", exec = "exifaudio" }]
+prepend_previewers = [{ mime = "audio/*", run = "exifaudio" }]
 append_previewers = [
-  { name = "*", exec = "hexyl" },
-  { mime = "text/csv", exec = "miller" },
+  { name = "*", run = "hexyl" },
+  { mime = "text/csv", run = "miller" },
 ]
