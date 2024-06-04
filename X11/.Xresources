@@ -6,7 +6,7 @@ Xft.rgba:	rgb
 Xft.lcdfilter:	lcddefault
 Xcursor.theme: capitaine-cursors
 Xcursor.size: 10
-! Xft.dpi: 110
+Xft.dpi: 110
 
 ! special
 *.foreground:   #d9d7d6
