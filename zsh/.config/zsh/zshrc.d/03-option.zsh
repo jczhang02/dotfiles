@@ -197,22 +197,22 @@ zstyle ':fzf-tab:*:*argument-rest*' popup-pad 100 8
 zstyle ':fzf-tab:*:*argument-rest*' fzf-preview
 
 zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview \
-	'git diff $word | delta'
+    'git diff $word | delta'
 zstyle ':fzf-tab:complete:git-log:*' fzf-preview \
-	'git log --color=always $word'
+    'git log --color=always $word'
 zstyle ':fzf-tab:complete:git-help:*' fzf-preview \
-	'git help $word | bat -plman --color=always'
+    'git help $word | bat -plman --color=always'
 zstyle ':fzf-tab:complete:git-show:*' fzf-preview \
-	'case "$group" in
+    'case "$group" in
 	"commit tag") git show --color=always $word ;;
 	*) git show --color=always $word | delta ;;
-	esac'
+esac'
 zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
-	'case "$group" in
+    'case "$group" in
 	"modified file") git diff $word | delta ;;
 	"recent commit object name") git show --color=always $word | delta ;;
 	*) git log --color=always $word ;;
-	esac'
+esac'
 
 ## vimmode
 KEYTIMEOUT=0
@@ -222,19 +222,19 @@ ZSHZ_DATA="$XDG_CONFIG_HOME/zsh/history/zsh_z.data"
 ZSHZ_CASE=smart
 
 ## zoxide
-# _ZO_CMD_PREFIX="z"
+_ZO_CMD_PREFIX="cd"
 # _ZO_DATA_DIR
 
 ## ZCOMPDUMP
 
 () {
-  emulate -L zsh
-  local -r cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/zsh
-  autoload -Uz _store_cache compinit
-  zstyle ':completion:*' use-cache true
-  zstyle ':completion:*' cache-path $cache_dir/.zcompcache
-  [[ -f $cache_dir/.zcompcache/.make-cache-dir ]] || _store_cache .make-cache-dir
-  compinit -C -d $cache_dir/.zcompdump
+    emulate -L zsh
+    local -r cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/zsh
+    autoload -Uz _store_cache compinit
+    zstyle ':completion:*' use-cache true
+    zstyle ':completion:*' cache-path $cache_dir/.zcompcache
+    [[ -f $cache_dir/.zcompcache/.make-cache-dir ]] || _store_cache .make-cache-dir
+    compinit -C -d $cache_dir/.zcompdump
 }
 
 

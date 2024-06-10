@@ -16,7 +16,7 @@ zi light-mode for \
     g-plane/pnpm-shell-completion
 
 zi has'zoxide' ver'auto_pushd' for atload="function z() { __zoxide_z \"\$@\" }" \
-z-shell/zsh-zoxide
+    z-shell/zsh-zoxide
 
 zi wait="1" lucid for \
     OMZL::clipboard.zsh \
