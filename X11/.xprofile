@@ -13,7 +13,5 @@
 # export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 xset s off -dpms
 export XDG_CURRENT_DESKTOP=awesome
-/usr/bin/autorandr -c 
 
 export GLFW_IM_MODULE=ibus
-

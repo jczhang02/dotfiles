@@ -8,7 +8,7 @@ local function autostart_apps()
 	helpers.run.run_once_grep("copyq")
 
 	--- Kdeconnect
-	helpers.run.run_once_grep("/usr/lib64/libexec/kdeconnectd")
+	helpers.run.run_once_grep("/usr/bin/kdeconnectd")
 
 	--- Fcitx5
 	helpers.run.run_once_grep("fcitx5")
