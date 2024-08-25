@@ -5,7 +5,8 @@ zi wait="0" lucid light-mode for \
     hchbaw/zce.zsh \
     Aloxaf/gencomp \
     Aloxaf/zsh-sqlite \
-    wfxr/forgit
+    wfxr/forgit \
+    lukechilds/zsh-nvm
 
 zi light-mode for \
     as="program" atclone="rm -f ^(rgg|agv)" \

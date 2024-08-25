@@ -67,5 +67,9 @@ FZF_DEFAULT_COMMAND='fd --type f --hidden --follow'
 ## Aliyunpan
 export ALIYUNPAN_CONFIG_DIR="/home/jc/.config/aliyunpan"
 
+## NVM
+export NVM_DIR="$HOME/.local/share/nvm"
+export NVM_COMPLETION=true
+
 ## Starship
 # export STARSHIP_CONFIG="/home/jc/.config/starship/starship.toml"
