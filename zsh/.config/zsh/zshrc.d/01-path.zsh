@@ -71,5 +71,8 @@ export ALIYUNPAN_CONFIG_DIR="/home/jc/.config/aliyunpan"
 export NVM_DIR="$HOME/.local/share/nvm"
 export NVM_COMPLETION=true
 
+## R
+export R_LIBS_USER="/home/jc/.local/share/R/"
+
 ## Starship
 # export STARSHIP_CONFIG="/home/jc/.config/starship/starship.toml"

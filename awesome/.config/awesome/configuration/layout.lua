@@ -7,6 +7,9 @@ local mstab = bling.layout.mstab
 local centered = bling.layout.centered
 local equal = bling.layout.equalarea
 local deck = bling.layout.deck
+local termfair = require("modules.lain.layout.termfair")
+local cascade = require("modules.lain.layout.cascade")
+local centerwork = require("modules.lain.layout.centerwork")
 
 machi.editor.nested_layouts = {
 	["0"] = equal,
@@ -20,11 +23,10 @@ machi.editor.nested_layouts = {
 --- Set the layouts
 tag.connect_signal("request::default_layouts", function()
 	awful.layout.append_default_layouts({
-		-- mstab,
-		-- deck,
 		equal,
-		centered,
-		-- awful.layout.suit.spiral.dwindle,
+		centerwork,
+		termfair,
+		cascade,
 		machi.default_layout,
 	})
 end)

@@ -288,4 +288,12 @@ theme.machi_editor_border_color = theme.lighter_black
 theme.machi_editor_border_opacity = 0.25
 theme.machi_editor_active_opacity = 0.25
 
+--- Layout lain
+theme.lain_icons = os.getenv("HOME") .. "/.config/awesome/modules/lain/icons/layout/default/"
+theme.layout_termfair = theme.lain_icons .. "termfair.png"
+theme.layout_centerfair = theme.lain_icons .. "centerfair.png" -- termfair.center
+theme.layout_cascade = theme.lain_icons .. "cascade.png"
+theme.layout_cascadetile = theme.lain_icons .. "cascadetile.png" -- cascade.tile
+theme.layout_centerwork = theme.lain_icons .. "centerwork.png"
+
 return theme

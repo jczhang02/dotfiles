@@ -1,20 +1,35 @@
 #!/bin/bash
 
-ROUTER_UUID="
-    4b8dee9a-5576-4ec8-a6a5-4c7328a9c45e
-    3348cdf8-4863-4ac7-8911-aa6adff7b182
-    b313e05f-1a70-4a76-a2c3-358e6a7cd5f4
-    "
-UP_CMD="systemctl start dae"
-DOWN_CMD="systemctl stop dae"
+SELF_UUID=""
+# CONNECTION_UUID="0e593986-54ac-4fed-9ed5-435bf4592908"
+DLUT_UUID="0e593986-54ac-4fed-9ed5-435bf4592908"
 
-if [[ "$ROUTER_UUID" =~ "$CONNECTION_UUID" ]]; then
-	case "$2" in
-	up | vpn-up)
-		exec $UP_CMD
-		;;
-	down | vpn-down)
-		exec $DOWN_CMD
-		;;
-	esac
-fi
+UP_CMD="dae run --disable-timestamp -c /home/jc/.config/dae/general/config.dae"
+UP_DLUT_CMD="dae run --disable-timestamp -c /home/jc/.config/dae/dlut/config.dae"
+DOWN_CMD="killall dae"
+
+# if [[ "$SELF_UUID" =~ "$CONNECTION_UUID" ]]; then
+# 	logger "Current connection do not need start dae."
+# else
+# if [[ "$DLUT_UUID" =~ "$CONNECTION_UUID" ]]; then
+# 	logger "Start DLUT"
+# 	case "$2" in
+# 	up | vpn-up)
+# 		exec $UP_DLUT_CMD
+# 		;;
+# 	down | vpn-down)
+# 		exec $DOWN_CMD
+# 		;;
+# 	esac
+# else
+# 	logger "Start General"
+# 	case "$2" in
+# 	up | vpn-up)
+# 		exec $UP_CMD
+# 		;;
+# 	down | vpn-down)
+# 		exec $DOWN_CMD
+# 		;;
+# 	esac
+# fi
+# fi

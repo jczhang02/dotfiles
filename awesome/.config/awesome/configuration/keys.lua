@@ -129,12 +129,12 @@ awful.keyboard.append_global_keybindings({
 	end, { description = "decrease brightness", group = "hotkeys" }),
 
 	--- Volume control
-	awful.key({}, "F3", function()
+	awful.key({}, "XF86AudioRaiseVolume", function()
 		awful.spawn("pamixer -i 5", false)
 		awesome.emit_signal("widget::volume")
 		awesome.emit_signal("module::volume_osd:show", true)
 	end, { description = "increase volume", group = "hotkeys" }),
-	awful.key({}, "F2", function()
+	awful.key({}, "XF86AudioLowerVolume", function()
 		awful.spawn("pamixer -d 5", false)
 		awesome.emit_signal("widget::volume")
 		awesome.emit_signal("module::volume_osd:show", true)
