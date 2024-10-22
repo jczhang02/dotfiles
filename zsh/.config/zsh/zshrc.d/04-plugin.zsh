@@ -61,3 +61,7 @@ zi ice wait lucid atinit"ZI[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay"
 zi light z-shell/F-Sy-H
 zi ice wait lucid atload"!_zsh_autosuggest_start"
 zi load zsh-users/zsh-autosuggestions
+
+command="Generate a concise git commit message that summarizes the key changes. Stay high-level and combine smaller changes to overarching topics. Skip describing any reformatting changes."
+
+alias autocommit="BRANCH_NAME=\$(git branch --show-current) && MSG=\"\$(git diff --staged | sgpt '$command')\" && PREFIXED_MSG=\"\${BRANCH_NAME}: \${MSG}\" && echo \${PREFIXED_MSG} && git commit"
