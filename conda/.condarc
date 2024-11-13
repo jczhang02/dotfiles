@@ -4,10 +4,8 @@ changeps1: false
 show_channel_urls: true
 # add_pip_as_python_dependency: true
 channel_priority: strict
-
 channels:
   - defaults
-show_channel_urls: true
 default_channels:
   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
@@ -21,13 +19,11 @@ custom_channels:
   pytorch-lts: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
   simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
   deepmodeling: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/
-
 # when using "conda create" for envs these packages will always be installed
 # adjust that list according your needs, the packages below are just a suggestion!
 # create_default_packages:
 #   - ipykernel
 #   - jupyter
 #   - pip
-
 safety_checks: disabled
 auto_activate_base: false
