@@ -29,7 +29,7 @@ local function autostart_apps()
 	helpers.run.run_once_grep("/usr/libexec/polkit-gnome-authentication-agent-1")
 
 	--- libinput-guesture
-	helpers.run.run_once_grep("libinput-gestures-setup start")
+	-- helpers.run.run_once_grep("libinput-gestures-setup start")
 
 	--- Other stuff
 	helpers.run.run_once_grep("blueman-applet")
