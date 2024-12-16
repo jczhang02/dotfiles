@@ -8,6 +8,7 @@ function dsf() {
 # alias ca="conda activate"
 # alias mi="micromamba install"
 # alias ms="micromamba search"
+alias conda="mamba"
 alias mamba="micromamba"
 alias dev="cd /home/jc/dev/"
 
@@ -40,7 +41,6 @@ alias grep="rg"
 # alias ping="gping"
 alias diff="dsf"
 alias top="btop"
-alias conda="mamba"
 
 ## proxychains function
 function proxychains_1080() {
