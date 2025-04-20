@@ -14,7 +14,7 @@ return {
 		--- Default code editor
 		code_editor = "code",
 		--- Default web browser
-		web_browser = "google-chrome-stable --enable-features=TouchpadOverscrollHistoryNavigation",
+		web_browser = "google-chrome-stable --enable-features=TouchpadOverscrollHistoryNavigation --simulate-outdated-no-au='01 Jan 2199'",
 		--- Default file manager
 		file_manager = "thunar",
 		--- Default network manager

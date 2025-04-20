@@ -4,12 +4,6 @@ function dsf() {
     diff -u $@ | delta
 }
 
-## conda alias
-# alias ca="conda activate"
-# alias mi="micromamba install"
-# alias ms="micromamba search"
-alias conda="mamba"
-alias mamba="micromamba"
 alias dev="cd /home/jc/dev/"
 
 ## killall gnome-terminal-server
