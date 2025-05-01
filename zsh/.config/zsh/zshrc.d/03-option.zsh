@@ -158,7 +158,7 @@ LIMIT 1
 }
 
 # ZSH_AUTOSUGGEST_STRATEGY=(histdb_top_here match_prev_cmd completion)
-ZSH_AUTOSUGGEST_STRATEGY=(match_prev_cmd completion)
+ZSH_AUTOSUGGEST_STRATEGY+=(match_prev_cmd completion)
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
@@ -215,7 +215,18 @@ zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
 esac'
 
 ## vimmode
-KEYTIMEOUT=0
+
+function zvm_config() {
+    ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
+    ZVM_VI_INSERT_ESCAPE_BINDKEY=jk
+    ZVM_CURSOR_STYLE_ENABLED=false
+    ZVM_VI_EDITOR=nvim
+}
+
+function zvm_after_init() {
+    zvm_bindkey viins '^[^?' delete-word
+    bindkey '^H' backward-kill-word
+}
 
 ## zsh-z
 ZSHZ_DATA="$XDG_CONFIG_HOME/zsh/history/zsh_z.data"

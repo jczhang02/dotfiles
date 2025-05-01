@@ -4,7 +4,6 @@ zi wait="0" lucid light-mode for \
     hlissner/zsh-autopair \
     hchbaw/zce.zsh \
     Aloxaf/gencomp \
-    Aloxaf/zsh-sqlite \
     wfxr/forgit \
     lukechilds/zsh-nvm
 
@@ -39,15 +38,15 @@ zi light-mode for \
 zi ice as"completion" blockf
 zi snippet https://github.com/ohmyzsh/ohmyzsh/blob/master/plugins/rust/_rustc
 
+zpcompinit; zpcdreplay
 
 zi light-mode for \
-    softmoth/zsh-vim-mode \
-    twang817/zsh-manydots-magic
+    jeffreytse/zsh-vi-mode \
+    twang817/zsh-manydots-magic \
+    Aloxaf/zsh-sqlite \
+    Aloxaf/fzf-tab \
+    Freed-Wu/fzf-tab-source
 
-zi light Aloxaf/fzf-tab
-zi light Freed-Wu/fzf-tab-source
-
-zpcompinit; zpcdreplay
 
 for i in $XDG_CONFIG_HOME/zsh/plugins/*/*.plugin.zsh; do
     source $i
