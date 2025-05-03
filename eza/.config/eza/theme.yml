@@ -1,0 +1,2 @@
+extensions:
+  pro: {filename: {foreground: Red, is_underline: true, is_bold: true}, icon: {glyph: }}
