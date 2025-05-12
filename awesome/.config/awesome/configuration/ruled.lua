@@ -90,6 +90,7 @@ ruled.client.connect_signal("request::rules", function()
 			role = {
 				"GtkFileChooserDialog",
 				"conversation",
+				"buble",
 			},
 		},
 		properties = { placement = helpers.client.centered_client_placement },

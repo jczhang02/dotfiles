@@ -41,7 +41,7 @@ zi snippet https://github.com/ohmyzsh/ohmyzsh/blob/master/plugins/rust/_rustc
 zpcompinit; zpcdreplay
 
 zi light-mode for \
-    jeffreytse/zsh-vi-mode \
+    softmoth/zsh-vim-mode \
     twang817/zsh-manydots-magic \
     Aloxaf/zsh-sqlite \
     Aloxaf/fzf-tab \

@@ -221,12 +221,9 @@ function zvm_config() {
     ZVM_VI_INSERT_ESCAPE_BINDKEY=jk
     ZVM_CURSOR_STYLE_ENABLED=false
     ZVM_VI_EDITOR=nvim
+    ZVM_INIT_MODE=none
 }
 
-function zvm_after_init() {
-    zvm_bindkey viins '^[^?' delete-word
-    bindkey '^H' backward-kill-word
-}
 
 ## zsh-z
 ZSHZ_DATA="$XDG_CONFIG_HOME/zsh/history/zsh_z.data"
