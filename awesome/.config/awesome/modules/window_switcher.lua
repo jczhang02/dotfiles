@@ -64,9 +64,9 @@ local function draw_widget(mouse_keys)
 		style = {
 			font = beautiful.font,
 			bg_normal = beautiful.black,
-			bg_focus = beautiful.lighter_black,
+			bg_focus = beautiful.color4,
 			fg_normal = beautiful.white,
-			fg_focus = beautiful.accent,
+			fg_focus = beautiful.black,
 			shape = gears.shape.rounded_rect,
 		},
 		layout = {
