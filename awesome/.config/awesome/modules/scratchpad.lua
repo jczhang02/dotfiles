@@ -251,7 +251,7 @@ local cherry_scratch = function(screen_geometry)
 	local cherry = bling.module.scratchpad:new({
 		command = "/usr/bin/cherry-studio --ignore-additional-command-line-flags --ozone-platform-hint=auto --enable-wayland-ime %U",
 		rule = { instance = "cherrystudio" },
-		sticky = true,
+		sticky = false,
 		autoclose = false,
 		floating = true,
 		geometry = { x = x, y = y, height = height, width = width },

@@ -383,7 +383,7 @@ awful.keyboard.append_global_keybindings({
 	--- Set machi layout
 	awful.key({ mod, "Control" }, "m", function()
 		awful.layout.set(machi.default_layout)
-	end, { description = "set floating layout", group = "layout" }),
+	end, { description = "set machi layout", group = "layout" }),
 
 	--- Layout machi
 	awful.key({ mod }, ".", function()
