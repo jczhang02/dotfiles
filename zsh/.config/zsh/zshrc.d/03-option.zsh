@@ -63,6 +63,13 @@ zstyle ':completion:*:kill:*' ignored-patterns '0'
 zstyle ':completion:*:manuals'    separate-sections true
 zstyle ':completion:*:manuals.*'  insert-sections   true
 
+# disable conda directory
+zstyle ':completion:*:conda:*' tag-order  '! (|*-)directories' -
+zstyle ':completion:*:mamba:*' tag-order  '! (|*-)directories' -
+
+zstyle ':completion:*:conda:*' ignored-patterns 'base|rsyslog'
+zstyle ':completion:*:mamba:*' ignored-patterns 'base|rsyslog'
+
 # 补全第三方 Git 子命令
 # 直接用 git-extras 提供的补全更好
 # zstyle ':completion:*:*:git:*' user-commands ${${(M)${(k)commands}:#git-*}/git-/}
@@ -88,6 +95,7 @@ zstyle ':completion:*:jobs' numbers true
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 export MANROFFOPT='-c'
 
+zstyle ':fzf-tab:sources' config-directory $XDG_CONFIG_HOME/zsh/plugins/fzf-tab-source
 
 # 单词中也进行补全
 setopt complete_in_word

@@ -21,7 +21,7 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 
-# mamba
+# micromamba
 # eval "$(micromamba shell hook --shell zsh)"
 
 # export MAMBA_EXE="/usr/bin/micromamba";
@@ -30,6 +30,9 @@ unset __conda_setup
 # __mamba_setup="$('micromamba' shell hook --shell zsh --prefix '/home/jc/.conda' 2> /dev/null)"
 
 # eval "$__mamba_setup"
+
+# mamba
+eval "$(mamba shell hook --shell zsh)"
 
 
 zmodload zsh/zprof

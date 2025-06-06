@@ -24,8 +24,8 @@ alias unsetproxy="unset ALL_PROXY"
 
 ## program substitution
 alias rm="trash"
-alias ks1="kdeconnect-cli --device=6817e90ac81177dc --share"
-alias ks2="kdeconnect-cli --device=4309e71d0cacb9d0 --share"
+alias ks_phone="kdeconnect-cli --device=ab7e8b0b263f4dbaa168b50a3998855f --share"
+alias ks_tablet="kdeconnect-cli --device=5ef66e595f7846e58e9914d2b8423da0 --share"
 alias mutt="neomutt"
 alias cat="bat"
 alias vim="nvim"
@@ -35,6 +35,9 @@ alias grep="rg"
 # alias ping="gping"
 alias diff="dsf"
 alias top="btop"
+
+# conda
+alias conda="mamba"
 
 ## proxychains function
 function proxychains_1080() {
