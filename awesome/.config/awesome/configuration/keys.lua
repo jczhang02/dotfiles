@@ -218,25 +218,13 @@ awful.keyboard.append_global_keybindings({
 	awful.key({ mod, shift }, "Return", function()
 		scratchpad.toggle_and_restore("term")
 	end, {
-		description = "alacritty scratchpad",
+		description = "term scratchpad",
 		group = "scratchpad",
 	}),
 	awful.key({ mod }, "p", function()
 		scratchpad.toggle_and_restore("pavucontrol")
 	end, { description = "pavucontrol scratchpad", group = "scratchpad" }),
-	awful.key({ mod }, "x", function()
-		scratchpad.toggle_and_restore("spotify")
-	end, {
-		description = "spotify scratchpad",
-		group = "scratchpad",
-	}),
 
-	awful.key({ mod }, "s", function()
-		scratchpad.toggle_and_restore("strawberry")
-	end, {
-		description = "fsearch scratchpad",
-		group = "scratchpad",
-	}),
 	awful.key({ mod }, "b", function()
 		scratchpad.toggle_and_restore("blueman")
 	end, {
@@ -244,9 +232,9 @@ awful.keyboard.append_global_keybindings({
 		group = "scratchpad",
 	}),
 	awful.key({ mod }, "c", function()
-		scratchpad.toggle_and_restore("netease")
+		scratchpad.toggle_and_restore("cherry")
 	end, {
-		description = "netease scratchpad",
+		description = "cherry studio scratchpad",
 		group = "scratchpad",
 	}),
 	awful.key({ mod }, "t", function()

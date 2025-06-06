@@ -163,11 +163,11 @@ ruled.client.connect_signal("request::rules", function()
 
 	-- keepassxc
 	ruled.client.append_rule({
-		id = "keepassxc",
+		id = "1password",
 		rule_any = {
-			class = { "KeePassXC" },
+			class = { "1Password" },
 		},
-		except_any = { name = { "KeePassXC-Browser Confirm Access" }, type = { "dialog" } },
+		-- except_any = { name = { "KeePassXC-Browser Confirm Access" }, type = { "dialog" } },
 		properties = {
 			floating = true,
 			placement = helpers.client.centered_client_placement,

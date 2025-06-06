@@ -40,7 +40,7 @@ local function autostart_apps()
 
 	awful.spawn.with_shell("xrdb -override /home/jc/.Xresources")
 
-	helpers.run.run_once_grep("keepassxc")
+	helpers.run.run_once_grep("/opt/1Password/1password --silent")
 end
 
 autostart_apps()

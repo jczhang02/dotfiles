@@ -99,32 +99,6 @@ local terminal_scratch = function(screen_geometry)
 	return term
 end
 
-local spotify_scratch = function(screen_geometry)
-	-- clamp the width and height to always fit on screen
-	local width = math.min(screen_geometry.width * 0.70, 2000)
-	local height = math.min(800, screen_geometry.height - 20)
-	local x = (screen_geometry.width - width) / 2
-	local y = ((screen_geometry.height - height) / 2) + screen_geometry.y
-
-	local spotify = bling.module.scratchpad:new({
-		command = "proxychains spotify",
-		rule = { instance = "spotify" },
-		sticky = true,
-		autoclose = false,
-		floating = true,
-		geometry = { x = x, y = y, height = height, width = width },
-		reapply = true,
-		rubato = { y = anim_y },
-	})
-
-	spotify:connect_signal("turn_off", restore_client)
-	awesome.connect_signal("scratch::spotify", function()
-		spotify:toggle()
-	end)
-
-	return spotify
-end
-
 local netease_scratch = function(screen_geometry)
 	-- clamp the width and height to always fit on screen
 	local width = math.min(screen_geometry.width * 0.70, 1000)
@@ -161,7 +135,7 @@ local mathpix_scratch = function(screen_geometry)
 	local y = ((screen_geometry.height - height) / 2) + screen_geometry.y
 
 	local mathpix = bling.module.scratchpad:new({
-		command = "/home/jczhang/.appimages/snip.AppImage",
+		command = "/home/jc/.local/share/AppImage/mathpix.AppImage",
 		rule = { instance = "snip.AppImage" },
 		sticky = true,
 		autoclose = false,
@@ -207,62 +181,6 @@ local tg_scratch = function(screen_geometry)
 	end)
 
 	return tg
-end
-
-local strawberry_scratch = function(screen_geometry)
-	local width = math.min(screen_geometry.width / 1.4, 2400)
-	local height = screen_geometry.height * 0.80
-	local x = (screen_geometry.width - width) / 2
-	--local x = (screen_geometry.width - width - 20) + screen_geometry.x
-	local y = (screen_geometry.height - height) / 2
-
-	local strawberry = bling.module.scratchpad:new({
-		command = "strawberry",
-		rule = { instance = "strawberry" },
-		sticky = false,
-		autoclose = false,
-		floating = true,
-		geometry = { x = x, y = y, height = height, width = width },
-		reapply = true,
-		rubato = {
-			y = rubato_with_defaults({}),
-		},
-	})
-
-	strawberry:connect_signal("turn_off", restore_client)
-	awesome.connect_signal("scratch::strawberry", function()
-		strawberry:toggle()
-	end)
-
-	return strawberry
-end
-
-local kuro_scratch = function(screen_geometry)
-	local width = math.min(screen_geometry.width / 1.4, 2400)
-	local height = screen_geometry.height * 0.80
-	local x = (screen_geometry.width - width) / 2
-	--local x = (screen_geometry.width - width - 20) + screen_geometry.x
-	local y = (screen_geometry.height - height) / 2
-
-	local kuro = bling.module.scratchpad:new({
-		command = "kuro",
-		rule = { instance = "kuro" },
-		sticky = false,
-		autoclose = false,
-		floating = true,
-		geometry = { x = x, y = y, height = height, width = width },
-		reapply = true,
-		rubato = {
-			y = rubato_with_defaults({}),
-		},
-	})
-
-	kuro:connect_signal("turn_off", restore_client)
-	awesome.connect_signal("scratch::kuro", function()
-		kuro:toggle()
-	end)
-
-	return kuro
 end
 
 local pavucontrol_scratch = function(screen_geometry)
@@ -320,18 +238,46 @@ local blueman_scratch = function(screen_geometry)
 
 	return blueman
 end
+
+local cherry_scratch = function(screen_geometry)
+	-- clamp the width and height to always fit on screen
+
+	local width = math.min(screen_geometry.width / 1.4, 2400)
+	local height = screen_geometry.height * 0.80
+	local x = (screen_geometry.width - width) / 2
+	--local x = (screen_geometry.width - width - 20) + screen_geometry.x
+	local y = (screen_geometry.height - height) / 2
+
+	local cherry = bling.module.scratchpad:new({
+		command = "/usr/bin/cherry-studio --ignore-additional-command-line-flags --ozone-platform-hint=auto --enable-wayland-ime %U",
+		rule = { instance = "cherrystudio" },
+		sticky = true,
+		autoclose = false,
+		floating = true,
+		geometry = { x = x, y = y, height = height, width = width },
+		reapply = true,
+		rubato = {
+			y = anim_y,
+		},
+	})
+
+	cherry:connect_signal("turn_off", restore_client)
+	awesome.connect_signal("scratch::cherry", function()
+		cherry:toggle()
+	end)
+
+	return cherry
+end
+
 -- initialize scratchpads
 _M.init = function()
 	local scratchpads = {
 		term = terminal_scratch,
-		spotify = spotify_scratch,
-		netease = netease_scratch,
 		tg = tg_scratch,
-		kuro = kuro_scratch,
 		pavucontrol = pavucontrol_scratch,
 		music = music_scratch,
 		blueman = blueman_scratch,
-		strawberry = strawberry_scratch,
+		cherry = cherry_scratch,
 	}
 
 	for name, scratch in pairs(scratchpads) do
