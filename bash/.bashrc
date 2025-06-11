@@ -15,7 +15,7 @@ umask 002
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
-    . /etc/bashrc
+	. /etc/bashrc
 fi
 
 # don't put duplicate lines in the history. See bash(1) for more options
@@ -32,12 +32,12 @@ export HISTIGNORE="&:ls:ll:la:cd:exit:clear"
 
 # enable bash_completion if available
 if [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
+	. /etc/bash_completion
 fi
 
 # enable programmable completion features
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-    . /etc/bash_completion
+	. /etc/bash_completion
 fi
 
 ########################################
@@ -52,9 +52,9 @@ export SHELL=/bin/bash
 
 # ensures programs know to use 256-colours
 if [[ $TERM == "xterm" ]]; then
-    export TERM="xterm-256color"
+	export TERM="xterm-256color"
 elif [[ $TERM == "screen" ]]; then
-    export TERM="screen-256color"
+	export TERM="screen-256color"
 fi
 
 # Provide a kickass prompt
@@ -62,19 +62,19 @@ PS1='\[\033[0;36m\]$(date "+%H:%M") \[\033[01;32m\][\[\033[01;31m\]\w\[\033[01;3
 
 # set variable identifying the chroot you work in (used in the prompt below)
 if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
+	debian_chroot=$(cat /etc/debian_chroot)
 fi
 
 # force colour prompt
 if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-        # We have color support; assume it's compliant with Ecma-48
-        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-        # a case would tend to support setf rather than setaf.)
-        color_prompt=yes
-    else
-        color_prompt=
-    fi
+	if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+		# We have color support; assume it's compliant with Ecma-48
+		# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+		# a case would tend to support setf rather than setaf.)
+		color_prompt=yes
+	else
+		color_prompt=
+	fi
 fi
 
 # enable sudo completion
@@ -86,13 +86,13 @@ complete -cf sudo
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    alias dir='dir --color=auto'
-    alias vdir='vdir --color=auto'
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
+	test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+	alias ls='ls --color=auto'
+	alias dir='dir --color=auto'
+	alias vdir='vdir --color=auto'
+	alias grep='grep --color=auto'
+	alias fgrep='fgrep --color=auto'
+	alias egrep='egrep --color=auto'
 fi
 
 alias ls='ls --color=auto -h'
@@ -103,16 +103,17 @@ alias vim="nvim"
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/usr/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+__conda_setup="$('/usr/bin/conda' 'shell.bash' 'hook' 2>/dev/null)"
 if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
+	eval "$__conda_setup"
 else
-    if [ -f "/usr/etc/profile.d/conda.sh" ]; then
-        . "/usr/etc/profile.d/conda.sh"
-    else
-        export PATH="/usr/bin:$PATH"
-    fi
+	if [ -f "/usr/etc/profile.d/conda.sh" ]; then
+		. "/usr/etc/profile.d/conda.sh"
+	else
+		export PATH="/usr/bin:$PATH"
+	fi
 fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash

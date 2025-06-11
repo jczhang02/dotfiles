@@ -169,6 +169,9 @@ alias rgc='rg --color=always'
 alias less='less -r'
 alias open='xdg-open'
 
+fs() {
+    curl -s -F "c=@${1:--}" "https://fars.ee/?u=1" | tee /dev/tty | perl -p -e 'chomp if eof' | xclip -selection clipboard -i
+}
 
 # python
 alias pip="pipx"
