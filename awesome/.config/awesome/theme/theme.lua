@@ -17,7 +17,7 @@ local icons = require("icons")
 --- ░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
 
 --- Ui Fonts
-theme.font_name = "HarmonyOS Sans "
+theme.font_name = "Iosevka NFP "
 theme.font = theme.font_name .. "Medium 9"
 
 --- Icon Fonts
