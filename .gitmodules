@@ -20,6 +20,4 @@
 	path = nvim/.config/nvim
 	url = git@github.com:jczhang02/nvimdots.git
 	branch = 0.11
-[submodule "awesome/.config/awesome/modules/catppuccin"]
-	path = awesome/.config/awesome/modules/catppuccin
-	url = git@github.com:catppuccin/lua.git
+
