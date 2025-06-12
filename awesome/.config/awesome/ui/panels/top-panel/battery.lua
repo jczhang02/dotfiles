@@ -12,13 +12,13 @@ local wbutton = require("ui.widgets.button")
 --- ~~~~~~~~~~~~~~
 
 return function()
-	local happy_color = beautiful.color2
-	local sad_color = beautiful.color1
-	local ok_color = beautiful.color3
-	local charging_color = beautiful.color6
+	local happy_color = beautiful.green
+	local sad_color = beautiful.red
+	local ok_color = beautiful.pink
+	local charging_color = beautiful.rosewater
 
 	local charging_icon = wibox.widget({
-		markup = helpers.ui.colorize_text("", beautiful.white),
+		markup = helpers.ui.colorize_text("", beautiful.rosewater),
 		font = beautiful.icon_font .. "Round 14",
 		align = "center",
 		valign = "center",
@@ -35,7 +35,7 @@ return function()
 		shape = helpers.ui.rrect(5),
 		color = beautiful.white,
 		background_color = beautiful.transparent,
-		border_color = beautiful.white,
+		border_color = beautiful.text,
 		widget = wibox.widget.progressbar,
 	})
 
@@ -43,7 +43,7 @@ return function()
 		{
 			wibox.widget.textbox,
 			widget = wibox.container.background,
-			bg = beautiful.white,
+			bg = beautiful.surface0,
 			forced_width = dpi(8.2),
 			forced_height = dpi(8.2),
 			shape = function(cr, width, height)
@@ -69,6 +69,7 @@ return function()
 	local battery_percentage_text = wibox.widget({
 		id = "percent_text",
 		text = "50%",
+		color = beautiful.text,
 		font = beautiful.font_name .. "Medium 12",
 		align = "center",
 		valign = "center",

@@ -17,7 +17,6 @@ return function(s)
 	--- ~~~~~~~~~~
 	s.clock = require("ui.panels.top-panel.clock")(s)
 	s.battery = require("ui.panels.top-panel.battery")()
-	s.network = require("ui.panels.top-panel.network")()
 
 	--- Animated tag list
 	--- ~~~~~~~~~~~~~~~~~
@@ -81,7 +80,7 @@ return function(s)
 						self.widget.children[1].bg = beautiful.accent
 						self.indicator_animation:set(dpi(32))
 					elseif #c3:clients() == 0 then
-						self.widget.children[1].bg = beautiful.color8
+						self.widget.children[1].bg = beautiful.overlay2
 						self.indicator_animation:set(dpi(8))
 					else
 						self.widget.children[1].bg = beautiful.accent
@@ -105,7 +104,7 @@ return function(s)
 						self.widget.children[1].bg = beautiful.accent
 						self.indicator_animation:set(dpi(32))
 					elseif #c3:clients() == 0 then
-						self.widget.children[1].bg = beautiful.color8
+						self.widget.children[1].bg = beautiful.overlay2
 						self.indicator_animation:set(dpi(8))
 					else
 						self.widget.children[1].bg = beautiful.accent
@@ -184,28 +183,6 @@ return function(s)
 		})
 	end
 
-	--- Notif panel
-	--- ~~~~~~~~~~~
-	local function notif_panel()
-		local icon = wibox.widget({
-			markup = helpers.ui.colorize_text("", beautiful.accent),
-			align = "center",
-			valign = "center",
-			font = beautiful.icon_font .. "Round 18",
-			widget = wibox.widget.textbox,
-		})
-
-		local widget = wbutton.elevated.state({
-			child = icon,
-			normal_bg = beautiful.wibar_bg,
-			on_release = function()
-				awesome.emit_signal("notification_panel::toggle", s)
-			end,
-		})
-
-		return widget
-	end
-
 	--- Layoutbox
 	--- ~~~~~~~~~
 	local function layoutbox()
@@ -262,8 +239,6 @@ return function(s)
 					{
 						system_tray(),
 						s.battery,
-						-- s.network,
-						notif_panel(),
 						layoutbox(),
 						layout = wibox.layout.fixed.horizontal,
 					},

@@ -11,13 +11,14 @@ local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
 local helpers = require("helpers")
 local icons = require("icons")
+local palette = require("modules.catppuccin.latte")
 
 --- ░█▀▀░█▀█░█▀█░▀█▀░█▀▀
 --- ░█▀▀░█░█░█░█░░█░░▀▀█
 --- ░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
 
 --- Ui Fonts
-theme.font_name = "Iosevka NFP "
+theme.font_name = "Iosevka "
 theme.font = theme.font_name .. "Medium 9"
 
 --- Icon Fonts
@@ -28,80 +29,52 @@ theme.icon_font = "Material Icons "
 --- ░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
 
 --- Special
-theme.white = "#edeff0"
-theme.darker_black = "#060809"
-theme.black = "#0c0e0f"
-theme.lighter_black = "#121415"
-theme.one_bg = "#161819"
-theme.one_bg2 = "#1f2122"
-theme.one_bg3 = "#27292a"
-theme.grey = "#343637"
-theme.grey_fg = "#3e4041"
-theme.grey_fg2 = "#484a4b"
-theme.light_grey = "#505253"
+theme.white = palette.text.hex
+theme.black = palette.base.hex
 
 theme.transparent = "#00000000"
 
---- Black
-theme.color0 = "#232526"
-theme.color8 = "#2c2e2f"
-
---- Red
-theme.color1 = "#df5b61"
-theme.color9 = "#e8646a"
-
---- Green
-theme.color2 = "#78b892"
-theme.color10 = "#81c19b"
-
---- Yellow
-theme.color3 = "#de8f78"
-theme.color11 = "#e79881"
-
---- Blue
-theme.color4 = "#6791c9"
-theme.color12 = "#709ad2"
-
---- Magenta
-theme.color5 = "#bc83e3"
-theme.color13 = "#c58cec"
-
---- Cyan
-theme.color6 = "#67afc1"
-theme.color14 = "#70b8ca"
-
---- White
-theme.color7 = "#e4e6e7"
-theme.color15 = "#f2f4f5"
+--- catppuccin
+theme.base = palette.base.hex
+theme.mantle = palette.mantle.hex
+theme.crust = palette.crust.hex
+theme.surface0 = palette.surface0.hex
+theme.surface1 = palette.surface1.hex
+theme.surface2 = palette.surface2.hex
+theme.overlay0 = palette.overlay0.hex
+theme.overlay1 = palette.overlay1.hex
+theme.overlay2 = palette.overlay2.hex
+theme.subtext0 = palette.subtext0.hex
+theme.subtext1 = palette.subtext1.hex
+theme.text = palette.text.hex
+theme.lavender = palette.lavender.hex
+theme.blue = palette.blue.hex
+theme.sapphire = palette.sapphire.hex
+theme.sky = palette.sky.hex
+theme.teal = palette.teal.hex
+theme.green = palette.green.hex
+theme.yellow = palette.yellow.hex
+theme.peach = palette.peach.hex
+theme.maroon = palette.maroon.hex
+theme.red = palette.red.hex
+theme.mauve = palette.mauve.hex
+theme.pink = palette.pink.hex
+theme.flamingo = palette.flamingo.hex
+theme.rosewater = palette.rosewater.hex
 
 --- Background Colors
-theme.bg_normal = theme.black
-theme.bg_focus = theme.black
-theme.bg_urgent = theme.black
-theme.bg_minimize = theme.black
+theme.bg_normal = theme.base
+theme.bg_focus = theme.mantle
+theme.bg_urgent = theme.base
+theme.bg_minimize = theme.base
 
 --- Foreground Colors
-theme.fg_normal = theme.white
-theme.fg_focus = theme.accent
-theme.fg_urgent = theme.color1
-theme.fg_minimize = theme.color0
+theme.fg_normal = theme.text
+theme.fg_focus = theme.text
+theme.fg_urgent = theme.text
+theme.fg_minimize = theme.text
 
---- Accent colors
-function theme.random_accent_color()
-	local accents = {
-		theme.color9,
-		theme.color10,
-		theme.color11,
-		theme.color12,
-		theme.color13,
-		theme.color14,
-	}
-
-	local i = math.random(1, #accents)
-	return accents[i]
-end
-
-theme.accent = theme.color4
+theme.accent = theme.rosewater
 
 --- UI events
 theme.leave_event = theme.transparent
@@ -110,12 +83,12 @@ theme.press_event = "#ffffff" .. "15"
 theme.release_event = "#ffffff" .. "10"
 
 --- Widgets
-theme.widget_bg = "#1b1d1e"
+theme.widget_bg = theme.crust
 
 --- Titlebars
-theme.titlebar_enabled = true
-theme.titlebar_bg = theme.black
-theme.titlebar_fg = theme.white
+theme.titlebar_enabled = false
+theme.titlebar_bg = theme.base
+theme.titlebar_fg = theme.surface1
 
 local icon_dir = gfs.get_configuration_dir() .. "/icons/titlebar/"
 
@@ -144,23 +117,17 @@ theme.titlebar_maximized_button_normal_inactive_hover = icon_dir .. "maximized_f
 theme.titlebar_maximized_button_focus_inactive_hover = icon_dir .. "maximized_focus_hover.svg"
 
 --- Wibar
-theme.wibar_bg = "#101213"
+theme.wibar_bg = theme.base
 theme.wibar_height = dpi(35)
 
 --- Music
-theme.music_bg = theme.black
-theme.music_bg_accent = theme.darker_black
-theme.music_accent = theme.lighter_black
+theme.music_bg = theme.base
+theme.music_bg_accent = theme.mantle
+theme.music_accent = theme.accent
 
 --- ░█░█░▀█▀░░░█▀▀░█░░░█▀▀░█▄█░█▀▀░█▀█░▀█▀░█▀▀
 --- ░█░█░░█░░░░█▀▀░█░░░█▀▀░█░█░█▀▀░█░█░░█░░▀▀█
 --- ░▀▀▀░▀▀▀░░░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀░░▀░░▀▀▀
-
---- Wallpapers
-theme.wallpaper = gears.surface.load_uncached(gfs.get_configuration_dir() .. "theme/assets/wave.png")
---- theme.wallpaper = gears.surface.load_uncached(gfs.get_configuration_dir() .. "theme/assets/yoru-dots.png")
---- theme.wallpaper = gears.surface.load_uncached(gfs.get_configuration_dir() .. "theme/assets/mountain.jpg")
---- theme.wallpaper = gears.surface.load_uncached(gfs.get_configuration_dir() .. "theme/assets/rocks.jpg")
 
 --- Image Assets
 theme.pfp = gears.surface.load_uncached(gfs.get_configuration_dir() .. "theme/assets/pfp.png")
@@ -180,39 +147,41 @@ theme.layout_machi = icons.machi
 --- Icon Theme
 --- Define the icon theme for application icons. If not set then the icons
 --- from /usr/share/icons and /usr/share/icons/hicolor will be used.
-theme.icon_theme = "WhiteSur-dark"
+--- TODO: find how to reload
+theme.icon_theme = "Papirus-Light"
 
 --- Borders
 theme.border_width = 4
 theme.oof_border_width = 0
 theme.border_color_marked = theme.titlebar_bg
-theme.border_color_active = theme.color1
+theme.border_color_active = theme.red
 theme.border_color_normal = theme.transparent
 theme.border_color_new = theme.titlebar_bg
 theme.border_color_urgent = theme.titlebar_bg
-theme.border_color_floating = theme.color6
+theme.border_color_floating = theme.lavender
 theme.border_color_maximized = theme.titlebar_bg
 theme.border_color_fullscreen = theme.titlebar_bg
+theme.border_focus = theme.text
 
 --- Corner Radius
 theme.border_radius = 0
 
 --- Edge snap
-theme.snap_bg = theme.color8
+theme.snap_bg = theme.base
 theme.snap_shape = helpers.ui.rrect(0)
 
 --- Main Menu
-theme.main_menu_bg = theme.lighter_black
+theme.main_menu_bg = theme.base
 
 --- Tooltip
-theme.tooltip_bg = theme.lighter_black
-theme.tooltip_fg = theme.white
+theme.tooltip_bg = theme.base
+theme.tooltip_fg = theme.text
 theme.tooltip_font = theme.font_name .. "Regular 10"
 
 --- Hotkeys Pop Up
-theme.hotkeys_bg = theme.black
-theme.hotkeys_fg = theme.white
-theme.hotkeys_modifiers_fg = theme.white
+theme.hotkeys_bg = theme.base
+theme.hotkeys_fg = theme.text
+theme.hotkeys_modifiers_fg = theme.base
 theme.hotkeys_font = theme.font_name .. "Medium 12"
 theme.hotkeys_description_font = theme.font_name .. "Regular 10"
 theme.hotkeys_shape = helpers.ui.rrect(theme.border_radius)
@@ -255,10 +224,10 @@ theme.mstab_border_radius = dpi(6)
 theme.mstab_bar_disable = true
 theme.tabbar_disable = true
 theme.tabbar_style = "modern"
-theme.tabbar_bg_focus = theme.black
-theme.tabbar_bg_normal = theme.color0
-theme.tabbar_fg_focus = theme.color0
-theme.tabbar_fg_normal = theme.color15
+theme.tabbar_bg_focus = theme.base
+theme.tabbar_bg_normal = theme.base
+theme.tabbar_fg_focus = theme.crust
+theme.tabbar_fg_normal = theme.mantle
 theme.tabbar_position = "bottom"
 theme.tabbar_AA_radius = 0
 theme.tabbar_size = 0
@@ -266,12 +235,9 @@ theme.mstab_bar_ontop = true
 
 --- Notifications
 theme.notification_spacing = dpi(4)
-theme.notification_bg = theme.black
-theme.notification_bg_alt = theme.lighter_black
-
---- Notif center
-theme.notif_center_notifs_bg = theme.one_bg2
-theme.notif_center_notifs_bg_alt = theme.one_bg3
+theme.notification_bg = theme.surface0
+theme.notification_bg_alt = theme.surface1
+theme.notification_fg = theme.text
 
 --- Swallowing
 theme.dont_swallow_classname_list = {
@@ -282,9 +248,9 @@ theme.dont_swallow_classname_list = {
 }
 
 --- Layout Machi
-theme.machi_switcher_border_color = theme.lighter_black
+theme.machi_switcher_border_color = theme.surface1
 theme.machi_switcher_border_opacity = 0.25
-theme.machi_editor_border_color = theme.lighter_black
+theme.machi_editor_border_color = theme.surface1
 theme.machi_editor_border_opacity = 0.25
 theme.machi_editor_active_opacity = 0.25
 

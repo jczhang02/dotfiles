@@ -3,9 +3,7 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local naughty = require("naughty")
-local decorations = require("ui.decorations")
 local bling = require("modules.bling")
--- local playerctl_daemon = require("signal.playerctl")
 local machi = require("modules.layout-machi")
 local helpers = require("helpers")
 local apps = require("configuration.apps")
@@ -49,10 +47,6 @@ awful.keyboard.append_global_keybindings({
 
 	awful.key({ mod, shift }, "a", function()
 		awesome.emit_signal("central_panel::toggle", awful.screen.focused())
-	end, { description = "central_panel", group = "hotkeys" }),
-
-	awful.key({ mod, shift }, "d", function()
-		awesome.emit_signal("notification_panel::toggle", awful.screen.focused())
 	end, { description = "central_panel", group = "hotkeys" }),
 
 	--- WM
@@ -480,29 +474,13 @@ awful.keyboard.append_global_keybindings({
 	}),
 })
 
--- Screen
------------
---awful.keyboard.append_global_keybindings({
--- No need for these (single screen setup)
---awful.key({ superkey, ctrlkey }, "j", function () awful.screen.focus_relative( 1) end,
---{description = "focus the next screen", group = "screen"}),
---awful.key({ superkey, ctrlkey }, "k", function () awful.screen.focus_relative(-1) end,
---{description = "focus the previous screen", group = "screen"}),
---})
-
 --- Mouse bindings on desktop
 --- ~~~~~~~~~~~~~~~~~~~~~~~~~
-local main_menu = require("ui.main-menu")
 
 awful.mouse.append_global_mousebindings({
-	--- Left click
+	--- Left click to clear notifications
 	awful.button({}, 1, function()
 		naughty.destroy_all_notifications()
-	end),
-
-	--- Middle click
-	awful.button({}, 2, function()
-		awesome.emit_signal("central_panel::toggle", awful.screen.focused())
 	end),
 })
 

@@ -14,8 +14,8 @@ local widgets = require("ui.widgets")
 
 naughty.persistence_enabled = true
 naughty.config.defaults.ontop = true
-naughty.config.defaults.timeout = 6
-naughty.config.defaults.title = "System Notification"
+naughty.config.defaults.timeout = 4
+naughty.config.defaults.title = "Notification"
 naughty.config.defaults.position = "top_right"
 
 local function get_oldest_notification()
@@ -53,7 +53,7 @@ end)
 
 naughty.connect_signal("request::display", function(n)
 	--- random accent color
-	local accent_colors = beautiful.random_accent_color()
+	local accent_colors = beautiful.accent
 
 	--- table of icons
 	local app_icons = {
@@ -84,8 +84,8 @@ naughty.connect_signal("request::display", function(n)
 		bg = accent_colors,
 		widget = wibox.container.background,
 		shape = gears.shape.circle,
-		forced_height = dpi(20),
-		forced_width = dpi(20),
+		forced_height = dpi(10),
+		forced_width = dpi(10),
 	})
 
 	local icon = wibox.widget({
@@ -176,6 +176,7 @@ naughty.connect_signal("request::display", function(n)
 		step_function = wibox.container.scroll.step_functions.waiting_nonlinear_back_and_forth,
 		fps = 60,
 		speed = 75,
+		fg = beautiful.notification_fg,
 		widgets.text({
 			font = beautiful.font_name,
 			size = 11,
@@ -189,6 +190,7 @@ naughty.connect_signal("request::display", function(n)
 		step_function = wibox.container.scroll.step_functions.waiting_nonlinear_back_and_forth,
 		fps = 60,
 		speed = 75,
+		fg = beautiful.notification_fg,
 		widgets.text({
 			font = beautiful.font_name,
 			size = 11,
