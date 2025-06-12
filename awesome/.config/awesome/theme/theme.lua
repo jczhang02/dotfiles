@@ -83,7 +83,7 @@ theme.press_event = "#ffffff" .. "15"
 theme.release_event = "#ffffff" .. "10"
 
 --- Widgets
-theme.widget_bg = theme.crust
+theme.widget_bg = theme.surface1
 
 --- Titlebars
 theme.titlebar_enabled = false
@@ -117,7 +117,7 @@ theme.titlebar_maximized_button_normal_inactive_hover = icon_dir .. "maximized_f
 theme.titlebar_maximized_button_focus_inactive_hover = icon_dir .. "maximized_focus_hover.svg"
 
 --- Wibar
-theme.wibar_bg = theme.base
+theme.wibar_bg = theme.surface0
 theme.wibar_height = dpi(35)
 
 --- Music
@@ -154,7 +154,7 @@ theme.icon_theme = "Papirus-Light"
 theme.border_width = 4
 theme.oof_border_width = 0
 theme.border_color_marked = theme.titlebar_bg
-theme.border_color_active = theme.red
+theme.border_color_active = theme.rosewater
 theme.border_color_normal = theme.transparent
 theme.border_color_new = theme.titlebar_bg
 theme.border_color_urgent = theme.titlebar_bg
