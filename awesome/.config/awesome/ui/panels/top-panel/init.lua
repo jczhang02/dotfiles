@@ -106,7 +106,7 @@ return function(s)
 					elseif #c3:clients() == 0 then
 						self.widget.children[1].bg = beautiful.overlay2
 						self.indicator_animation:set(dpi(8))
-					else
+					elseif #c3:clients() ~= 0 then
 						self.widget.children[1].bg = beautiful.accent
 						self.indicator_animation:set(dpi(16))
 					end
