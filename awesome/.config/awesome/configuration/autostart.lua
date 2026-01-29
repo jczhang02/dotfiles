@@ -21,7 +21,6 @@ local function autostart_apps()
 			"picom --dbus --config /home/jc/.config/awesome/configuration/picom.conf > /home/jc/.config/awesome/logs/picom.log"
 		)
 	end)
-
 	-- helpers.run.run_once_pgrep("mpd")
 	-- helpers.run.run_once_pgrep("mpDris2")
 

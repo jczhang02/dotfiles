@@ -1,0 +1,78 @@
+# vim:ft=bash
+layout_mamba() {
+    # Call in .envrc (direnv) with following statement:
+    #    layout mamba <your_environment_name>
+
+    MAMBA_ROOT_PREFIX="${HOME}/.conda" # Make sure this points to path of your micromamba install
+    MAMBA_EXE="/usr/bin/mamba"         # Should be pointing to the micromamba binary
+    # evaluating the Shell in use, e.g. bash/zsh/fish
+    __my_shell=$(basename ${SHELL})
+    __mamba_setup="$("${MAMBA_EXE}" shell hook --shell "${__my_shell}" --root-prefix "${MAMBA_ROOT_PREFIX}" 2>/dev/null)"
+    __my_env="$1"
+
+    eval " ${__mamba_setup}"
+
+    if [ -n "$1" ]; then
+        # Explicit environment name from layout command.
+        mamba activate ${__my_env}
+    elif (grep -q name: environment.yml); then
+        # Detect environment name from `environment.yml` file in `.envrc` directory
+        mamba activate $(grep name: environment.yml | sed -e 's/name: //')
+    else
+        (>&2 echo No environment specified)
+        exit 1
+    fi
+
+    unset __my_shell
+    unset __mamba_setup
+    unset __my_env
+}
+
+layout_mamba_uv() {
+    # Call in .envrc (direnv) with following statement:
+    #    layout mamba_uv <your_environment_name>
+
+    MAMBA_ROOT_PREFIX="${HOME}/.conda" # Make sure this points to path of your micromamba install
+    MAMBA_EXE="/usr/bin/mamba"         # Should be pointing to the micromamba binary
+    # evaluating the Shell in use, e.g. bash/zsh/fish
+    __my_shell=$(basename ${SHELL})
+    __mamba_setup="$("${MAMBA_EXE}" shell hook --shell "${__my_shell}" --root-prefix "${MAMBA_ROOT_PREFIX}" 2>/dev/null)"
+    __my_env="$1"
+
+    eval " ${__mamba_setup}"
+
+    if [ -n "$1" ]; then
+        # Explicit environment name from layout command.
+        mamba activate ${__my_env}
+    elif (grep -q name: environment.yml); then
+        # Detect environment name from `environment.yml` file in `.envrc` directory
+        mamba activate $(grep name: environment.yml | sed -e 's/name: //')
+    else
+        (>&2 echo No environment specified)
+        exit 1
+    fi
+
+    unset __my_shell
+    unset __mamba_setup
+    unset __my_env
+
+    export UV_PROJECT_ENVIRONMENT=${CONDA_PREFIX}
+}
+
+layout_uv() {
+    if [[ -d ".venv" ]]; then
+        VIRTUAL_ENV="$(pwd)/.venv"
+    fi
+
+    if [[ -z $VIRTUAL_ENV || ! -d $VIRTUAL_ENV ]]; then
+        log_status "No uv project exists. Executing \`uv init\` to create one."
+        uv init --no-readme
+        rm hello.py
+        uv venv
+        VIRTUAL_ENV="$(pwd)/.venv"
+    fi
+
+    PATH_add "$VIRTUAL_ENV/bin"
+    export UV_ACTIVE=1 # or VENV_ACTIVE=1
+    export VIRTUAL_ENV
+}

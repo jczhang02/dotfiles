@@ -23,7 +23,8 @@ zi wait="1" lucid for \
     OMZL::git.zsh \
     OMZP::git/git.plugin.zsh \
     OMZP::extract \
-    OMZP::pip
+    OMZP::pip \
+    MenkeTechnologies/zsh-cargo-completion
 
 zi ice as"program" pick"bin/git-fuzzy"
 zi light bigH/git-fuzzy

@@ -238,7 +238,7 @@ ZSHZ_DATA="$XDG_CONFIG_HOME/zsh/history/zsh_z.data"
 ZSHZ_CASE=smart
 
 ## zoxide
-_ZO_CMD_PREFIX="cd"
+_ZO_CMD_PREFIX="j"
 # _ZO_DATA_DIR
 
 ## ZCOMPDUMP

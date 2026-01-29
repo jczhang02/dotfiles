@@ -22,6 +22,7 @@ path+=(
     $XDG_DATA_HOME/gomodule/bin/
     $XDG_DATA_HOME/bin/
     $XDG_DATA_HOME/bob/nvim-bin/
+    $HOME/.deno/bin/
 )
 
 fpath+=(
@@ -73,6 +74,8 @@ export NVM_COMPLETION=true
 
 ## R
 export R_LIBS_USER="/home/jc/.local/share/R/"
+
+export ZSQLITE_ZSH_SRC_VERSION=5.9
 
 ## Starship
 # export STARSHIP_CONFIG="/home/jc/.config/starship/starship.toml"

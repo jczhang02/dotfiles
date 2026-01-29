@@ -117,6 +117,20 @@ ruled.client.connect_signal("request::rules", function()
 	ruled.client.append_rule({
 		rule_any = {
 			class = {
+				"Flet",
+			},
+		},
+		properties = {
+			floating = true,
+			width = 1920 * 0.8,
+			height = 1080 * 0.8,
+			placement = helpers.client.centered_client_placement,
+		},
+	})
+
+	ruled.client.append_rule({
+		rule_any = {
+			class = {
 				"wechat",
 			},
 			instance = {

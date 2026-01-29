@@ -164,7 +164,7 @@ local tg_scratch = function(screen_geometry)
 
 	local tg = bling.module.scratchpad:new({
 		command = "Telegram",
-		rule = { instance = "Telegram" },
+		rule = { instance = "telegram-desktop" },
 		sticky = false,
 		autoclose = false,
 		floating = true,

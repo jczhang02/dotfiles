@@ -49,6 +49,10 @@ awful.keyboard.append_global_keybindings({
 		awesome.emit_signal("central_panel::toggle", awful.screen.focused())
 	end, { description = "central_panel", group = "hotkeys" }),
 
+	awful.key({ mod, shift }, "k", function()
+		awful.spawn("killall /usr/bin/gnome-terminal", false)
+	end, { description = "command", group = "hotkeys" }),
+
 	--- WM
 	--- ~~
 	--- Restart awesome
