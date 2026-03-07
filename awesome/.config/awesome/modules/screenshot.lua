@@ -32,7 +32,7 @@ function shots.shot(action)
 	end)
 
 	send:connect_signal("invoked", function()
-		awful.spawn("kdeconnect-cli --device=6817e90ac81177dc --share=" .. filename)
+		awful.spawn("kdeconnect-cli --device=ab7e8b0b263f4dbaa168b50a3998855f --share=" .. filename)
 	end)
 
 	if action == "full" then

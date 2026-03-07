@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+"""Fetch Claude Code usage limits from Anthropic API.
+
+Outputs JSON: {"five_hour": <number>, "seven_day": <number>, ...}
+Auto-refreshes OAuth token when expired or rate-limited.
+"""
+
+import json
+import os
+import stat
+import time
+import urllib.error
+import urllib.request
+
+AUTH_FILE = os.path.expanduser("~/.local/share/opencode/auth.json")
+CLIENT_ID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+TOKEN_ENDPOINT = "https://console.anthropic.com/v1/oauth/token"
+USAGE_ENDPOINT = "https://api.anthropic.com/api/oauth/usage"
+REFRESH_BUFFER_MS = 60_000
+
+
+def error_json(reason: str) -> str:
+    return json.dumps({"error": reason, "five_hour": -1, "seven_day": -1})
+
+
+def read_auth() -> dict:
+    try:
+        with open(AUTH_FILE) as f:
+            return json.load(f).get("anthropic", {})
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def write_auth(access: str, refresh: str, expires_in: int) -> None:
+    try:
+        with open(AUTH_FILE) as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        data = {}
+
+    data.setdefault("anthropic", {}).update(
+        {
+            "type": "oauth",
+            "access": access,
+            "refresh": refresh,
+            "expires": int(time.time() * 1000) + expires_in * 1000,
+        }
+    )
+
+    with open(AUTH_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+    os.chmod(AUTH_FILE, stat.S_IRUSR | stat.S_IWUSR)
+
+
+def refresh_token(refresh_tok: str) -> str | None:
+    """Refresh OAuth token. Returns new access token or None."""
+    if not refresh_tok:
+        return None
+
+    body = json.dumps(
+        {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_tok,
+            "client_id": CLIENT_ID,
+        }
+    ).encode()
+
+    req = urllib.request.Request(
+        TOKEN_ENDPOINT,
+        data=body,
+        headers={"Content-Type": "application/json"},
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            result = json.load(resp)
+    except (urllib.error.URLError, json.JSONDecodeError):
+        return None
+
+    new_access = result.get("access_token", "")
+    new_refresh = result.get("refresh_token", "")
+    expires_in = result.get("expires_in", 0)
+
+    if not new_access or not new_refresh:
+        return None
+
+    write_auth(new_access, new_refresh, expires_in)
+    return new_access
+
+
+def fetch_usage(token: str) -> tuple[int, str]:
+    """Fetch usage. Returns (http_status, response_body)."""
+    req = urllib.request.Request(
+        USAGE_ENDPOINT,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "User-Agent": "claude-code/2.0.32",
+            "anthropic-beta": "oauth-2025-04-20",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return resp.status, resp.read().decode()
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode()
+    except urllib.error.URLError:
+        return 0, "{}"
+
+
+def parse_usage(body: str) -> str:
+    try:
+        data = json.loads(body)
+        fh = data.get("five_hour", {})
+        sd = data.get("seven_day", {})
+        return json.dumps(
+            {
+                "five_hour": fh.get("utilization", -1),
+                "seven_day": sd.get("utilization", -1),
+                "five_hour_resets_at": fh.get("resets_at", ""),
+                "seven_day_resets_at": sd.get("resets_at", ""),
+            }
+        )
+    except (json.JSONDecodeError, AttributeError):
+        return error_json("parse_error")
+
+
+def main() -> None:
+    auth = read_auth()
+    token = auth.get("access", "")
+    refresh_tok = auth.get("refresh", "")
+    expires = auth.get("expires", 0)
+    now_ms = int(time.time() * 1000)
+
+    # Refresh if token expired or missing
+    if not token or expires <= now_ms + REFRESH_BUFFER_MS:
+        token = refresh_token(refresh_tok)
+        if not token:
+            print(error_json("refresh_failed"))
+            return
+
+    # Fetch usage
+    status, body = fetch_usage(token)
+
+    # Rate-limited: refresh token and retry once
+    if status == 429:
+        token = refresh_token(
+            refresh_tok if not token else read_auth().get("refresh", "")
+        )
+        if not token:
+            print(error_json("refresh_failed"))
+            return
+        status, body = fetch_usage(token)
+
+    if status != 200:
+        print(error_json(f"http_{status}"))
+        return
+
+    print(parse_usage(body))
+
+
+if __name__ == "__main__":
+    main()

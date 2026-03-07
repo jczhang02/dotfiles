@@ -16,6 +16,7 @@ return function(s)
 	--- Widgets
 	--- ~~~~~~~~~~
 	s.clock = require("ui.panels.top-panel.clock")(s)
+	s.claude_usage = require("ui.panels.top-panel.claude-usage")()
 	s.battery = require("ui.panels.top-panel.battery")()
 
 	--- Animated tag list
@@ -238,6 +239,7 @@ return function(s)
 					tag_list(s),
 					{
 						system_tray(),
+						s.claude_usage,
 						s.battery,
 						layoutbox(),
 						layout = wibox.layout.fixed.horizontal,
