@@ -6,6 +6,9 @@
 
 set-option -g status-position top
 
+set -s extended-keys always
+set -as terminal-overrides ',xterm-kitty:extkeys'
+
 # -- session creation ----------------------------------------------------------
 
 # prompt for session name when creating a new session, possible values are:

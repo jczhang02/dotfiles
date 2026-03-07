@@ -22,6 +22,8 @@ if [[ ( ! "$(</proc/$PPID/cmdline)" =~ "tmux" ) && $- == *i* ]]; then
     fi
 fi
 
+# eval "$(zellij setup --generate-auto-start zsh)"
+
 # ==== p10k instant prompt ====
 if [[ -r "$XDG_CACHE_HOME/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
     source "$XDG_CACHE_HOME/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -48,4 +50,3 @@ do
     # echo CTG/zsh/zshrc: source $(basename $i)
     source $i
 done
-

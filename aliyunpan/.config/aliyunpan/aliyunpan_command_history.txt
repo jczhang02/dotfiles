@@ -2,3 +2,21 @@ login
 exit
 login
 exit
+login
+
+ls
+exit
+help
+lls
+u 020606.zip
+exit
+u 
+aliyunpan 
+exit
+ls
+exit
+ls
+share 012907-2.zup
+share 012907-2.zip
+share set mode 1 012907-2.zip
+share set 012907-2.zip

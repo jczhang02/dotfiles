@@ -1,10 +1,10 @@
 [user]
-	name = jczhang02
+    name = jczhang02
     email = jczhang@live.it
-	signingkey = 1F863CBFD6EDCA6B
+    signingkey = 1F863CBFD6EDCA6B
 [commit]
     gpgsign = true
-	template = /home/jc/.config/git/git-commit-template.txt
+    template = ~/.config/git/git-commit-template.txt
 [gpg]
     program = /usr/bin/gpg
 [alias]
@@ -12,7 +12,7 @@
 
 [core]
     pager = bat
-	editor = nvim
+    editor = nvim
 
 [interactive]
     diffFilter = delta 

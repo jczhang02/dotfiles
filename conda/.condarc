@@ -1,6 +1,8 @@
 # vim: ft=yaml
 envs_dirs:
   - /home/jc/.conda/envs/
+pkgs_dirs:
+  - /home/jc/.conda/pkgs/
 changeps1: false
 show_channel_urls: true
 # add_pip_as_python_dependency: true
