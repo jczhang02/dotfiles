@@ -356,6 +356,9 @@ tmux_conf_copy_to_os_clipboard=true
 # -- user customizations -------------------------------------------------------
 # this is the place to override or undo settings
 
+# Fcitx5 IME - propagate input method env vars to new panes/windows
+set -ga update-environment ' WAYLAND_DISPLAY XMODIFIERS GTK_IM_MODULE QT_IM_MODULE INPUT_METHOD'
+
 # increase history size
 #set -g history-limit 10000
 
