@@ -1,3 +1,33 @@
+# App configs with credentials
 aliyunpan/.config/aliyunpan/aliyunpan_config.json
 picgo/.picgo/config.json
+
+# Private keys & certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+id_ecdsa
+id_dsa
+
+# Secrets & credentials
+.env
+.env.*
+*.secret
+.netrc
+.pgpass
+.htpasswd
+credentials.json
+token.json
+secrets.yml
+secrets.yaml
+
+# Cloud & infra
+.boto
+.s3cfg
+kubeconfig
 
