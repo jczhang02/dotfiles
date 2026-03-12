@@ -4,7 +4,7 @@ theme = light:catppuccin-latte.conf,dark:catppuccin-mocha.conf
 
 # Font
 font-family = Iosevka Nerd Font Mono
-font-family = Symbols Nerd Font Mono
+font-family = Symbols Nerd Font
 font-family = LXGW WenKai Mono
 font-size = 12
 
