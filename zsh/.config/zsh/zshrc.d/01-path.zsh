@@ -77,5 +77,6 @@ export R_LIBS_USER="/home/jc/.local/share/R/"
 
 export ZSQLITE_ZSH_SRC_VERSION=5.9
 
+
 ## Starship
 # export STARSHIP_CONFIG="/home/jc/.config/starship/starship.toml"

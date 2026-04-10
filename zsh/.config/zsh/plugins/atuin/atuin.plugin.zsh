@@ -15,7 +15,7 @@ typeset -g _autin_histdb
 
 _atuin_histdb_init() {
     if (( $+_autin_histdb )); then
-        zsqlite_open -r _autin_histdb ~/.local/share/atuin/history.db
+        zsqlite_open -r -t 500 _autin_histdb ~/.local/share/atuin/history.db
     fi
 }
 

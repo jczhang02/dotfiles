@@ -5,32 +5,27 @@ EnumerateWithTriggerKeys=True
 ActivateKeys=
 # Deactivate Input Method
 DeactivateKeys=
+# Temporarily Toggle Input Method
+AltTriggerKeys=
 # Enumerate Input Method Forward
 EnumerateForwardKeys=
 # Enumerate Input Method Backward
 EnumerateBackwardKeys=
 # Skip first input method while enumerating
 EnumerateSkipFirst=False
+# Enumerate Input Method Group Forward
+EnumerateGroupForwardKeys=
+# Enumerate Input Method Group Backward
+EnumerateGroupBackwardKeys=
+# Fallback Previous page
+PrevPage=
+# Fallback Next page
+NextPage=
 # Time limit in milliseconds for triggering modifier key shortcuts
 ModifierOnlyKeyTimeout=250
 
 [Hotkey/TriggerKeys]
 0=Super+space
-
-[Hotkey/AltTriggerKeys]
-0=Shift_L
-
-[Hotkey/EnumerateGroupForwardKeys]
-0=Super+space
-
-[Hotkey/EnumerateGroupBackwardKeys]
-0=Shift+Super+space
-
-[Hotkey/PrevPage]
-0=Up
-
-[Hotkey/NextPage]
-0=Down
 
 [Hotkey/PrevCandidate]
 0=Shift+Tab

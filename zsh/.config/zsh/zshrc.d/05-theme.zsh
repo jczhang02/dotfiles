@@ -1,15 +1,8 @@
 # ==== theme ====
 
-set_fast_theme() {
-    FAST_HIGHLIGHT_STYLES[${FAST_THEME_NAME}alias]='fg=blue'
-    FAST_HIGHLIGHT_STYLES[${FAST_THEME_NAME}function]='fg=blue'
-    # 对 man 的高亮会卡住上下翻历史的动作
-    # FAST_HIGHLIGHT[chroma-man]=
-}
-
 zinit light-mode for \
-    atload="set_fast_theme" \
-    zdharma/fast-syntax-highlighting
+    atload="source $XDG_CONFIG_HOME/zsh/zi/plugins/catppuccin---zsh-syntax-highlighting/themes/catppuccin_latte-zsh-syntax-highlighting.zsh" \
+    zsh-users/zsh-syntax-highlighting
 
 
 : ${THEME:=p10k}
