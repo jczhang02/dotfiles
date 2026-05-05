@@ -18,6 +18,6 @@
 	url = https://github.com/chachmu/mpvDLNA
 [submodule "nvim/.config/nvim"]
 	path = nvim/.config/nvim
-	url = git@github.com:jczhang02/nvimdots.git
+	url = git@github.com:jczhang02/nvim.git
 	branch = main
 
