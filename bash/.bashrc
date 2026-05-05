@@ -117,3 +117,5 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+alias claude-mem='bun "/home/jc/.claude/plugins/cache/thedotmack/claude-mem/12.1.5/scripts/worker-service.cjs"'

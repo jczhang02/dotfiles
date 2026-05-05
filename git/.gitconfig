@@ -1,5 +1,5 @@
 [user]
-    name = jczhang02
+	name = JC Zhang
     email = jczhang@live.it
     signingkey = 1F863CBFD6EDCA6B
 [commit]
@@ -39,3 +39,9 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential

@@ -29,6 +29,8 @@ zi wait="1" lucid for \
 zi ice as"program" pick"bin/git-fuzzy"
 zi light bigH/git-fuzzy
 
+zi light  "wintermi/zsh-mise"
+
 zi ice as"completion"
 zi light-mode for \
     zchee/zsh-completions \

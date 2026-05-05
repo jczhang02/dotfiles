@@ -175,3 +175,8 @@ fs() {
 
 # python
 alias pip="pipx"
+
+# claude
+export CLAUDE_SHARED="$HOME/.config/claude/shared"
+alias claude='CLAUDE_CONFIG_DIR=$HOME/.config/claude/account-main claude --mcp-config $HOME/.config/claude/shared/mcp-servers.json'
+alias claude-ds='CLAUDE_CONFIG_DIR=$HOME/.config/claude/account-ds claude --mcp-config $HOME/.config/claude/shared/mcp-servers.json'

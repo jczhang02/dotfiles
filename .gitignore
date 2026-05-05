@@ -2,6 +2,9 @@
 aliyunpan/.config/aliyunpan/aliyunpan_config.json
 picgo/.picgo/config.json
 
+# OMC session/state (per-session, never commit)
+.omc/
+
 # Private keys & certificates
 *.pem
 *.key
