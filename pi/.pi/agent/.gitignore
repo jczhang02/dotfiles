@@ -1,0 +1,12 @@
+# pi runtime state & secrets — never commit (belt-and-suspenders;
+# with `stow --no-folding` these live as real files in ~/.pi/agent, not here).
+auth.json
+models.json
+npm/
+git/
+sessions/
+folder-history/
+.skill-lock.json
+mcp-cache.json
+debug.log
+*.log

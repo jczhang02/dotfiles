@@ -1,0 +1,69 @@
+{
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.5",
+  "defaultThinkingLevel": "xhigh",
+  "theme": "catppuccin-latte",
+  "quietStartup": true,
+  "collapseChangelog": true,
+  "editorPaddingX": 1,
+  "showHardwareCursor": true,
+  "hideThinkingBlock": false,
+  "autocompleteMaxVisible": 8,
+  "enableInstallTelemetry": false,
+  "terminal": {
+    "showImages": true,
+    "imageWidthCells": 60
+  },
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 16384,
+    "keepRecentTokens": 20000
+  },
+  "retry": {
+    "enabled": true,
+    "maxRetries": 3,
+    "provider": {
+      "maxRetries": 0
+    }
+  },
+  "enabledModels": [
+    "gpt-5*",
+    "*codex*"
+  ],
+  "enableSkillCommands": false,
+  "skills": [
+    "~/.agents/skills"
+  ],
+  "extensions": [
+    "extensions"
+  ],
+  "packages": [
+    "npm:pi-mcp-adapter",
+    "npm:@tintinweb/pi-subagents",
+    {
+      "source": "npm:@plannotator/pi-extension",
+      "skills": []
+    },
+    "npm:pi-goal",
+    "npm:pi-web-access",
+    "npm:@ramarivera/pi-skill-selector",
+    "npm:pi-rtk-optimizer",
+    "npm:pi-context-prune",
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:pi-caveman",
+    "npm:@heyhuynhgiabuu/pi-pretty",
+    "npm:@tmustier/pi-usage-extension",
+    "npm:pi-context-usage",
+    "git:github.com/hasit/pi-community-themes",
+    {
+      "source": "git:github.com/rytswd/pi-agent-extensions",
+      "extensions": [
+        "statusline",
+        "fetch"
+      ]
+    },
+    "git:github.com/fluxgear/pi-thinking-steps",
+    "npm:@juicesharp/rpiv-todo"
+  ],
+  "lastChangelogVersion": "0.78.0"
+}

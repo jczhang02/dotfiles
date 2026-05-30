@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "agentmemory": {
+      "command": "npx",
+      "args": ["-y", "@agentmemory/mcp"],
+      "lifecycle": "keep-alive"
+    }
+  }
+}
