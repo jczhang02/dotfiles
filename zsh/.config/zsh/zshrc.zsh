@@ -9,14 +9,43 @@ if [[ "$PROFILE_STARTUP" == true ]]; then
     setopt xtrace prompt_subst
 fi
 
-# ==== TMUX ====
-
-# 作为非 tmux 启动的交互式终端，考虑启动 tmux
+# ==== TMUX / sesh sessionizer ====
+# 启动直接弹 sesh picker (per-project session model).
+#   选中 → sesh connect (attach 或新建)
+#   Esc 取消 → 退到普通 zsh shell, 不进 tmux
+#   GC: 顺手清掉 main-<pid> 旧 grouped clone (历史遗留, 过渡期保留)
 if [[ ( ! "$(</proc/$PPID/cmdline)" =~ "tmux" ) && $- == *i* ]]; then
-    # 非嵌入式终端，启动 tmux
     if [[ ! "$(</proc/$PPID/cmdline)" =~ "dolphin|emacs|kate|visual-studio-code|SCREEN|zsh" ]]; then
-        exec tmux -f "$XDG_CONFIG_HOME/tmux/tmux.conf"
-        # 非 SCREEN 窗口，unset 相关环境变量，避免被识别为 TMUX 环境
+        local _tmux=("tmux" "-f" "$XDG_CONFIG_HOME/tmux/tmux.conf")
+        # GC stale main-<pid> clones from old A3 grouped-session model
+        if "${_tmux[@]}" has-session 2>/dev/null; then
+            local _s _pid
+            for _s in ${(f)"$("${_tmux[@]}" ls -F '#{session_name}' 2>/dev/null)"}; do
+                [[ "$_s" == main-<-> ]] || continue
+                _pid=${_s#main-}
+                [[ -d /proc/$_pid ]] || "${_tmux[@]}" kill-session -t "$_s" 2>/dev/null
+            done
+        fi
+        if command -v sesh >/dev/null 2>&1; then
+            local _target
+            _target=$(sesh list --icons 2>/dev/null | fzf --no-sort --ansi \
+                --border --border-label ' sesh ' --prompt '⚡ ' --height 80% \
+                --header '^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find' \
+                --bind 'tab:down,btab:up' \
+                --bind 'ctrl-a:change-prompt(⚡ )+reload(sesh list --icons)' \
+                --bind 'ctrl-t:change-prompt(🪟 )+reload(sesh list -t --icons)' \
+                --bind 'ctrl-g:change-prompt(⚙  )+reload(sesh list -c --icons)' \
+                --bind 'ctrl-x:change-prompt(📁 )+reload(sesh list -z --icons)' \
+                --bind 'ctrl-f:change-prompt(🔎 )+reload(fd -H -d 2 -t d -E .git . ~/dev)' \
+                --bind 'ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡ )+reload(sesh list --icons)')
+            if [[ -n "$_target" ]]; then
+                _target="${_target#* }"   # strip icon prefix
+                exec sesh connect "$_target"
+            fi
+            # Esc → fallthrough 进普通 shell
+        else
+            exec "${_tmux[@]}" new-session -A -s main
+        fi
     elif [[ ! "$(</proc/$PPID/cmdline)" =~ "SCREEN" ]]; then
         unset TMUX TMUX_PANE
     fi

@@ -1,13 +1,21 @@
-# : << EOF
+# : << 'EOF'
+# Oh my tmux!
+# 💛🩷💙🖤❤️🤍
 # https://github.com/gpakosz/.tmux
 # (‑●‑●)> dual licensed under the WTFPL v2 license and the MIT license,
 #         without any warranty.
 #         Copyright 2012— Gregory Pakosz (@gpakosz).
 
-set-option -g status-position top
 
-set -s extended-keys always
-set -as terminal-overrides ',xterm-kitty:extkeys'
+# -- bindings ------------------------------------------------------------------
+
+# preserve tmux stock bindings,
+# while adding bindings that don't conflict with these stock bindings
+# /!\ this disables some of Oh my tmux! bindings described in README.md
+#   - true
+#   - false (default)
+tmux_conf_preserve_stock_bindings=false
+
 
 # -- session creation ----------------------------------------------------------
 
@@ -16,6 +24,12 @@ set -as terminal-overrides ',xterm-kitty:extkeys'
 #   - false (default)
 #   - disabled (do not modify new-session bindings)
 tmux_conf_new_session_prompt=false
+
+# new session retains current path, possible values are:
+#   - true
+#   - false (default)
+#   - disabled (do not modify new-session bindings)
+tmux_conf_new_session_retain_current_path=false
 
 
 # -- windows & pane creation ---------------------------------------------------
@@ -55,7 +69,7 @@ tmux_conf_new_pane_reconnect_ssh=false
 # automatic detection relies on the COLORTERM environment variable being defined
 # to 'truecolor' or '24bit' or '$ tput colors' answering '16777216'
 # see https://github.com/termstandard/colors
-tmux_conf_24b_colour=auto
+tmux_conf_24b_colour=true
 
 
 # -- theming -------------------------------------------------------------------
@@ -71,24 +85,24 @@ tmux_conf_24b_colour=auto
 #   - tmux_conf_theme_synchronized
 tmux_conf_theme=enabled
 
-# default theme
-tmux_conf_theme_colour_1="#080808"    # dark gray
-tmux_conf_theme_colour_2="#303030"    # gray
-tmux_conf_theme_colour_3="#8a8a8a"    # light gray
-tmux_conf_theme_colour_4="#00afff"    # light blue
-tmux_conf_theme_colour_5="#ffff00"    # yellow
-tmux_conf_theme_colour_6="#080808"    # dark gray
-tmux_conf_theme_colour_7="#e4e4e4"    # white
-tmux_conf_theme_colour_8="#080808"    # dark gray
-tmux_conf_theme_colour_9="#ffff00"    # yellow
-tmux_conf_theme_colour_10="#ff00af"   # pink
-tmux_conf_theme_colour_11="#5fff00"   # green
-tmux_conf_theme_colour_12="#8a8a8a"   # light gray
-tmux_conf_theme_colour_13="#e4e4e4"   # white
-tmux_conf_theme_colour_14="#080808"   # dark gray
-tmux_conf_theme_colour_15="#080808"   # dark gray
-tmux_conf_theme_colour_16="#d70000"   # red
-tmux_conf_theme_colour_17="#e4e4e4"   # white
+# Catppuccin Latte palette mapped onto oh-my-tmux theme slots
+tmux_conf_theme_colour_1="#eff1f5"    # Base       — status bar bg
+tmux_conf_theme_colour_2="#bcc0cc"    # Surface1   — separators / inactive border
+tmux_conf_theme_colour_3="#5c5f77"    # Subtext1   — status bar fg
+tmux_conf_theme_colour_4="#1e66f5"    # Blue       — active pane/window accent
+tmux_conf_theme_colour_5="#df8e1d"    # Yellow     — prefix indicator bg
+tmux_conf_theme_colour_6="#4c4f69"    # Text       — prefix indicator fg
+tmux_conf_theme_colour_7="#4c4f69"    # Text       — status right fg highlight
+tmux_conf_theme_colour_8="#eff1f5"    # Base       — status right bg
+tmux_conf_theme_colour_9="#fe640b"    # Peach      — copy mode indicator
+tmux_conf_theme_colour_10="#8839ef"   # Mauve      — hostname / clock accent
+tmux_conf_theme_colour_11="#40a02b"   # Green      — current window bg
+tmux_conf_theme_colour_12="#9ca0b0"   # Overlay0   — inactive window fg
+tmux_conf_theme_colour_13="#4c4f69"   # Text       — current window fg
+tmux_conf_theme_colour_14="#e6e9ef"   # Mantle     — current window bg highlight
+tmux_conf_theme_colour_15="#e6e9ef"   # Mantle     — status left bg
+tmux_conf_theme_colour_16="#d20f39"   # Red        — alert/bell bg
+tmux_conf_theme_colour_17="#eff1f5"   # Base       — alert/bell fg
 
 # default theme (ansi)
 #tmux_conf_theme_colour_1="colour0"
@@ -167,7 +181,7 @@ tmux_conf_theme_status_attr="none"
 #     - #{hostname_full_ssh}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_terminal_title="❐ #S ● #I #W"
+tmux_conf_theme_terminal_title="#h ❐ #S ● #I #W"
 
 # window status style
 #   - built-in variables are:
@@ -255,9 +269,9 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
-tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage},} , %R , %d %b | #{username}#{root} | #{hostname} "
-
+tmux_conf_theme_status_left=" ❐ #S "
+#tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
+tmux_conf_theme_status_right=" #{prefix}#{mouse}#{synchronized} | #(cd '#{pane_current_path}' 2>/dev/null && git symbolic-ref --short HEAD 2>/dev/null || echo -) | %H:%M #{?#{==:#{hostname_ssh},},,| #{hostname_ssh}} "
 
 # status left style
 tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
@@ -314,22 +328,28 @@ tmux_conf_battery_bar_length="auto"
 #   - gradient (default)
 #   - heat
 #   - "colour_full_fg,colour_empty_fg,colour_bg"
+#   - gradient(colour_fg_1,colour_fg_2,...,colour_fg_n)
 tmux_conf_battery_bar_palette="gradient"
 #tmux_conf_battery_bar_palette="#d70000,#e4e4e4,#000000"   # red, white, black
+#tmux_conf_battery_bar_palette="gradient(#00afff,#47a2ff,#7c91ff,#ac7afb,#d65be2,#e163df,#eb6cdd,#f475db,#ec9ff1,#eac3fe,#efe2ff,#ffffff)"
 
 # battery hbar palette, possible values are:
 #   - gradient (default)
 #   - heat
 #   - "colour_low,colour_half,colour_full"
+#   - gradient(colour_fg_1,colour_fg_2,...,colour_fg_n)
 tmux_conf_battery_hbar_palette="gradient"
 #tmux_conf_battery_hbar_palette="#d70000,#ff5f00,#5fff00"  # red, orange, green
+#tmux_conf_battery_hbar_palette="gradient(#00afff,#47a2ff,#7c91ff,#ac7afb,#d65be2,#e163df,#eb6cdd,#f475db,#ec9ff1,#eac3fe,#efe2ff,#ffffff)"
 
 # battery vbar palette, possible values are:
 #   - gradient (default)
 #   - heat
 #   - "colour_low,colour_half,colour_full"
+#   - gradient(colour_fg_1,colour_fg_2,...,colour_fg_n)
 tmux_conf_battery_vbar_palette="gradient"
 #tmux_conf_battery_vbar_palette="#d70000,#ff5f00,#5fff00"  # red, orange, green
+#tmux_conf_battery_vbar_palette="gradient(#00afff,#47a2ff,#7c91ff,#ac7afb,#d65be2,#e163df,#eb6cdd,#f475db,#ec9ff1,#eac3fe,#efe2ff,#ffffff)"
 
 # symbols used to indicate whether battery is charging or discharging
 tmux_conf_battery_status_charging="↑"       # U+2191
@@ -349,40 +369,153 @@ tmux_conf_theme_clock_style="24"
 #   - true
 #   - false (default)
 #   - disabled
-# on macOS, this requires installing reattach-to-user-namespace, see README.md
 # on Linux, this requires xsel, xclip or wl-copy
-tmux_conf_copy_to_os_clipboard=true
+tmux_conf_copy_to_os_clipboard=false
+
+
+# -- urlscan -------------------------------------------------------------------
+
+# options passed to urlscan
+tmux_conf_urlscan_options="--compact --dedupe"
 
 
 # -- user customizations -------------------------------------------------------
-# this is the place to override or undo settings
 
-# Fcitx5 IME - propagate input method env vars to new panes/windows
+# status line on top
+set -g status-position top
+
+# truecolor + hyperlinks + synchronized output (ghostty / wezterm / kitty / foot)
+set -g  default-terminal "tmux-256color"
+set -ga terminal-overrides ",xterm-256color*:Tc"
+set -ga terminal-features ",*:hyperlinks,RGB,256,clipboard,strikethrough,sync"
+set -s  extended-keys always
+set -s  extended-keys-format csi-u                                    # pi works best with csi-u
+set -as terminal-overrides ',xterm-kitty:extkeys'
+
+# resize/redraw: 单 client 立即按尺寸 resize, 减少 TUI (CC/opencode) 重绘 leak
+set -g aggressive-resize on
+
+# Fcitx5 IME — propagate input method env vars to new panes/windows
 set -ga update-environment ' WAYLAND_DISPLAY XMODIFIERS GTK_IM_MODULE QT_IM_MODULE INPUT_METHOD'
 
-# increase history size
-#set -g history-limit 10000
+# history
+set -g history-limit 100000
 
-# start with mouse mode enabled
+# mouse + Vi keys
 set -g mouse on
-
-# force Vi mode
-#   really you should export VISUAL or EDITOR environment variable, see manual
+# Disable tmux right-click menus.
+unbind -T root MouseDown3Pane
+unbind -T root MouseDown3Status
+unbind -T root MouseDown3StatusLeft
+unbind -T root M-MouseDown3Pane
+unbind -T root M-MouseDown3Status
+unbind -T root M-MouseDown3StatusLeft
 set -g status-keys vi
-set -g mode-keys vi
+set -g mode-keys  vi
 
-# replace C-b by C-a instead of using both prefixes
-# set -gu prefix2
-# unbind C-a
-# unbind C-b
-# set -g prefix C-a
-# bind C-a send-prefix
+# DO NOT exit-unattached: A3 grouped sessions need server to outlive last client
+set -g exit-unattached off
 
-# if you don't want Oh my tmux! to alter a binding, use #!important
-# bind c new-window -c '#{pane_current_path}' #!important
+# Prefix → Ctrl-Space (主) + Ctrl-a (备)
+unbind C-b
+set -g prefix  C-Space
+set -g prefix2 C-a
+bind C-Space send-prefix
+bind C-a     send-prefix -2
 
-# move status line to top
-#set -g status-position top
+# prefix s → sesh popup picker (live sessions + zoxide + sesh.toml)
+# 覆盖 tmux 默认 choose-tree
+unbind s
+bind s display-popup -E -w 80% -h 80% -B \
+    "sesh connect \"\$(sesh list --icons | fzf \
+        --no-sort --ansi --border --border-label ' sesh ' --prompt '⚡ ' \
+        --header '^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find' \
+        --bind 'tab:down,btab:up' \
+        --bind 'ctrl-a:change-prompt(⚡ )+reload(sesh list --icons)' \
+        --bind 'ctrl-t:change-prompt(🪟 )+reload(sesh list -t --icons)' \
+        --bind 'ctrl-g:change-prompt(⚙  )+reload(sesh list -c --icons)' \
+        --bind 'ctrl-x:change-prompt(📁 )+reload(sesh list -z --icons)' \
+        --bind 'ctrl-f:change-prompt(🔎 )+reload(fd -H -d 2 -t d -E .git . ~/dev)' \
+        --bind 'ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡ )+reload(sesh list --icons)' \
+    )\""
+
+# vi-mode: y → tmux 内部 buffer + OSC52 转发给外层终端 (ghostty 写系统剪贴板)
+# 避开 fork wl-copy 守护进程, 顺带消除 dash-to-dock 误触发的"新应用"动画
+set -g set-clipboard on
+bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+
+# 移除 oh-my-tmux 的 M-y "yank-and-paste-pop" 绑定 (emacs + vi mode)。
+# 当 copy_to_os_clipboard=false 时其 perl transform 把 "wl-copy; tmux paste-buffer"
+# 字符串中的 wl-copy 剥离 → 残留 "; tmux ..." 被 tmux 当成新命令解析 → syntax error。
+# vi-mode 用户不需要这条 paste-pop 行为。
+unbind -T copy-mode    M-y
+unbind -T copy-mode-vi M-y
+
+# Kill 快捷键 (杀完立即 resurrect save, 避免 15min 内 server 崩复活)
+# prefix X   → 杀当前 session, 带确认
+# prefix W   → 杀当前 window, 带确认 (替代默认 prefix+&)
+# prefix C-x → fzf 多选杀 session (Tab 多选, Enter 确认)
+# 注: confirm-before 的 command 参数是单条 tmux 命令, \; 不会被当作分隔符,
+# 必须用 run-shell + 外部 shell ; 串接 (kill-session 走 tmux CLI).
+bind X confirm-before -y -p "kill session #S? (Y/n)" \
+    "run-shell '~/.config/tmux/plugins/tmux-resurrect/scripts/save.sh; tmux kill-session'"
+
+bind W confirm-before -y -p "kill window #W? (Y/n)" kill-window
+
+# 覆盖 oh-my-tmux 默认 prefix+x / prefix+& — Enter 即默认 yes
+bind x confirm-before -y -p "kill-pane #P? (Y/n)" kill-pane
+bind & confirm-before -y -p "kill-window #W? (Y/n)" kill-window
+
+bind C-x display-popup -E -w 60% -h 50% \
+    "sh -c 'tmux list-sessions -F \"#S\" | \
+        fzf --multi --reverse --prompt \"kill> \" --header \"Tab 多选, Enter 确认\" | \
+        xargs -r -I{} tmux kill-session -t {}; \
+        ~/.config/tmux/plugins/tmux-resurrect/scripts/save.sh'"
+
+
+
+
+# display a message after toggling mouse support
+bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?#{mouse},on,off}'
+
+
+# -- vim-style bindings --------------------------------------------------------
+
+# gt/gT/gg/ge — window cycle + jump (key-table chord on g)
+unbind g
+bind g switch-client -T VIMG
+bind -T VIMG t next-window
+bind -T VIMG T previous-window
+bind -T VIMG g select-window -t :^         # gg → first window
+bind -T VIMG e select-window -t :$         # ge → last window
+
+# G → last window (vim G = bottom)
+bind G select-window -t :$
+
+# / → enter copy-mode + forward search (vim /)
+# Note: prefix ? 保留 list-keys 默认; copy-mode 内可直接按 ? 反向搜索
+bind / copy-mode \; send-keys /
+
+# | → vertical split (vim :vsp 视觉符号), 保留 _ / - 现有分屏
+unbind '|'
+bind | split-window -h -c "#{pane_current_path}"
+
+# ZZ / ZQ — kill window via Z table (vim 退出键)
+unbind Z
+bind Z switch-client -T VIMZ
+bind -T VIMZ Z confirm-before -y -p "kill window #W? (Y/n)" kill-window
+bind -T VIMZ Q kill-window
+
+# = → equalize layout (vim Ctrl-w =)
+bind '=' select-layout tiled
+
+# tmux-resurrect 缓存清理 (~/.local/bin/tmux-resurrect-prune)
+# prefix + R       → prune 7d+ snapshots (silent, display freed size)
+# prefix + M-r     → keep last 5 snapshots
+# prefix + C-M-r   → nuke all snapshots + pane_contents.tar.gz (confirm)
+bind R     run-shell "$HOME/.local/bin/tmux-resurrect-prune 7d"
+bind M-r   run-shell "$HOME/.local/bin/tmux-resurrect-prune keep5"
+bind C-M-r confirm-before -p "nuke resurrect cache? (y/n) " "run-shell '$HOME/.local/bin/tmux-resurrect-prune nuke'"
 
 
 # -- tpm -----------------------------------------------------------------------
@@ -397,7 +530,7 @@ set -g mode-keys vi
 # by default, launching tmux will update tpm and all plugins
 #   - true (default)
 #   - false
-tmux_conf_update_plugins_on_launch=false
+tmux_conf_update_plugins_on_launch=true
 
 # by default, reloading the configuration will update tpm and all plugins
 #   - true (default)
@@ -418,34 +551,74 @@ tmux_conf_uninstall_plugins_on_reload=true
 # /!\ do not add set -g @plugin 'tmux-plugins/tpm'
 # /!\ do not add run '~/.tmux/plugins/tpm/tpm'
 
+# /!\ the 'set -g @tpm_plugins' syntax is not supported
 # to enable a plugin, use the 'set -g @plugin' syntax:
 # visit https://github.com/tmux-plugins for available plugins
-#set -g @plugin 'tmux-plugins/tmux-copycat'
-#set -g @plugin 'tmux-plugins/tmux-cpu'
-#set -g @plugin 'tmux-plugins/tmux-resurrect'
-#set -g @plugin 'tmux-plugins/tmux-continuum'
-#set -g @continuum-restore 'on'
 
+# -- disabled old tmux-window-name plugin --------------------------------------
+# set -g @plugin 'ofirgall/tmux-window-name'
+# set -g @tmux_window_dir_programs "['nvim', 'vim', 'vi', 'git', 'lazygit', 'btop', 'htop']"
+# set -g @tmux_window_name_shells  "['bash', 'fish', 'sh', 'zsh']"
+# set -g @tmux_window_name_max_name_len "25"
+# set -g @tmux_window_name_use_tilde "True"
+# set -g @tmux_window_name_show_program_args "True"
+# set -g @tmux_window_name_substitute_sets "[ \
+# ('claude', '🤖cc'), \
+# ('opencode', '🤖oc'), \
+# ('codex', '🤖cx'), \
+# ('aider', '🤖ad'), \
+# ('gemini', '🤖gm'), \
+# ('npm run dev', '⚡dev'), \
+# ('pnpm dev', '⚡dev'), \
+# ('cargo run', '🦀run'), \
+# ('cargo build', '🦀build'), \
+# ('uv run', '🐍run'), \
+# ('pytest', '🧪test'), \
+# ('docker compose', '🐳'), \
+# ('journalctl', '📋log') \
+# ]"
+# set-hook -ga after-select-pane  "run-shell -b '~/.config/tmux/plugins/tmux-window-name/scripts/rename_session_windows.py'"
+# set-hook -ga after-resize-pane  "run-shell -b '~/.config/tmux/plugins/tmux-window-name/scripts/rename_session_windows.py'"
 
-# bind -T copy-mode    DoubleClick1Pane select-pane \; send -X select-word \; send -X copy-pipe-no-clear "xsel -i"
-# bind -T copy-mode-vi DoubleClick1Pane select-pane \; send -X select-word \; send -X copy-pipe-no-clear "xsel -i"
-# bind -n DoubleClick1Pane select-pane \; copy-mode -M \; send -X select-word \; send -X copy-pipe-no-clear "xsel -i"
-# bind -T copy-mode    TripleClick1Pane select-pane \; send -X select-line \; send -X copy-pipe-no-clear "xsel -i"
-# bind -T copy-mode-vi TripleClick1Pane select-pane \; send -X select-line \; send -X copy-pipe-no-clear "xsel -i"
-# bind -n TripleClick1Pane select-pane \; copy-mode -M \; send -X select-line \; send -X copy-pipe-no-clear "xsel -i"
-# bind -n MouseDown2Pane run "tmux set-buffer -b primary_selection \"$(xsel -o)\"; tmux paste-buffer -b primary_selection; tmux delete-buffer -b primary_selection"
+# semantic auto-renaming for pi/claude + dev tools
+# Local dev plugin is TPM-compatible, but sourced directly so TPM does not try to clone it.
+run-shell -b '/home/jc/dev/tmux-autoname/tmux-autoname.tmux'
 
-set -g @plugin 'ofirgall/tmux-window-name'
-set -g @tmux_window_dir_programs "['nvim', 'vim', 'vi', 'git']"
-set -g @tmux_window_name_shells "['bash', 'fish', 'sh', 'zsh']"
-set -g @tmux_window_name_max_name_len "20"
+# === 切 pane/window/session 时强制 fcitx5 回英文 ===
+# tmux 内部焦点事件不触发 wayland focus-in, fcitx5 不会自动 reset.
+# 主动调 fcitx5-remote -c (deactivate).
+set-hook -ga after-select-pane    "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
+set-hook -ga after-select-window  "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
+set-hook -ga client-session-changed "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
+
+# system clipboard yank
 set -g @plugin 'tmux-plugins/tmux-yank'
-set -g @yank_selection_mouse 'clipboard'
-# set -g @yank_action 'copy-pipe-no-clear'
+set -g @yank_selection_mouse 'tmux'  # OSC52 转发, 不再 fork wl-copy
+
+# Ctrl-h/j/k/l moves across vim splits + tmux panes
 set -g @plugin 'christoomey/vim-tmux-navigator'
-set -g @plugin 'tmux-plugins/tmux-open'
-# set -g @plugin 'tmux-plugins/tmux-urlview'
+
+# prefix u → fuzzy pick URL from current pane, open in browser
 set -g @plugin 'wfxr/tmux-fzf-url'
+
+# prefix F → tmux-fzf menu (session/window/pane/command/keybinding/clipboard/process)
+# prefix b → 直接进 clipboard (paste-buffer 选择器)
+set -g @plugin 'sainnhe/tmux-fzf'
+TMUX_FZF_LAUNCH_KEY="F"
+unbind b
+bind b run-shell -b "~/.config/tmux/plugins/tmux-fzf/scripts/clipboard.sh buffer"
+
+# M-p (no-prefix) → tmux-palette: Raycast-like command palette (Bun-based)
+# 默认 @palette-key=C-Space 会撞 tmux prefix, 故改 M-p
+set -g @plugin 'eduwass/tmux-palette'
+set -g @palette-key 'M-p'
+
+# layout-only persistence across reboot
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @resurrect-capture-pane-contents 'on'
+set -g @continuum-save-interval '15'
+set -g @continuum-restore 'on'
 
 # -- custom variables ----------------------------------------------------------
 
@@ -457,19 +630,46 @@ set -g @plugin 'wfxr/tmux-fzf-url'
 # then, use #{foo} in e.g. the 'tmux_conf_theme_status_left' or the
 # 'tmux_conf_theme_status_right' variables.
 
+# ------------------------------------------------------------------------------
+
 # # /!\ do not remove the following line
 # EOF
 #
 # # /!\ do not "uncomment" the functions: the leading "# " characters are needed
 #
+# # usage: #{weather}
 # weather() {                                         # see https://github.com/chubin/wttr.in#one-line-output
 #   curl -f -s -m 2 'wttr.in?format=3' || printf '\n' # /!\ make sure curl is installed
 #   sleep 900                                         # sleep for 15 minutes, throttle network requests whatever the value of status-interval
 # }
 #
+# # usage: #{online}
 # online() {
 #   ping -c 1 1.1.1.1 >/dev/null 2>&1 && printf '✔' || printf '✘'
 # }
 #
+# # usage: #{wan_ip_v4}
+# wan_ip_v4() {
+#   curl -f -s -m 2 -4 ifconfig.me
+#   sleep 300                                         # sleep for 5 minutes, throttle network requests whatever the value of status-interval
+# }
+#
+# # usage: #{wan_ip_v6}
+# wan_ip_v6() {
+#   curl -f -s -m 2 -6 ifconfig.me
+#   sleep 300                                         # sleep for 5 minutes, throttle network requests whatever the value of status-interval
+# }
+#
+# # usage: #{github_stars}, #{github_stars tmux/tmux}, ...
+# github_stars() {
+#   repository=${1##*https://github.com/}
+#   repository=${repository%% *}
+#   repository=${repository%%.git}
+#   url="https://api.github.com/repos/${repository:-gpakosz/.tmux}"
+#   curl -s "$url" | perl -MJSON::PP=decode_json -CO -0777 -E '$response = decode_json(readline *STDIN); say ($response->{stargazers_count})'
+#   sleep 300                                         # sleep for 5 minutes, throttle network requests whatever the value of status-interval
+# }
+#
 # "$@"
 # # /!\ do not remove the previous line
+# #     do not write below this line

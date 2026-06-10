@@ -2,6 +2,16 @@
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "xhigh",
+  "thinkingBudgets": {
+    "minimal": 1024,
+    "low": 2048,
+    "medium": 8192,
+    "high": 16384,
+    "xhigh": 24576
+  },
+  "transport": "sse",
+  "websocketConnectTimeoutMs": 120000,
+  "httpIdleTimeoutMs": 120000,
   "theme": "catppuccin-latte",
   "quietStartup": true,
   "collapseChangelog": true,
@@ -27,43 +37,48 @@
     }
   },
   "enabledModels": [
-    "gpt-5*",
-    "*codex*"
+    "openai-codex/*"
   ],
-  "enableSkillCommands": false,
+  "enableSkillCommands": true,
   "skills": [
     "~/.agents/skills"
   ],
   "extensions": [
-    "extensions"
+    "extensions",
+    "/home/jc/.pi/agent/npm/node_modules/@pi-unipi/notify/index.ts"
   ],
   "packages": [
     "npm:pi-mcp-adapter",
-    "npm:@tintinweb/pi-subagents",
-    {
-      "source": "npm:@plannotator/pi-extension",
-      "skills": []
-    },
-    "npm:pi-goal",
-    "npm:pi-web-access",
-    "npm:@ramarivera/pi-skill-selector",
     "npm:pi-rtk-optimizer",
-    "npm:pi-context-prune",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-caveman",
-    "npm:@heyhuynhgiabuu/pi-pretty",
-    "npm:@tmustier/pi-usage-extension",
     "npm:pi-context-usage",
     "git:github.com/hasit/pi-community-themes",
-    {
-      "source": "git:github.com/rytswd/pi-agent-extensions",
-      "extensions": [
-        "statusline",
-        "fetch"
-      ]
-    },
-    "git:github.com/fluxgear/pi-thinking-steps",
-    "npm:@juicesharp/rpiv-todo"
+    "npm:@juicesharp/rpiv-todo",
+    "https://github.com/davebcn87/pi-autoresearch",
+    "npm:pi-worktree",
+    "npm:pi-powerline-footer",
+    "npm:@pi-unipi/notify",
+    "npm:pi-dynamic-workflows",
+    "npm:@byteowlz/pi-auto-rename",
+    "npm:pi-rewind",
+    "npm:pi-subagents",
+    "npm:pi-codex-goal",
+    "npm:@complexthings/pi-dynamic-context-pruning",
+    "npm:@ff-labs/pi-fff",
+    "npm:pi-loadout",
+    "https://github.com/monotykamary/pi-tps",
+    "npm:nowledge-mem-pi",
+    "npm:@howaboua/pi-codex-conversion",
+    "npm:pi-context-prune",
+    "npm:pi-smart-fetch"
   ],
-  "lastChangelogVersion": "0.78.0"
+  "lastChangelogVersion": "0.79.1",
+  "powerline": {
+    "preset": "default",
+    "fixedEditor": false
+  },
+  "observational-memory": {
+    "passive": true
+  }
 }

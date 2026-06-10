@@ -8,10 +8,25 @@ font-family = Symbols Nerd Font
 font-family = LXGW WenKai Mono
 font-size = 12
 
+# Hardwire CJK codepoints to LXGW WenKai Mono — bypasses fontconfig fuzzy scoring
+# that lets Iosevka NF Mono (no zh coverage) outrank LXGW for monospace:lang=zh.
+# Ranges: CJK Symbols & Punct, Ext-A, CJK Unified, Compat Ideographs, Halfwidth/Fullwidth, Ext-B, Ext-C
+font-codepoint-map = U+3000-U+303F=LXGW WenKai Mono
+font-codepoint-map = U+3400-U+4DBF=LXGW WenKai Mono
+font-codepoint-map = U+4E00-U+9FFF=LXGW WenKai Mono
+font-codepoint-map = U+F900-U+FAFF=LXGW WenKai Mono
+font-codepoint-map = U+FF00-U+FFEF=LXGW WenKai Mono
+font-codepoint-map = U+20000-U+2A6DF=LXGW WenKai Mono
+font-codepoint-map = U+2A700-U+2B73F=LXGW WenKai Mono
+
 # Disable ligatures
 font-feature = -calt
 font-feature = -clig
 font-feature = -liga
+
+# Compensate fractional scaling blur (DP-1 @ 1.25x, no subpixel rendering)
+font-thicken = true
+font-thicken-strength = 128
 
 # Window
 window-height = 50
@@ -20,19 +35,28 @@ window-padding-x = 0
 window-padding-y = 0
 window-decoration = auto
 window-show-tab-bar = never
-background-opacity = 1
 confirm-close-surface = false
 
+background-opacity = 1
 quit-after-last-window-closed = false
 
 app-notifications=no-clipboard-copy
+
+# Cursor — force block, disable shell-integration auto-shaping
+cursor-style = block
+cursor-style-blink = false
+shell-integration-features = no-cursor
 
 
 # GTK integration (closest to WezTerm's INTEGRATED_BUTTONS|RESIZE)
 
 # Input
-mouse-hide-while-typing = false
+mouse-hide-while-typing = true
 mouse-scroll-multiplier = 1
+# URL links: Ctrl+Shift+hover underlines, Ctrl+Shift+click opens.
+# Shift bypasses tmux `mouse on`; Ctrl gates matching, so the old
+# I-beam<->hand nvim flicker only happens while Ctrl is held.
+link-url = true
 
 # Misc
 auto-update = off
@@ -42,3 +66,16 @@ keybind = ctrl+enter=text:\x1b[13;5u
 keybind = shift+enter=text:\x1b[13;2u
 keybind = ctrl+shift+enter=text:\x1b[13;6u
 keybind = ctrl+backspace=text:\x17
+
+# Split focus — Ctrl+Shift+hjkl (no conflict with Neovim/shell Ctrl+hjkl)
+# Note: ctrl+shift+j overrides default write_screen_file:paste,plain
+keybind = ctrl+shift+h=goto_split:left
+keybind = ctrl+shift+j=goto_split:down
+keybind = ctrl+shift+k=goto_split:up
+keybind = ctrl+shift+l=goto_split:right
+
+# Resize splits — Ctrl+Shift+Alt+hjkl
+keybind = ctrl+shift+alt+h=resize_split:left,10
+keybind = ctrl+shift+alt+j=resize_split:down,10
+keybind = ctrl+shift+alt+k=resize_split:up,10
+keybind = ctrl+shift+alt+l=resize_split:right,10

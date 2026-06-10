@@ -1,0 +1,1496 @@
+#compdef gig
+
+autoload -U is-at-least
+
+_gig() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_gig_commands" \
+"*::: :->gig" \
+&& ret=0
+    case $state in
+    (gig)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-command-$line[1]:"
+        case $line[1] in
+            (new)
+_arguments "${_arguments_options[@]}" : \
+'--title=[One-line title for the order]:TITLE:_default' \
+'--slug=[Short slug (used as the folder name later by \`gig init\`)]:SLUG:_default' \
+'--quoted-price=[Quoted price in yuan (e.g. 1200 or 1200.50). Optional at create time]:QUOTED_PRICE:_default' \
+'--final-price=[Final price in yuan (e.g. 1200 or 1200.50)]:FINAL_PRICE:_default' \
+'--cut-ratio=[Override default cut ratio (e.g. 0.6)]:CUT_RATIO:_default' \
+'--currency=[Currency ISO code. Defaults to config value]:CURRENCY:_default' \
+'--source-org=[Source group / org identifier]:SOURCE_ORG:_default' \
+'--source=[Source name (looks up existing source entity, auto-fills cut ratio)]:SOURCE:_default' \
+'--notes=[Notes]:NOTES:_default' \
+'--lead[Create as a lead (not yet accepted)]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(ls)
+_arguments "${_arguments_options[@]}" : \
+'--status=[Filter by status (e.g. lead, accepted, in_progress)]:STATUS:_default' \
+'-a[Show all orders including archived and cancelled]' \
+'--all[Show all orders including archived and cancelled]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+'--status=[Filter by status (e.g. lead, accepted, in_progress)]:STATUS:_default' \
+'-a[Show all orders including archived and cancelled]' \
+'--all[Show all orders including archived and cancelled]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(init)
+_arguments "${_arguments_options[@]}" : \
+'--slug=[Override the slug / folder name used for the project directory]:SLUG:_default' \
+'--title=[Order title (used when creating a new order without an id)]:TITLE:_default' \
+'--quoted-price=[Quoted price in yuan (used when creating a new order)]:QUOTED_PRICE:_default' \
+'--source=[Source name (used when creating a new order)]:SOURCE:_default' \
+'-i[Interactive mode\: prompt for order details]' \
+'--interactive[Interactive mode\: prompt for order details]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug. Omit to create a new order for the current directory:_default' \
+&& ret=0
+;;
+(price)
+_arguments "${_arguments_options[@]}" : \
+'--amount=[New final price in yuan (e.g. 1200 or 1200.50)]:AMOUNT:_default' \
+'--reason=[Optional reason for the price change]:REASON:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(change)
+_arguments "${_arguments_options[@]}" : \
+'--message=[Description of the requirement change]:MESSAGE:_default' \
+'--delta=[Price delta in yuan (positive = increase, negative = decrease). E.g. 300 means ¥300]:DELTA:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(note)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_text -- Order id or slug, OR the note text when used alone (context resolves id):_default' \
+'::text_if_id -- Note text (when the first positional is the order id):_default' \
+&& ret=0
+;;
+(tag)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+'*::tags -- Tags to add (space-separated):_default' \
+&& ret=0
+;;
+(cut)
+_arguments "${_arguments_options[@]}" : \
+'--ratio=[New cut ratio (0.0 – 1.0)]:RATIO:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(status)
+_arguments "${_arguments_options[@]}" : \
+'--yes[Skip confirmation prompt]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_status -- Order id or slug, OR target status when used alone (context resolves id):_default' \
+'::status_if_id -- Target status (when the first positional is the order id):_default' \
+&& ret=0
+;;
+(paid)
+_arguments "${_arguments_options[@]}" : \
+'--on=[Override the paid date (unix timestamp). Defaults to now]:ON:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(archive)
+_arguments "${_arguments_options[@]}" : \
+'--yes[Skip confirmation prompt]' \
+'--purge[Delete local files instead of moving them to archive_root]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(lead)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__lead_commands" \
+"*::: :->lead" \
+&& ret=0
+
+    case $state in
+    (lead)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-lead-command-$line[1]:"
+        case $line[1] in
+            (promote)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':id -- Order id or slug:_default' \
+&& ret=0
+;;
+(drop)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':id -- Order id or slug:_default' \
+&& ret=0
+;;
+(ls)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__lead__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-lead-help-command-$line[1]:"
+        case $line[1] in
+            (promote)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(drop)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(cd)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(doctor)
+_arguments "${_arguments_options[@]}" : \
+'--fix[Attempt to fix broken paths by searching dev_root and archive_root]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(pack)
+_arguments "${_arguments_options[@]}" : \
+'--format=[Archive format\: "zip" (default) or "tar.zst"]:FORMAT:_default' \
+'--output=[Override the output path (default\: \$TMPDIR/gig-<slug>.<ext>)]:OUTPUT:_files' \
+'--dry-run[Print the file list without creating the archive]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(deliver)
+_arguments "${_arguments_options[@]}" : \
+'--uploader=[Uploader name (overrides config default_uploader)]:UPLOADER:_default' \
+'--format=[Archive format used when packing\: "zip" or "tar.zst" (defaults to config pack.default_format)]:FORMAT:_default' \
+'--resend[Skip pack step and re-upload the most recent local archive]' \
+'--dry-run[Print what would be packed/uploaded without actually doing it]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::id -- Order id or slug (omit to use context from current directory):_default' \
+&& ret=0
+;;
+(stats)
+_arguments "${_arguments_options[@]}" : \
+'--range=[Date range as YYYY-MM..YYYY-MM (defaults to current month)]:RANGE:_default' \
+'--by=[Group breakdown by "tag" or "client"]:tag|client:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(export)
+_arguments "${_arguments_options[@]}" : \
+'--output=[Output file path (defaults to stdout)]:OUTPUT:_files' \
+'-h[Print help]' \
+'--help[Print help]' \
+':format -- Format\: csv or json:_default' \
+&& ret=0
+;;
+(client)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__client_commands" \
+"*::: :->client" \
+&& ret=0
+
+    case $state in
+    (client)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-client-command-$line[1]:"
+        case $line[1] in
+            (ls)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':id -- Client id:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__client__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-client-help-command-$line[1]:"
+        case $line[1] in
+            (ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(template)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__template_commands" \
+"*::: :->template" \
+&& ret=0
+
+    case $state in
+    (template)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-template-command-$line[1]:"
+        case $line[1] in
+            (ls)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Template name (without extension), e.g. "project-readme":_default' \
+&& ret=0
+;;
+(edit)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Template name (without extension), e.g. "project-readme":_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__template__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-template-help-command-$line[1]:"
+        case $line[1] in
+            (ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(edit)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(config)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__config_commands" \
+"*::: :->config" \
+&& ret=0
+
+    case $state in
+    (config)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-config-command-$line[1]:"
+        case $line[1] in
+            (get)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':key -- Key in dot-notation, e.g. "general.dev_root":_default' \
+&& ret=0
+;;
+(set)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':key -- Key in dot-notation:_default' \
+':value -- Value to set:_default' \
+&& ret=0
+;;
+(edit)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__config__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-config-help-command-$line[1]:"
+        case $line[1] in
+            (get)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(set)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(edit)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(import)
+_arguments "${_arguments_options[@]}" : \
+'--status=[Force a specific status for all imported projects (e.g. archived, in_progress)]:STATUS:_default' \
+'-i[Prompt to confirm/override each inferred field]' \
+'--interactive[Prompt to confirm/override each inferred field]' \
+'--relocate[Move the directory to dev_root or archive_root after import (by status)]' \
+'--dry-run[Print what would happen without writing to the database]' \
+'--force[Re-import even if the path is already in the database (deletes the old entry first)]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths -- Directories to import (defaults to current directory if omitted):_files' \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" : \
+'--yes[Skip confirmation prompt]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id -- Order id or slug:_default' \
+&& ret=0
+;;
+(upload)
+_arguments "${_arguments_options[@]}" : \
+'--uploader=[Override the uploader (e.g. s3\:aliyun-hk, rclone\:r2)]:UPLOADER:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::files -- Files to upload:_files' \
+&& ret=0
+;;
+(backup)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(completion)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell -- Target shell type:(zsh)' \
+&& ret=0
+;;
+(source)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__source_commands" \
+"*::: :->source" \
+&& ret=0
+
+    case $state in
+    (source)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-source-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+'--name=[Source name (e.g. "PlatformA")]:NAME:_default' \
+'--cut-ratio=[Commission cut ratio (0.0–1.0, e.g. 0.6 means 60% goes to you)]:CUT_RATIO:_default' \
+'--notes=[Optional notes]:NOTES:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(ls)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__source__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-source-help-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-command-$line[1]:"
+        case $line[1] in
+            (new)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(init)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(price)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(change)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(note)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(tag)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(cut)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(status)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(paid)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(archive)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(lead)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__lead_commands" \
+"*::: :->lead" \
+&& ret=0
+
+    case $state in
+    (lead)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-lead-command-$line[1]:"
+        case $line[1] in
+            (promote)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(drop)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(cd)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(doctor)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(pack)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(deliver)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(stats)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(export)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(client)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__client_commands" \
+"*::: :->client" \
+&& ret=0
+
+    case $state in
+    (client)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-client-command-$line[1]:"
+        case $line[1] in
+            (ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(template)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__template_commands" \
+"*::: :->template" \
+&& ret=0
+
+    case $state in
+    (template)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-template-command-$line[1]:"
+        case $line[1] in
+            (ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(edit)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(config)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__config_commands" \
+"*::: :->config" \
+&& ret=0
+
+    case $state in
+    (config)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-config-command-$line[1]:"
+        case $line[1] in
+            (get)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(set)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(edit)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(import)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(upload)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(backup)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(completion)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(source)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__source_commands" \
+"*::: :->source" \
+&& ret=0
+
+    case $state in
+    (source)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-source-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(ls)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_gig_commands] )) ||
+_gig_commands() {
+    local commands; commands=(
+'new:Create a new order' \
+'ls:List orders' \
+'list:List orders' \
+'show:Show a single order in detail' \
+'init:Initialise a project folder for an accepted order' \
+'price:Update the final price of an order' \
+'change:Record a requirement change' \
+'note:Append a note to an order' \
+'tag:Add tags to an order' \
+'cut:Update the cut ratio for an order' \
+'status:Force-set the status of an order' \
+'paid:Mark an order as paid' \
+'archive:Archive an order (move project folder to archive root)' \
+'lead:Lead subcommands (promote / drop / ls)' \
+'cd:Print the dev_path of an order (for shell \`cd\`)' \
+'doctor:Run consistency checks on paths and data' \
+'pack:Pack a project into an archive (zip or tar.zst)' \
+'deliver:Pack, upload, record artifact, and transition order to delivered' \
+'stats:Show income statistics' \
+'export:Export orders to CSV or JSON' \
+'client:Client subcommands (ls / show)' \
+'template:Template subcommands (ls / show / edit)' \
+'config:Config subcommands (get / set / edit)' \
+'import:Import existing project directories into the database' \
+'delete:Delete an order from the database' \
+'upload:Upload arbitrary files to the configured cloud storage' \
+'backup:Snapshot the database to the backups directory' \
+'completion:Print shell completion script' \
+'source:Source subcommands (add / ls)' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__archive_commands] )) ||
+_gig__subcmd__archive_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig archive commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__backup_commands] )) ||
+_gig__subcmd__backup_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig backup commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__cd_commands] )) ||
+_gig__subcmd__cd_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig cd commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__change_commands] )) ||
+_gig__subcmd__change_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig change commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__client_commands] )) ||
+_gig__subcmd__client_commands() {
+    local commands; commands=(
+'ls:List all clients' \
+'show:Show a client'\''s details and their orders' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig client commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__client__subcmd__help_commands] )) ||
+_gig__subcmd__client__subcmd__help_commands() {
+    local commands; commands=(
+'ls:List all clients' \
+'show:Show a client'\''s details and their orders' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig client help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__client__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__client__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig client help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__client__subcmd__help__subcmd__ls_commands] )) ||
+_gig__subcmd__client__subcmd__help__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig client help ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__client__subcmd__help__subcmd__show_commands] )) ||
+_gig__subcmd__client__subcmd__help__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig client help show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__client__subcmd__ls_commands] )) ||
+_gig__subcmd__client__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig client ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__client__subcmd__show_commands] )) ||
+_gig__subcmd__client__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig client show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__completion_commands] )) ||
+_gig__subcmd__completion_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig completion commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config_commands] )) ||
+_gig__subcmd__config_commands() {
+    local commands; commands=(
+'get:Print a config value (dot-notation key)' \
+'set:Set a config value and save' \
+'edit:Open config.toml in \$EDITOR' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig config commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config__subcmd__edit_commands] )) ||
+_gig__subcmd__config__subcmd__edit_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig config edit commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config__subcmd__get_commands] )) ||
+_gig__subcmd__config__subcmd__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig config get commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config__subcmd__help_commands] )) ||
+_gig__subcmd__config__subcmd__help_commands() {
+    local commands; commands=(
+'get:Print a config value (dot-notation key)' \
+'set:Set a config value and save' \
+'edit:Open config.toml in \$EDITOR' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig config help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config__subcmd__help__subcmd__edit_commands] )) ||
+_gig__subcmd__config__subcmd__help__subcmd__edit_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig config help edit commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config__subcmd__help__subcmd__get_commands] )) ||
+_gig__subcmd__config__subcmd__help__subcmd__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig config help get commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__config__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig config help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config__subcmd__help__subcmd__set_commands] )) ||
+_gig__subcmd__config__subcmd__help__subcmd__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig config help set commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__config__subcmd__set_commands] )) ||
+_gig__subcmd__config__subcmd__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig config set commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__cut_commands] )) ||
+_gig__subcmd__cut_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig cut commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__delete_commands] )) ||
+_gig__subcmd__delete_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig delete commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__deliver_commands] )) ||
+_gig__subcmd__deliver_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig deliver commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__doctor_commands] )) ||
+_gig__subcmd__doctor_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig doctor commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__export_commands] )) ||
+_gig__subcmd__export_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig export commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help_commands] )) ||
+_gig__subcmd__help_commands() {
+    local commands; commands=(
+'new:Create a new order' \
+'ls:List orders' \
+'show:Show a single order in detail' \
+'init:Initialise a project folder for an accepted order' \
+'price:Update the final price of an order' \
+'change:Record a requirement change' \
+'note:Append a note to an order' \
+'tag:Add tags to an order' \
+'cut:Update the cut ratio for an order' \
+'status:Force-set the status of an order' \
+'paid:Mark an order as paid' \
+'archive:Archive an order (move project folder to archive root)' \
+'lead:Lead subcommands (promote / drop / ls)' \
+'cd:Print the dev_path of an order (for shell \`cd\`)' \
+'doctor:Run consistency checks on paths and data' \
+'pack:Pack a project into an archive (zip or tar.zst)' \
+'deliver:Pack, upload, record artifact, and transition order to delivered' \
+'stats:Show income statistics' \
+'export:Export orders to CSV or JSON' \
+'client:Client subcommands (ls / show)' \
+'template:Template subcommands (ls / show / edit)' \
+'config:Config subcommands (get / set / edit)' \
+'import:Import existing project directories into the database' \
+'delete:Delete an order from the database' \
+'upload:Upload arbitrary files to the configured cloud storage' \
+'backup:Snapshot the database to the backups directory' \
+'completion:Print shell completion script' \
+'source:Source subcommands (add / ls)' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__archive_commands] )) ||
+_gig__subcmd__help__subcmd__archive_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help archive commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__backup_commands] )) ||
+_gig__subcmd__help__subcmd__backup_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help backup commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__cd_commands] )) ||
+_gig__subcmd__help__subcmd__cd_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help cd commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__change_commands] )) ||
+_gig__subcmd__help__subcmd__change_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help change commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__client_commands] )) ||
+_gig__subcmd__help__subcmd__client_commands() {
+    local commands; commands=(
+'ls:List all clients' \
+'show:Show a client'\''s details and their orders' \
+    )
+    _describe -t commands 'gig help client commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__client__subcmd__ls_commands] )) ||
+_gig__subcmd__help__subcmd__client__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help client ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__client__subcmd__show_commands] )) ||
+_gig__subcmd__help__subcmd__client__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help client show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__completion_commands] )) ||
+_gig__subcmd__help__subcmd__completion_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help completion commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__config_commands] )) ||
+_gig__subcmd__help__subcmd__config_commands() {
+    local commands; commands=(
+'get:Print a config value (dot-notation key)' \
+'set:Set a config value and save' \
+'edit:Open config.toml in \$EDITOR' \
+    )
+    _describe -t commands 'gig help config commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__config__subcmd__edit_commands] )) ||
+_gig__subcmd__help__subcmd__config__subcmd__edit_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help config edit commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__config__subcmd__get_commands] )) ||
+_gig__subcmd__help__subcmd__config__subcmd__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help config get commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__config__subcmd__set_commands] )) ||
+_gig__subcmd__help__subcmd__config__subcmd__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help config set commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__cut_commands] )) ||
+_gig__subcmd__help__subcmd__cut_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help cut commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__delete_commands] )) ||
+_gig__subcmd__help__subcmd__delete_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help delete commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__deliver_commands] )) ||
+_gig__subcmd__help__subcmd__deliver_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help deliver commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__doctor_commands] )) ||
+_gig__subcmd__help__subcmd__doctor_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help doctor commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__export_commands] )) ||
+_gig__subcmd__help__subcmd__export_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help export commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__import_commands] )) ||
+_gig__subcmd__help__subcmd__import_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help import commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__init_commands] )) ||
+_gig__subcmd__help__subcmd__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help init commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__lead_commands] )) ||
+_gig__subcmd__help__subcmd__lead_commands() {
+    local commands; commands=(
+'promote:Promote a lead to negotiating' \
+'drop:Drop a lead (cancel it)' \
+'ls:List all leads' \
+    )
+    _describe -t commands 'gig help lead commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__lead__subcmd__drop_commands] )) ||
+_gig__subcmd__help__subcmd__lead__subcmd__drop_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help lead drop commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__lead__subcmd__ls_commands] )) ||
+_gig__subcmd__help__subcmd__lead__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help lead ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__lead__subcmd__promote_commands] )) ||
+_gig__subcmd__help__subcmd__lead__subcmd__promote_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help lead promote commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__ls_commands] )) ||
+_gig__subcmd__help__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__new_commands] )) ||
+_gig__subcmd__help__subcmd__new_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help new commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__note_commands] )) ||
+_gig__subcmd__help__subcmd__note_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help note commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__pack_commands] )) ||
+_gig__subcmd__help__subcmd__pack_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help pack commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__paid_commands] )) ||
+_gig__subcmd__help__subcmd__paid_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help paid commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__price_commands] )) ||
+_gig__subcmd__help__subcmd__price_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help price commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__show_commands] )) ||
+_gig__subcmd__help__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__source_commands] )) ||
+_gig__subcmd__help__subcmd__source_commands() {
+    local commands; commands=(
+'add:Add a new source' \
+'ls:List all sources' \
+    )
+    _describe -t commands 'gig help source commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__source__subcmd__add_commands] )) ||
+_gig__subcmd__help__subcmd__source__subcmd__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help source add commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__source__subcmd__ls_commands] )) ||
+_gig__subcmd__help__subcmd__source__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help source ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__stats_commands] )) ||
+_gig__subcmd__help__subcmd__stats_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help stats commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__status_commands] )) ||
+_gig__subcmd__help__subcmd__status_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help status commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__tag_commands] )) ||
+_gig__subcmd__help__subcmd__tag_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help tag commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__template_commands] )) ||
+_gig__subcmd__help__subcmd__template_commands() {
+    local commands; commands=(
+'ls:List available templates' \
+'show:Print template content to stdout' \
+'edit:Open template in \$EDITOR (copies embedded default if not in user dir yet)' \
+    )
+    _describe -t commands 'gig help template commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__template__subcmd__edit_commands] )) ||
+_gig__subcmd__help__subcmd__template__subcmd__edit_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help template edit commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__template__subcmd__ls_commands] )) ||
+_gig__subcmd__help__subcmd__template__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help template ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__template__subcmd__show_commands] )) ||
+_gig__subcmd__help__subcmd__template__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help template show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__upload_commands] )) ||
+_gig__subcmd__help__subcmd__upload_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help upload commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__import_commands] )) ||
+_gig__subcmd__import_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig import commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__init_commands] )) ||
+_gig__subcmd__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig init commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead_commands] )) ||
+_gig__subcmd__lead_commands() {
+    local commands; commands=(
+'promote:Promote a lead to negotiating' \
+'drop:Drop a lead (cancel it)' \
+'ls:List all leads' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig lead commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead__subcmd__drop_commands] )) ||
+_gig__subcmd__lead__subcmd__drop_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig lead drop commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead__subcmd__help_commands] )) ||
+_gig__subcmd__lead__subcmd__help_commands() {
+    local commands; commands=(
+'promote:Promote a lead to negotiating' \
+'drop:Drop a lead (cancel it)' \
+'ls:List all leads' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig lead help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead__subcmd__help__subcmd__drop_commands] )) ||
+_gig__subcmd__lead__subcmd__help__subcmd__drop_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig lead help drop commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__lead__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig lead help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead__subcmd__help__subcmd__ls_commands] )) ||
+_gig__subcmd__lead__subcmd__help__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig lead help ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead__subcmd__help__subcmd__promote_commands] )) ||
+_gig__subcmd__lead__subcmd__help__subcmd__promote_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig lead help promote commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead__subcmd__ls_commands] )) ||
+_gig__subcmd__lead__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig lead ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__lead__subcmd__promote_commands] )) ||
+_gig__subcmd__lead__subcmd__promote_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig lead promote commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__ls_commands] )) ||
+_gig__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__new_commands] )) ||
+_gig__subcmd__new_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig new commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__note_commands] )) ||
+_gig__subcmd__note_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig note commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__pack_commands] )) ||
+_gig__subcmd__pack_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig pack commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__paid_commands] )) ||
+_gig__subcmd__paid_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig paid commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__price_commands] )) ||
+_gig__subcmd__price_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig price commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__show_commands] )) ||
+_gig__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__source_commands] )) ||
+_gig__subcmd__source_commands() {
+    local commands; commands=(
+'add:Add a new source' \
+'ls:List all sources' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig source commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__source__subcmd__add_commands] )) ||
+_gig__subcmd__source__subcmd__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig source add commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__source__subcmd__help_commands] )) ||
+_gig__subcmd__source__subcmd__help_commands() {
+    local commands; commands=(
+'add:Add a new source' \
+'ls:List all sources' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig source help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__source__subcmd__help__subcmd__add_commands] )) ||
+_gig__subcmd__source__subcmd__help__subcmd__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig source help add commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__source__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__source__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig source help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__source__subcmd__help__subcmd__ls_commands] )) ||
+_gig__subcmd__source__subcmd__help__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig source help ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__source__subcmd__ls_commands] )) ||
+_gig__subcmd__source__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig source ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__stats_commands] )) ||
+_gig__subcmd__stats_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig stats commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__status_commands] )) ||
+_gig__subcmd__status_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig status commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__tag_commands] )) ||
+_gig__subcmd__tag_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig tag commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template_commands] )) ||
+_gig__subcmd__template_commands() {
+    local commands; commands=(
+'ls:List available templates' \
+'show:Print template content to stdout' \
+'edit:Open template in \$EDITOR (copies embedded default if not in user dir yet)' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig template commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template__subcmd__edit_commands] )) ||
+_gig__subcmd__template__subcmd__edit_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig template edit commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template__subcmd__help_commands] )) ||
+_gig__subcmd__template__subcmd__help_commands() {
+    local commands; commands=(
+'ls:List available templates' \
+'show:Print template content to stdout' \
+'edit:Open template in \$EDITOR (copies embedded default if not in user dir yet)' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig template help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template__subcmd__help__subcmd__edit_commands] )) ||
+_gig__subcmd__template__subcmd__help__subcmd__edit_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig template help edit commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__template__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig template help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template__subcmd__help__subcmd__ls_commands] )) ||
+_gig__subcmd__template__subcmd__help__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig template help ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template__subcmd__help__subcmd__show_commands] )) ||
+_gig__subcmd__template__subcmd__help__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig template help show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template__subcmd__ls_commands] )) ||
+_gig__subcmd__template__subcmd__ls_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig template ls commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__template__subcmd__show_commands] )) ||
+_gig__subcmd__template__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig template show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__upload_commands] )) ||
+_gig__subcmd__upload_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig upload commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_gig" ]; then
+    _gig "$@"
+else
+    compdef _gig gig
+fi

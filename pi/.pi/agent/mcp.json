@@ -1,9 +1,52 @@
 {
   "mcpServers": {
+    "websearch": {
+      "url": "https://mcp.exa.ai/mcp?tools=web_search_exa",
+      "lifecycle": "lazy"
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "lifecycle": "lazy"
+    },
+    "grep_app": {
+      "url": "https://mcp.grep.app",
+      "lifecycle": "lazy"
+    },
     "agentmemory": {
       "command": "npx",
-      "args": ["-y", "@agentmemory/mcp"],
-      "lifecycle": "keep-alive"
+      "args": [
+        "-y",
+        "@agentmemory/mcp@0.9.24"
+      ],
+      "lifecycle": "lazy",
+      "directTools": [
+        "memory_recall",
+        "memory_smart_search",
+        "memory_save",
+        "memory_file_history",
+        "memory_patterns",
+        "memory_timeline",
+        "memory_profile",
+        "memory_lesson_recall",
+        "memory_lesson_save",
+        "memory_verify"
+      ],
+      "excludeTools": [
+        "memory_export",
+        "memory_governance_delete",
+        "memory_heal",
+        "memory_mesh_sync",
+        "memory_slot_delete",
+        "memory_slot_replace",
+        "memory_claude_bridge_sync"
+      ]
+    },
+    "zotero": {
+      "command": "zotero-mcp",
+      "env": {
+        "ZOTERO_LOCAL": "true"
+      },
+      "lifecycle": "lazy"
     }
   }
 }

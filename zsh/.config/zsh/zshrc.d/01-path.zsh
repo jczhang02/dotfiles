@@ -77,6 +77,19 @@ export R_LIBS_USER="/home/jc/.local/share/R/"
 
 export ZSQLITE_ZSH_SRC_VERSION=5.9
 
+export OPENCODE_EXPERIMENTAL_WORKSPACES=true
+export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true
+export OPENCODE_EXPERIMENTAL_PLAN_MODE=true
+export OPENCODE_EXPERIMENTAL_SCOUT=true
+export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
+export OPENCODE_EXPERIMENTAL_OXFMT=true
+export OPENCODE_EXPERIMENTAL_ICON_DISCOVERY=true
+export OPENCODE_EXPERIMENTAL_NATIVE_LLM=true
+
+export MULTICA_WORKSPACES_ROOT="$HOME/.local/share/multica/workspaces"
+
 
 ## Starship
 # export STARSHIP_CONFIG="/home/jc/.config/starship/starship.toml"
+#
+#

@@ -42,7 +42,7 @@
     <test name="family" qual="any">
       <string>monospace</string>
     </test>
-    <edit binding="weak" mode="prepend" name="family">
+    <edit binding="strong" mode="prepend" name="family">
       <string>Iosevka NFM</string>
       <string>Symbols Nerd Font</string>
       <string>LXGW WenKai Mono</string>
@@ -56,7 +56,7 @@
     <test name="family" qual="any">
       <string>ui-monospace</string>
     </test>
-    <edit binding="weak" mode="prepend" name="family">
+    <edit binding="strong" mode="prepend" name="family">
       <string>Iosevka NFM</string>
       <string>Symbols Nerd Font</string>
       <string>LXGW WenKai Mono</string>

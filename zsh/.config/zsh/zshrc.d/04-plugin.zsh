@@ -39,7 +39,7 @@ zi light-mode for \
     endaaman/lxd-completion-zsh
 
 zi ice as"completion" blockf
-zi snippet https://github.com/ohmyzsh/ohmyzsh/blob/master/plugins/rust/_rustc
+zi snippet OMZP::rust/_rustc
 
 zpcompinit; zpcdreplay
 

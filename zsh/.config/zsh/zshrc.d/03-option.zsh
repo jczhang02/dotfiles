@@ -192,7 +192,10 @@ zstyle ':fzf-tab:complete:cd:*' popup-pad 0 3
 zstyle ':fzf-tab:*' fzf-flags --color=light
 zstyle ':fzf-tab:*' popup-min-size 100 8
 
-zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
+# ftb-tmux-popup 在 A3 grouped session 下浮到 main 而非当前 view-* client,
+# 表现为按 Tab 卡死 (popup 进程在另一 session 无人交互). 改用行内 fzf.
+# 复现: tmux popup 进程残留 + /tmp/zsh-fzf-tab-jc/ 不清, 见 2026-05-19 调试.
+# zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 zstyle ':fzf-tab:*' switch-group ',' '.'
 
 zstyle ':fzf-tab:*' default-color $'\033[94m'

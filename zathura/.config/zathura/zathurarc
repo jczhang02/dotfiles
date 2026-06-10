@@ -66,5 +66,19 @@ set recolor-darkcolor           "#f8f8f2" # Foreground
 #
 # Startup options
 #
-set adjust-open width
-set recolor false
+
+set adjust-open best-fit
+set page-padding 5
+set pages-per-row 1
+set scroll-page-aware "true"
+set scroll-full-overlap 0.01
+set scroll-step 100
+
+# vimtex synctex + inverse search
+set synctex true
+set synctex-editor-command "nvim --headless -c \"VimtexInverseSearch %{line} '%{input}'\""
+set incremental-search true
+
+# PDF reload: signal backend listens for SIGHUP. vimtex sends SIGHUP after compile.
+# (glib/inotify backend fails when latexmk replaces inode via unlink+create.)
+set filemonitor "signal"
