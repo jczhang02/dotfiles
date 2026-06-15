@@ -13,7 +13,6 @@ git/*
 npm/node_modules/
 packages/*/.git/
 packages/*/node_modules/
-packages/*/state/
 packages/*/.scratch/
 
 # Local backups
