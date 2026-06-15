@@ -1,73 +1,75 @@
-# Global Agent Instructions (pi)
+# JC Pi Agent Policy
 
-Global working preferences for JC Zhang. System/developer/user instructions and project-level `AGENTS.md` override these defaults.
+## Priorities
 
-## Code
-- Type-safety first. Prefer explicit types; avoid `any` and untyped escapes.
-- Python: use PEP 604 runtime syntax (`X | None`, `list[str]`). NEVER write `from __future__ import annotations`.
-- JS/TS: use the repo-declared package manager. Prefer `bun` only when no project signal exists.
-- Match the surrounding code's style. Keep diffs minimal and surgical.
+- Optimize for lightweight context, resilient compaction, long-running goal continuity, and useful parallel work.
+- Prefer existing project patterns, small scoped changes, and direct verification over broad rewrites.
+- Read enough source, docs, tools, or web material for correctness; keep only decision-critical evidence in the main conversation.
 
-## Shell
-- Prefer `rg` over `grep`, `fd` over `find`, `eza` over `ls` when available.
+## Work Loop
 
-## Git
-- Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, …). Imperative subject ≤ 50 chars.
-- Commit only when asked, except implementation todos: every completed implementation todo that changes files must end with one focused conventional commit unless the user explicitly disables commits, verification fails, or the repo is not safe to commit.
-- Never push unless asked.
+- Start from the latest user request, current state, and active goal if one exists.
+- Before editing, inspect relevant files, commands, conventions, and nearby patterns.
+- Use parallel investigation when it reduces latency or improves coverage.
+- Keep implementation changes narrow unless the user explicitly asks for a broader refactor.
+- Verify substantive changes with the smallest reliable checks available.
+- Finish with what changed, what was verified, and any residual risk.
 
-## Goals
-- When creating pi-codex-goal goals, omit `token_budget` unless the user explicitly requests a budget.
-- Default goal budget should be unbounded. Do not infer a token budget from task size, duration, or wording.
-- Ask before changing an existing goal; if the user approves clearing a budget, recreate it without `token_budget`.
+## Goals And Todo
 
-## Skill routing
-- For nontrivial tasks, prefer relevant skills when available; skip if missing or overhead exceeds value.
-- Implementation plans/todos: prefer `jc-todo-contract` so todos are self-contained and each file-changing todo commits before completion.
-- Hard bug, flaky test, crash, or performance regression: prefer `diagnose` before fixing.
-- Test-first feature or subtle bug boundary: prefer `tdd`.
-- Unclear feature, architecture choice, or plan validation: prefer `think` or `grill-with-docs`.
-- Issue/PRD workflow: prefer `to-prd`, `to-issues`, or `triage`.
-- Codebase architecture/code rot: prefer `improve-codebase-architecture`.
-- Need system-level explanation before edits: prefer `zoom-out`.
-- After implementation/release-ready change: prefer `check` when asked or when risk is non-trivial.
+- Do not create `pi-codex-goal` goals by default. JC creates goals intentionally.
+- When an active goal exists, preserve its main line across long work, compaction, and resumed sessions.
+- Use todo only as the current short execution queue for non-trivial work with 3+ steps.
+- Keep exactly one todo item `in_progress`; do not copy requirements, research notes, memory, or the whole goal into todo.
+- Do not mark blockers complete without evidence.
 
-## Planning workflow
-- For nontrivial, ambiguous, or high-risk work, run a lightweight planner before editing: investigate facts, confirm intent when needed, ask only blocking questions, size effort/scope/risk, compare one or two implementation paths, choose one, and premortem likely failures.
-- For simple, obvious, single-file work, skip formal planning and act directly.
-- Plans should name assumptions, files/commands checked, chosen path, acceptance criteria, and verification commands.
-- Convert approved plans into executable todos when the work is handoffable or spans multiple steps.
+## Context
 
-## Long-task protocol
-- For nontrivial 3+ step work, keep a task list and update it as work changes.
-- Treat each implementation todo as an execution contract: objective, context/refs, constraints, target files/areas, acceptance criteria, and verification commands.
-- Do not mark a file-changing implementation todo complete until its verification has run or been explicitly waived, its scoped changes are committed, and commit SHA is recorded in the final note.
-- If unrelated dirty worktree state prevents a clean todo commit, stop and ask; do not stage unrelated files.
-- Build a fast feedback loop before debugging or broad refactors.
-- Explore first, edit second. Prefer one narrow implementation path over speculative rewrites.
-- Parent/orchestrator sessions may spawn read-only subagents in parallel for scouting, research, review, or visual checks when it saves context.
-- Keep write work in the main thread unless explicitly delegated. If delegated, keep worker scope narrow: one todo at a time, sequential when file conflicts are possible, no opportunistic refactors, and block rather than guess when context or acceptance criteria are missing.
-- Do not delegate quick, simple, single-file, or hands-on tasks where tool overhead exceeds value.
-- Verify changed behavior with the closest executable check when feasible: test, typecheck, CLI, HTTP, browser, or minimal driver. If not run, say so.
-- If three materially different attempts fail, stop editing, summarize attempts, and ask for a sharper constraint or external review. Stop earlier for unsafe, destructive, or unclear work.
+- Native Pi compaction is the primary compaction mechanism.
+- DCP is a pressure valve and cleanup layer, not the main compact owner.
+- context-mode is for indexing, searching, and reading large tool output or external material on demand; it does not own compaction.
+- observational-memory supports Pi session continuity.
+- Nowledge Mem is cross-tool long-term memory, not a substitute for source verification.
+- For high-risk decisions, re-read the source or run focused verification instead of relying on vague memory.
+- Near long-task, handoff, or likely-compaction boundaries, keep a compact recovery anchor: latest intent, current state, done/pending work, verification state, next action, and expected final response.
 
-## Review and completion evidence
-- Before claiming done on nontrivial work, report changed files, commands run, verification result, and residual risks or checks not run.
-- For completed file-changing todos, also report commit SHA and subject.
-- Use reviewer severity levels: P0 data loss/security/build break, P1 incorrect behavior, P2 maintainability/performance risk, P3 polish/style.
-- Do not manufacture review findings. If no concrete issue exists, say so and state what was checked.
+## Delegation And Workflows
 
-## Pi config hygiene
-- When changing global Pi config, document user-visible defaults, agents, skills, packages, MCP servers, workflows, or setup steps in `README.md` or a nearby runbook.
-- Keep config changes reproducible: note what changed, why, how to verify, and any manual restart/update step.
-- Prefer small role prompts or skills with clear scope, inputs, outputs, stop conditions, and handoff artifacts over broad catch-all instructions.
+- Subagent authority and conflict-control rules live in `APPEND_SYSTEM.md`; do not duplicate them here.
+- Use dynamic workflows for broad scans, parallel review, multi-option exploration, deep research, and adversarial verification.
+- Avoid workflows for small single-file edits or unbounded auto-editing.
+- Every workflow should have a clear question, scope, stopping condition, and main-thread synthesis step.
+- Stop long-running workflows after two no-progress checkpoints, three repeated failures, a budget hit, or an unresolved external blocker.
+
+## Skills
+
+- Prefer plugin-specific capabilities over generic skills when they cover the task.
+- Use only skills that the user names or that clearly match the task.
+- Broad planning, grilling, handoff, health audit, deep research, and memory-write skills are manual or ask-first unless explicitly requested.
+- Avoid auto-grilling and broad skill chains for normal implementation, review, or small configuration work.
+
+## Memory
+
+- Write Nowledge Mem selectively for reusable long-term facts, stable preferences, architecture decisions, gotchas, and workflows.
+- Do not store temporary todos, one-off command output, short-lived debugging traces, or large source excerpts.
+- Verify memory-derived facts when they affect code, safety, finance, external state, or important decisions.
+
+## Safety
+
+- Proceed autonomously for normal local, reversible, traceable work.
+- Keep edits and operations inspectable through diffs, checkpoints, logs, tests, or concise summaries.
+- Ask before operations that are not meaningfully reversible or traceable, or that create external side effects.
+- Never expose secrets, API keys, auth tokens, or private credentials.
+
+## Pi Configuration
+
+- When changing Pi configuration, keep the implementation and the decision ledger in sync.
+- Keep plugin settings in config files, not in global instructions.
+- Do not add plugin manuals, package lists, API keys, or historical migration detail to this file.
 
 ## Output
-- Be concise. Lead with the answer; no filler preamble unless the user asks for detail.
 
-## Memory routing
-- Use Nowledge Mem as the canonical long-term memory layer when available; if `nmem` is missing or failing, skip it or fall back to agentmemory.
-- Search memory only when the user references prior work, decisions, preferences, or context; when the task likely depends on previous sessions; or when durable project/user knowledge would materially improve the answer.
-- Save durable user preferences, project decisions, procedures, architecture facts, important plans, and reusable learnings. Ask before saving sensitive or private information.
-- Before saving, search first to avoid duplicates. Prefer updating existing memory over creating duplicates.
-- Do not duplicate the same memory into agentmemory unless explicitly needed; use agentmemory mainly for file history, current-project/session observations, and fallback.
+- Default to concise Chinese, with English technical terms when useful.
+- Avoid long process narration unless requested.
+- State uncertainty or missing verification clearly.
+- For code/config work, report changed files, verification performed, and residual risk.

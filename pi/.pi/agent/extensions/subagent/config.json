@@ -1,0 +1,12 @@
+{
+  "asyncByDefault": true,
+  "forceTopLevelAsync": false,
+  "maxSubagentDepth": 1,
+  "parallel": {
+    "maxTasks": 6,
+    "concurrency": 4
+  },
+  "intercomBridge": {
+    "mode": "off"
+  }
+}

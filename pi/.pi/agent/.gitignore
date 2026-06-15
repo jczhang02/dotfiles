@@ -1,12 +1,20 @@
-# pi runtime state & secrets — never commit (belt-and-suspenders;
-# with `stow --no-folding` these live as real files in ~/.pi/agent, not here).
+# Pi agent secrets/state/cache. Keep config/source only.
 auth.json
-models.json
-npm/
-git/
 sessions/
-folder-history/
-.skill-lock.json
+run-history.jsonl
+trust.json
 mcp-cache.json
-debug.log
-*.log
+backups/
+inspect/
+
+# Large/runtime dependency trees
+git/*
+!git/.gitignore
+npm/node_modules/
+packages/*/.git/
+packages/*/node_modules/
+packages/*/state/
+packages/*/.scratch/
+
+# Local backups
+*.bak-*

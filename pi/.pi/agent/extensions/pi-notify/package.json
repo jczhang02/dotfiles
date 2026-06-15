@@ -1,0 +1,19 @@
+{
+  "name": "pi-notify-global-extension",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "node --experimental-strip-types --test test/e2e.test.ts",
+    "check": "node --experimental-strip-types --check index.ts && node --experimental-strip-types --check test/e2e.test.ts",
+    "test:global": "bash test/global-cli.sh",
+    "test": "npm run check && npm run test:e2e && npm run test:global"
+  },
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}

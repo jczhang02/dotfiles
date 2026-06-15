@@ -1,0 +1,37 @@
+{
+  "name": "@complexthings/pi-dynamic-context-pruning",
+  "version": "1.0.7",
+  "description": "PI coding agent extension — Dynamic Context Pruning (DCP)",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "coding-agent",
+    "dynamic-context-pruning",
+    "dcp",
+    "context",
+    "pruning"
+  ],
+  "type": "module",
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "author": {
+    "name": "Greg",
+    "email": "greg.harvell@complexthings.com",
+    "url": "https://github.com/complexthings"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/complexthings/pi-dynamic-context-pruning.git"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*",
+    "@sinclair/typebox": "*"
+  }
+}

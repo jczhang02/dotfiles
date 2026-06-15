@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node"],
+    "typeRoots": ["/home/jc/.pi/agent/npm/node_modules/@types"],
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@earendil-works/pi-coding-agent": ["/opt/pi-coding-agent"],
+      "@earendil-works/pi-ai": ["/home/jc/.pi/agent/npm/node_modules/@earendil-works/pi-ai"],
+      "@earendil-works/pi-tui": ["/home/jc/.pi/agent/npm/node_modules/@earendil-works/pi-tui"]
+    }
+  },
+  "files": ["index.ts", "btw.ts", "btw-ui.ts", "tool-pairs.ts"]
+}
