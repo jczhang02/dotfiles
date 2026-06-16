@@ -43,7 +43,7 @@ export type NotifyConfig = {
 };
 
 type NotifyKind = "done" | "danger" | "error" | "compact" | "test" | "status";
-type NotifyEventName = "agent_end" | "dangerous_tool" | "tool_error" | "compaction";
+type NotifyEventName = "action_required" | "agent_end";
 
 type NotifyPayload = {
 	kind: NotifyKind;
@@ -58,6 +58,7 @@ type RuntimeOptions = {
 	now?: () => number;
 	writeStdout?: (text: string) => void;
 	execFile?: (file: string, args: string[], options?: { timeout?: number }) => Promise<unknown>;
+	schedule?: (callback: () => void | Promise<void>, delayMs: number) => void | Promise<void>;
 	env?: NodeJS.ProcessEnv;
 	platform?: NodeJS.Platform;
 };
@@ -69,9 +70,10 @@ const DEFAULT_CONFIG: NotifyConfig = {
 	historyPath: defaultHistoryPath(),
 	historyMaxEntries: 200,
 	notifyOnAgentEnd: true,
-	notifyOnDangerousTool: true,
+	// Legacy event flags stay in config for compatibility; action-required notifications do not use them directly.
+	notifyOnDangerousTool: false,
 	notifyOnToolError: false,
-	notifyOnCompaction: true,
+	notifyOnCompaction: false,
 	quietSeconds: 10,
 	sound: true,
 	timeoutMs: 10_000,
@@ -80,6 +82,7 @@ const DEFAULT_CONFIG: NotifyConfig = {
 };
 
 const CONFIG_KEYS = Object.keys(DEFAULT_CONFIG) as Array<keyof NotifyConfig>;
+const ACTION_REQUIRED_CHECK_DELAY_MS = 500;
 
 export function defaultConfigPath(): string {
 	return join(homedir(), ".config", "pi-notify", "config.json");
@@ -170,11 +173,11 @@ export function sanitizeTerminalText(value: string): string {
 function titleFor(kind: NotifyKind, project: string): string {
 	switch (kind) {
 		case "done":
-			return `Pi done - ${project}`;
+			return `Pi needs input - ${project}`;
 		case "danger":
 			return `⚠️ Pi tool request - ${project}`;
 		case "error":
-			return `Pi tool failed - ${project}`;
+			return `Pi needs attention - ${project}`;
 		case "compact":
 			return `Pi compacted - ${project}`;
 		case "test":
@@ -193,6 +196,16 @@ export function buildPayload(kind: NotifyKind, cwd: string, message: string): No
 		body: `${message}\nProject: ${project.name} (${project.path})`,
 		urgency,
 	};
+}
+
+function finalAssistantStoppedWithError(messages: unknown): boolean {
+	if (!Array.isArray(messages)) return false;
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const message = messages[i] && typeof messages[i] === "object" ? (messages[i] as Record<string, unknown>) : undefined;
+		if (message?.role !== "assistant") continue;
+		return message.stopReason === "error" || typeof message.errorMessage === "string";
+	}
+	return false;
 }
 
 export function detectDangerousTool(toolName: string, input: unknown, maxPreviewChars = 120): string | null {
@@ -365,15 +378,13 @@ async function appendHistory(payload: NotifyPayload, backend: NotifyBackend, con
 	}
 }
 
-const EVENT_CONFIG_KEYS: Record<NotifyEventName, keyof Pick<NotifyConfig, "notifyOnAgentEnd" | "notifyOnDangerousTool" | "notifyOnToolError" | "notifyOnCompaction">> = {
+const EVENT_CONFIG_KEYS: Record<NotifyEventName, keyof Pick<NotifyConfig, "notifyOnAgentEnd">> = {
+	action_required: "notifyOnAgentEnd",
 	agent_end: "notifyOnAgentEnd",
-	dangerous_tool: "notifyOnDangerousTool",
-	tool_error: "notifyOnToolError",
-	compaction: "notifyOnCompaction",
 };
 
 function renderEvents(config: NotifyConfig): string {
-	return `agent_end=${config.notifyOnAgentEnd}\ndangerous_tool=${config.notifyOnDangerousTool}\ntool_error=${config.notifyOnToolError}\ncompaction=${config.notifyOnCompaction}`;
+	return `action_required=${config.notifyOnAgentEnd}`;
 }
 
 function parseEventName(value: string | undefined): NotifyEventName | undefined {
@@ -414,7 +425,7 @@ function commandHelp(): string {
 		"/notify history   Show local history settings",
 		"/notify history <on|off|clear|path|max> [value]",
 		"/notify events    Show enabled event triggers",
-		"/notify events <agent_end|dangerous_tool|tool_error|compaction> <on|off>",
+		"/notify events <action_required|agent_end> <on|off>",
 		"/notify sound <on|off>    Enable or disable notification sound",
 	].join("\n");
 }
@@ -424,9 +435,18 @@ export default function piNotify(pi: ExtensionAPI, runtime: RuntimeOptions = {})
 	const now = runtime.now ?? (() => Date.now());
 	const writeStdout = runtime.writeStdout ?? ((text: string) => process.stdout.write(text));
 	const runExecFile = runtime.execFile ?? ((file, args, options) => execFile(file, args, options));
+	const schedule =
+		runtime.schedule ??
+		((callback: () => void | Promise<void>, delayMs: number) => {
+			const timer = setTimeout(() => void (async () => callback())().catch(() => {}), delayMs);
+			timer.unref?.();
+		});
 	const env = runtime.env ?? process.env;
 	const os = runtime.platform ?? platform();
 	const lastSent = new Map<string, number>();
+	let runId = 0;
+	let actionRequiredSent = false;
+	let sawToolError = false;
 
 	let config = loadConfig(configPath);
 
@@ -485,30 +505,65 @@ export default function piNotify(pi: ExtensionAPI, runtime: RuntimeOptions = {})
 		if (ctx.hasUI) ctx.ui.setStatus("pi-notify", config.enabled ? "notify:on" : "notify:off");
 	});
 
-	pi.on("agent_end", async (_event, ctx) => {
+	pi.on("agent_start", async () => {
+		runId++;
+		actionRequiredSent = false;
+		sawToolError = false;
+	});
+
+	pi.on("agent_end", async (event, ctx) => {
 		const currentConfig = loadCurrentConfig();
 		if (!currentConfig.notifyOnAgentEnd) return;
-		await notify(buildPayload("done", ctx.cwd, "Ready for input"), ctx, currentConfig);
+		if (actionRequiredSent) return;
+
+		const candidateRunId = runId;
+		const stoppedWithError = finalAssistantStoppedWithError(event.messages);
+		const hadToolError = sawToolError;
+
+		const checkActionRequired = async (): Promise<void> => {
+			await schedule(async () => {
+				const latestConfig = loadCurrentConfig();
+				if (!latestConfig.notifyOnAgentEnd) return;
+				if (candidateRunId !== runId || actionRequiredSent) return;
+
+				let isIdle = true;
+				let hasPendingMessages = false;
+				try {
+					isIdle = typeof ctx.isIdle === "function" ? ctx.isIdle() : true;
+					hasPendingMessages = typeof ctx.hasPendingMessages === "function" ? ctx.hasPendingMessages() : false;
+				} catch {
+					isIdle = false;
+				}
+				if (!isIdle || hasPendingMessages) {
+					await checkActionRequired();
+					return;
+				}
+
+				const attention = stoppedWithError;
+				const body = attention
+					? hadToolError
+						? "Agent stopped after a tool error. Review and decide next step."
+						: "Agent stopped after an error. Review and decide next step."
+					: "Agent stopped. Review result or send next instruction.";
+				actionRequiredSent = true;
+				const sent = await notify({ ...buildPayload(attention ? "error" : "done", ctx.cwd, body), force: true }, ctx, latestConfig);
+				if (!sent) actionRequiredSent = false;
+			}, ACTION_REQUIRED_CHECK_DELAY_MS);
+		};
+
+		await checkActionRequired();
 	});
 
-	pi.on("tool_call", async (event, ctx) => {
-		const currentConfig = loadCurrentConfig();
-		if (!currentConfig.notifyOnDangerousTool) return;
-		const preview = detectDangerousTool(event.toolName, event.input, currentConfig.maxPreviewChars);
-		if (!preview) return;
-		await notify(buildPayload("danger", ctx.cwd, preview), ctx, currentConfig);
+	pi.on("tool_call", async () => {
+		// Tool calls are normal agent work. Native notifications are reserved for action-required states.
 	});
 
-	pi.on("tool_result", async (event, ctx) => {
-		const currentConfig = loadCurrentConfig();
-		if (!currentConfig.notifyOnToolError || !event.isError) return;
-		await notify(buildPayload("error", ctx.cwd, `${event.toolName} failed`), ctx, currentConfig);
+	pi.on("tool_result", async (event) => {
+		if (event.isError) sawToolError = true;
 	});
 
-	pi.on("session_compact", async (_event, ctx) => {
-		const currentConfig = loadCurrentConfig();
-		if (!currentConfig.notifyOnCompaction) return;
-		await notify(buildPayload("compact", ctx.cwd, "Context compacted"), ctx, currentConfig);
+	pi.on("session_compact", async () => {
+		// Successful compaction is background maintenance, not a user action request.
 	});
 
 	pi.registerCommand("notify", {
