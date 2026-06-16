@@ -620,6 +620,9 @@ set -g @resurrect-capture-pane-contents 'on'
 set -g @continuum-save-interval '15'
 set -g @continuum-restore 'on'
 
+
+
+set -g allow-passthrough on
 # -- custom variables ----------------------------------------------------------
 
 # to define a custom #{foo} variable, define a POSIX shell function between the
