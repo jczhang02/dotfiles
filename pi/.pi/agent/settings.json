@@ -1,11 +1,11 @@
 {
-  "lastChangelogVersion": "0.79.4",
+  "lastChangelogVersion": "0.79.5",
   "transport": "auto",
-  "websocketConnectTimeoutMs": 120000,
+  "websocketConnectTimeoutMs": 30000,
   "httpIdleTimeoutMs": 300000,
   "compaction": {
     "enabled": true,
-    "reserveTokens": 32768,
+    "reserveTokens": 24576,
     "keepRecentTokens": 20000
   },
   "packages": [
@@ -57,7 +57,7 @@
     "baseDelayMs": 5000,
     "provider": {
       "maxRetries": 0,
-      "maxRetryDelayMs": 0
+      "maxRetryDelayMs": 60000
     }
   },
   "enabledModels": [
