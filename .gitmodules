@@ -21,3 +21,7 @@
 	url = git@github.com:jczhang02/nvim.git
 	branch = main
 
+[submodule "pi/.pi/agent"]
+	path = pi/.pi/agent
+	url = https://github.com/jczhang02/pi-agent.git
+	branch = main
