@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -u
+
+readonly target=${1:-}
+readonly max_bytes=$((5 * 1024 * 1024))
+
+if [[ -z $target || ( ! -e $target && ! -L $target ) ]]; then
+    printf 'missing: %s\n' "$target"
+    exit 0
+fi
+
+if [[ -d $target ]]; then
+    if command -v tree >/dev/null 2>&1; then
+        tree -C -L 2 --noreport -- "$target" 2>/dev/null
+    elif command -v eza >/dev/null 2>&1; then
+        eza -la --color=always -- "$target" 2>/dev/null
+    else
+        command ls -la -- "$target" 2>/dev/null
+    fi | head -c 1048576
+    exit 0
+fi
+
+if [[ ! -f $target ]]; then
+    file -b -- "$target" 2>/dev/null
+    exit 0
+fi
+
+size=$(stat -c '%s' -- "$target" 2>/dev/null) || exit 0
+if (( size > max_bytes )); then
+    printf '[too large: %s bytes]\n' "$size"
+    file -b -- "$target" 2>/dev/null
+    exit 0
+fi
+
+mime=$(file -b --mime-type -- "$target" 2>/dev/null)
+case $mime in
+    text/* | application/json | application/xml | application/javascript)
+        {
+            highlight --out-format=ansi --line-numbers --line-range=1-300 \
+                --validate-input --max-size="$max_bytes" -- "$target" 2>/dev/null \
+                || bat --color=always --paging=never --style=numbers \
+                    --line-range=:300 -- "$target" 2>/dev/null \
+                || sed -n '1,300p' -- "$target" 2>/dev/null
+        } | head -c 1048576
+        ;;
+    *)
+        printf '[non-text MIME: %s]\n' "$mime"
+        file -b -- "$target" 2>/dev/null
+        ;;
+esac

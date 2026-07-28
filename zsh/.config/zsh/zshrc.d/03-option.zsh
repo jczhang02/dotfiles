@@ -14,7 +14,7 @@ zstyle ':completion:*:complete:*' use-cache true
 zstyle ':completion:*:complete:*' cache-policy _aloxaf_caching_policy
 _aloxaf_caching_policy() {
     # 缓存策略：若不存在或 14 天以前则认定为失效
-    [[ ! -f $1 && -n "$1"(Nm+14) ]]
+    [[ ! -f $1 || -n $1(#qNm+14) ]]
 }
 
 # 补全顺序:
@@ -70,10 +70,6 @@ zstyle ':completion:*:mamba:*' tag-order  '! (|*-)directories' -
 zstyle ':completion:*:conda:*' ignored-patterns 'base|rsyslog'
 zstyle ':completion:*:mamba:*' ignored-patterns 'base|rsyslog'
 
-# 补全第三方 Git 子命令
-# 直接用 git-extras 提供的补全更好
-# zstyle ':completion:*:*:git:*' user-commands ${${(M)${(k)commands}:#git-*}/git-/}
-
 # zwc 什么的忽略掉吧
 # FIXME: 导致 zmodload 的补全结果出现其他文件
 # zstyle ':completion:*:*:*:*'   file-patterns '^*.(zwc|pyc):compiled-files' '*:all-files'
@@ -117,7 +113,7 @@ setopt extended_glob
 setopt no_nomatch
 
 ## spell check
-setopt correct
+unsetopt correct
 
 ## auto slash
 zstyle ':completion:*' special-dirs true
@@ -130,42 +126,7 @@ select-word-style bash
 ## FUNCNEST
 export FUNCNEST=1000
 
-## zsh-histdb
-HISTDB_FILE=$ZDOTDIR/history/zsh-history.db
-
-## zsh-zsh-autosuggestions
-_zsh_autosuggest_strategy_histdb_top_here() {
-    emulate -L zsh
-    (( $+functions[_histdb_query] && $+builtins[zsqlite_exec] )) || return
-    _histdb_init
-    local last_cmd="$(sql_escape ${history[$((HISTCMD-1))]})"
-    local cmd="$(sql_escape $1)"
-    local pwd="$(sql_escape $PWD)"
-    local reply=$(zsqlite_exec _HISTDB "
-SELECT argv FROM (
-	SELECT c1.argv, p1.dir, h1.session, h1.start_time, 1 AS priority
-	FROM history h1, history h2
-		LEFT JOIN commands c1 ON h1.command_id = c1.ROWID
-		LEFT JOIN commands c2 ON h2.command_id = c2.ROWID
-		LEFT JOIN places p1   ON h1.place_id = p1.ROWID
-	WHERE h1.ROWID = h2.ROWID + 1
-		AND c1.argv LIKE '$cmd%'
-		AND c2.argv = '$last_cmd'
-		AND h1.exit_status = 0
-    UNION
-	SELECT c1.argv, p1.dir, h1.session, h1.start_time, 0 AS priority
-	FROM history h1
-		LEFT JOIN commands c1 ON h1.command_id = c1.ROWID
-		LEFT JOIN places p1   ON h1.place_id = p1.ROWID
-	WHERE c1.argv LIKE '$cmd%'
-)
-ORDER BY dir != '$pwd', priority DESC, session != $HISTDB_SESSION, start_time DESC
-LIMIT 1
-    ")
-    typeset -g suggestion=$reply
-}
-
-# ZSH_AUTOSUGGEST_STRATEGY=(histdb_top_here match_prev_cmd completion)
+## zsh-autosuggestions
 ZSH_AUTOSUGGEST_STRATEGY+=(match_prev_cmd completion)
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 ZSH_AUTOSUGGEST_USE_ASYNC=1
@@ -225,15 +186,8 @@ zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
 	*) git log --color=always $word ;;
 esac'
 
-## vimmode
-
-function zvm_config() {
-    ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
-    ZVM_VI_INSERT_ESCAPE_BINDKEY=jk
-    ZVM_CURSOR_STYLE_ENABLED=false
-    ZVM_VI_EDITOR=nvim
-    ZVM_INIT_MODE=none
-}
+## Vim mode
+KEYTIMEOUT=20
 
 
 ## zsh-z
@@ -244,32 +198,10 @@ ZSHZ_CASE=smart
 _ZO_CMD_PREFIX="j"
 # _ZO_DATA_DIR
 
-## ZCOMPDUMP
-
-() {
-    emulate -L zsh
-    local -r cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/zsh
-    autoload -Uz _store_cache compinit
-    zstyle ':completion:*' use-cache true
-    zstyle ':completion:*' cache-path $cache_dir/.zcompcache
-    [[ -f $cache_dir/.zcompcache/.make-cache-dir ]] || _store_cache .make-cache-dir
-    compinit -C -d $cache_dir/.zcompdump
-}
-
-
 ## history
-autoload -Uz add-zsh-hook
-add-zsh-hook zshaddhistory max_history_len
-function max_history_len() {
-    if (($#1 > 240)) {
-        return 2
-    }
-    return 0
-}
-
 HISTFILE="$ZDOTDIR/.zsh_history"
-HISTSIZE=50000
-SAVEHIST=100000
+HISTSIZE=20000
+SAVEHIST=20000
 
 # 记录时间戳
 setopt extended_history

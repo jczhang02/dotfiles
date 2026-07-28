@@ -1,16 +1,22 @@
-local -a permission=(${(s::)${_PMS:-"rwxrwxrwx"}})
-local -a binary=()
+# DESC: Convert an octal permission such as 755 to rwxr-xr-x.
 
-for i in ${(s::)1}; do
-  binary+=(${(s::)${(l:3::0:)${"$(( [#2]i ))":2}}})
+local octal=${1:-}
+[[ $octal == [0-7][0-7][0-7] ]] || {
+    print -u2 -- 'usage: explain_permission OCTAL_MODE'
+    return 2
+}
+
+local -a permission=(r w x r w x r w x)
+local -a bits
+local digit bit index=1
+for digit in ${(s::)octal}; do
+    for bit in 4 2 1; do
+        if (( digit & bit )); then
+            print -n -- "$permission[index]"
+        else
+            print -n -- '-'
+        fi
+        (( ++index ))
+    done
 done
-
-for i j in ${permission:^binary}; do
-  if (( $j )); then
-    echo -n $i
-  else
-    echo -n _
-  fi
-done
-
-echo
+print

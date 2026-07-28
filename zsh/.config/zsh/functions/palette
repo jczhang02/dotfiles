@@ -1,15 +1,15 @@
-# DESC: 输出调色板, 可以额外指定背景色或加粗(-b)
+# DESC: Print the 256-color palette; pass -b or a numeric background.
 
 local -a colors
-local bold bg="%K{000}"
+local bold='' background='%K{000}' argument color
 
-for i ($@) {
-    [[ $i == -b ]] && bold=%B
-    [[ $i == <-> ]] && bg="%K{$i}"
-}
+for argument in "$@"; do
+    [[ $argument == -b ]] && bold='%B'
+    [[ $argument == <-> ]] && background="%K{$argument}"
+done
 
-for i ({000..255}) {
-    colors+=("$bold$bg%F{$i}$i%f%k${(L)bold}")
-}
+for color in {000..255}; do
+    colors+=("$bold$background%F{$color}$color%f%k${(L)bold}")
+done
 
-print -cP $colors
+print -cP -- $colors

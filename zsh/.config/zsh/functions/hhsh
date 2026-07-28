@@ -1,3 +1,0 @@
-local API=https://lab.magiconch.com/api/nbnhhsh/guess
-curl -s $API -d "text='$1'" | jq --raw-output '.[].trans | .[]'
-

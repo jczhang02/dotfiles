@@ -1,0 +1,5 @@
+# DESC: Print the suffix of a filename.
+
+local filename=${1:-}
+[[ -n $filename && $filename == *.* ]] || return 1
+print -r -- "${filename##*.}"

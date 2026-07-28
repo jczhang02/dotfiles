@@ -1,3 +1,7 @@
-# DESC: 输出指定颜色的 ANSi 转义序列, -b 表示加粗
+# DESC: Print the quoted ANSI escape sequence represented by a prompt string.
 
-echo -E ${(qqqq)${(%)1}}
+[[ -n ${1:-} ]] || {
+    print -u2 -- 'usage: printc PROMPT_ESCAPE'
+    return 2
+}
+print -r -- ${(qqqq)${(%)1}}

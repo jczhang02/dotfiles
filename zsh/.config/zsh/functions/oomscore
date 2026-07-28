@@ -1,6 +1,12 @@
-for proc in /proc/<0-9>#; do
-    printf "%2d %5d %s\n" \
-        $(<$proc/oom_score) \
-        ${proc:t} \
-        ${"$(<$proc/cmdline)"[1,80]}
+# DESC: Show the processes with the highest Linux OOM scores.
+
+[[ $OSTYPE == linux* && -d /proc ]] || return 1
+
+local proc pid score command_line
+for proc in /proc/<0-9>#(N/); do
+    pid=${proc:t}
+    [[ -r $proc/oom_score && -r $proc/cmdline ]] || continue
+    score=$(<"$proc/oom_score")
+    command_line=${"$(<"$proc/cmdline")"[1,80]}
+    printf '%2d %5d %s\n' "$score" "$pid" "$command_line"
 done | sort -nr | head -n 15

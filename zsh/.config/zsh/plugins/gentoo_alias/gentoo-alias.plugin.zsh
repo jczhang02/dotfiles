@@ -6,7 +6,6 @@ alias emre='doas emerge -C '
 alias emsearch='emerge -s '
 alias emsync='doas emerge --sync '
 alias emup='doas emerge -aDuN world '
-alias emclean='doas emerge --depclean '
 
 # PORTAGEQ
 alias pocolor='portageq colormap '
@@ -14,14 +13,6 @@ alias podist='portageq distdir '
 alias povar='portageq envvar '
 alias pomirror='portageq gentoo_mirrors'
 alias poorphan='portageq --orphaned '
-
-# GENLOP
-alias genstroy='doas genlop -l '
-alias geneta='doas genlop -c '
-alias genweta='watch -ct -n 1 doas genlop -c '
-alias geninfo='doas genlop -i '
-alias genustory='doas genlop -u '
-alias genstorytime='doas genlop -t '
 
 # QLOP
 alias qsummary='doas qlop -c '
