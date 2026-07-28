@@ -29,7 +29,7 @@ tmux_conf_new_session_prompt=false
 #   - true
 #   - false (default)
 #   - disabled (do not modify new-session bindings)
-tmux_conf_new_session_retain_current_path=false
+tmux_conf_new_session_retain_current_path=true
 
 
 # -- windows & pane creation ---------------------------------------------------
@@ -38,7 +38,7 @@ tmux_conf_new_session_retain_current_path=false
 #   - true
 #   - false (default)
 #   - disabled (do not modify new-window bindings)
-tmux_conf_new_window_retain_current_path=false
+tmux_conf_new_window_retain_current_path=true
 
 # new window tries to reconnect ssh sessions, possible values are:
 #   - true
@@ -69,7 +69,7 @@ tmux_conf_new_pane_reconnect_ssh=false
 # automatic detection relies on the COLORTERM environment variable being defined
 # to 'truecolor' or '24bit' or '$ tput colors' answering '16777216'
 # see https://github.com/termstandard/colors
-tmux_conf_24b_colour=true
+tmux_conf_24b_colour=false  # RGB is declared idempotently in terminal-features[100].
 
 
 # -- theming -------------------------------------------------------------------
@@ -196,7 +196,7 @@ tmux_conf_theme_terminal_title="#h ❐ #S ● #I #W"
 tmux_conf_theme_window_status_fg="$tmux_conf_theme_colour_3"
 tmux_conf_theme_window_status_bg="$tmux_conf_theme_colour_1"
 tmux_conf_theme_window_status_attr="none"
-tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+tmux_conf_theme_window_status_format="#{?#{e|<|:#{client_width},100},#I #{=/8/…:window_name},#I #W}#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -210,26 +210,26 @@ tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_
 #     - #{hostname_full_ssh}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_window_status_current_fg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_window_status_current_fg="#ffffff"
 tmux_conf_theme_window_status_current_bg="$tmux_conf_theme_colour_4"
 tmux_conf_theme_window_status_current_attr="bold"
-tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+tmux_conf_theme_window_status_current_format="#{?#{e|<|:#{client_width},100},#I #{=/16/…:window_name},#I #W}#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_current_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
 # window activity status style
-tmux_conf_theme_window_status_activity_fg="default"
+tmux_conf_theme_window_status_activity_fg="$tmux_conf_theme_colour_10"
 tmux_conf_theme_window_status_activity_bg="default"
-tmux_conf_theme_window_status_activity_attr="underscore"
+tmux_conf_theme_window_status_activity_attr="none"
 
 # window bell status style
-tmux_conf_theme_window_status_bell_fg="$tmux_conf_theme_colour_5"
+tmux_conf_theme_window_status_bell_fg="$tmux_conf_theme_colour_16"
 tmux_conf_theme_window_status_bell_bg="default"
-tmux_conf_theme_window_status_bell_attr="blink,bold"
+tmux_conf_theme_window_status_bell_attr="bold"
 
 # window last status style
-tmux_conf_theme_window_status_last_fg="$tmux_conf_theme_colour_4"
-tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_2"
+tmux_conf_theme_window_status_last_fg="$tmux_conf_theme_colour_3"
+tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_14"
 tmux_conf_theme_window_status_last_attr="none"
 
 # status left/right sections separators
@@ -271,17 +271,17 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{username_ssh}
 tmux_conf_theme_status_left=" ❐ #S "
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
-tmux_conf_theme_status_right=" #{prefix}#{mouse}#{synchronized} | #(cd '#{pane_current_path}' 2>/dev/null && git symbolic-ref --short HEAD 2>/dev/null || echo -) | %H:%M #{?#{==:#{hostname_ssh},},,| #{hostname_ssh}} "
+tmux_conf_theme_status_right=' #{prefix}#{synchronized}#(if [ "#{client_width}" -ge 100 ]; then git -C #{q:pane_current_path} symbolic-ref --quiet --short HEAD 2>/dev/null | sed "s/^/ · /"; fi)#{?#{==:#{hostname_ssh},},, · #{hostname_ssh}} '
 
 # status left style
-tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
-tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_9,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_11"
-tmux_conf_theme_status_left_attr="bold,none,none"
+tmux_conf_theme_status_left_fg="#ffffff"
+tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_10"
+tmux_conf_theme_status_left_attr="bold"
 
 # status right style
-tmux_conf_theme_status_right_fg="$tmux_conf_theme_colour_12,$tmux_conf_theme_colour_13,$tmux_conf_theme_colour_14"
-tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_17"
-tmux_conf_theme_status_right_attr="none,none,bold"
+tmux_conf_theme_status_right_fg="$tmux_conf_theme_colour_3"
+tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_status_right_attr="none"
 
 # pairing indicator
 tmux_conf_theme_pairing="⚇"                 # U+2687
@@ -384,19 +384,21 @@ tmux_conf_urlscan_options="--compact --dedupe"
 # status line on top
 set -g status-position top
 
-# truecolor + hyperlinks + synchronized output (ghostty / wezterm / kitty / foot)
+# Ghostty capabilities not advertised by terminfo; fixed index keeps reload idempotent.
 set -g  default-terminal "tmux-256color"
-set -ga terminal-overrides ",xterm-256color*:Tc"
-set -ga terminal-features ",*:hyperlinks,RGB,256,clipboard,strikethrough,sync"
+set -s  terminal-features[100] "xterm-ghostty:RGB:clipboard:hyperlinks:extkeys:strikethrough:sync"
 set -s  extended-keys always
 set -s  extended-keys-format csi-u                                    # pi works best with csi-u
-set -as terminal-overrides ',xterm-kitty:extkeys'
 
 # resize/redraw: 单 client 立即按尺寸 resize, 减少 TUI (CC/opencode) 重绘 leak
 set -g aggressive-resize on
 
-# Fcitx5 IME — propagate input method env vars to new panes/windows
-set -ga update-environment ' WAYLAND_DISPLAY XMODIFIERS GTK_IM_MODULE QT_IM_MODULE INPUT_METHOD'
+# Fcitx5 IME — fixed indices avoid duplicate entries after config reloads.
+set -g update-environment[100] WAYLAND_DISPLAY
+set -g update-environment[101] XMODIFIERS
+set -g update-environment[102] GTK_IM_MODULE
+set -g update-environment[103] QT_IM_MODULE
+set -g update-environment[104] INPUT_METHOD
 
 # history
 set -g history-limit 100000
@@ -415,6 +417,8 @@ set -g mode-keys  vi
 
 # DO NOT exit-unattached: A3 grouped sessions need server to outlive last client
 set -g exit-unattached off
+# Stay inside tmux and return to the previous session after killing the current one.
+set -g detach-on-destroy previous
 
 # Prefix → Ctrl-Space (主) + Ctrl-a (备)
 unbind C-b
@@ -443,6 +447,8 @@ bind s display-popup -E -w 80% -h 80% -B \
 # 避开 fork wl-copy 守护进程, 顺带消除 dash-to-dock 误触发的"新应用"动画
 set -g set-clipboard on
 bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+bind -T copy-mode    MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel
+bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel
 
 # 移除 oh-my-tmux 的 M-y "yank-and-paste-pop" 绑定 (emacs + vi mode)。
 # 当 copy_to_os_clipboard=false 时其 perl transform 把 "wl-copy; tmux paste-buffer"
@@ -450,15 +456,17 @@ bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
 # vi-mode 用户不需要这条 paste-pop 行为。
 unbind -T copy-mode    M-y
 unbind -T copy-mode-vi M-y
+# Remove tmux-yank-only bindings left behind when reloading a live server.
+unbind -T prefix       Y
+unbind -T copy-mode    y
+unbind -T copy-mode    Y
+unbind -T copy-mode-vi Y
 
-# Kill 快捷键 (杀完立即 resurrect save, 避免 15min 内 server 崩复活)
+# Kill 快捷键
 # prefix X   → 杀当前 session, 带确认
 # prefix W   → 杀当前 window, 带确认 (替代默认 prefix+&)
 # prefix C-x → fzf 多选杀 session (Tab 多选, Enter 确认)
-# 注: confirm-before 的 command 参数是单条 tmux 命令, \; 不会被当作分隔符,
-# 必须用 run-shell + 外部 shell ; 串接 (kill-session 走 tmux CLI).
-bind X confirm-before -y -p "kill session #S? (Y/n)" \
-    "run-shell '~/.config/tmux/plugins/tmux-resurrect/scripts/save.sh; tmux kill-session'"
+bind X confirm-before -y -p "kill session #S? (Y/n)" kill-session
 
 bind W confirm-before -y -p "kill window #W? (Y/n)" kill-window
 
@@ -469,8 +477,7 @@ bind & confirm-before -y -p "kill-window #W? (Y/n)" kill-window
 bind C-x display-popup -E -w 60% -h 50% \
     "sh -c 'tmux list-sessions -F \"#S\" | \
         fzf --multi --reverse --prompt \"kill> \" --header \"Tab 多选, Enter 确认\" | \
-        xargs -r -I{} tmux kill-session -t {}; \
-        ~/.config/tmux/plugins/tmux-resurrect/scripts/save.sh'"
+        xargs -r -I{} tmux kill-session -t {}'"
 
 
 
@@ -509,15 +516,6 @@ bind -T VIMZ Q kill-window
 # = → equalize layout (vim Ctrl-w =)
 bind '=' select-layout tiled
 
-# tmux-resurrect 缓存清理 (~/.local/bin/tmux-resurrect-prune)
-# prefix + R       → prune 7d+ snapshots (silent, display freed size)
-# prefix + M-r     → keep last 5 snapshots
-# prefix + C-M-r   → nuke all snapshots + pane_contents.tar.gz (confirm)
-bind R     run-shell "$HOME/.local/bin/tmux-resurrect-prune 7d"
-bind M-r   run-shell "$HOME/.local/bin/tmux-resurrect-prune keep5"
-bind C-M-r confirm-before -p "nuke resurrect cache? (y/n) " "run-shell '$HOME/.local/bin/tmux-resurrect-prune nuke'"
-
-
 # -- tpm -----------------------------------------------------------------------
 
 # while I don't use tpm myself, many people requested official support so here
@@ -530,12 +528,12 @@ bind C-M-r confirm-before -p "nuke resurrect cache? (y/n) " "run-shell '$HOME/.l
 # by default, launching tmux will update tpm and all plugins
 #   - true (default)
 #   - false
-tmux_conf_update_plugins_on_launch=true
+tmux_conf_update_plugins_on_launch=false
 
 # by default, reloading the configuration will update tpm and all plugins
 #   - true (default)
 #   - false
-tmux_conf_update_plugins_on_reload=true
+tmux_conf_update_plugins_on_reload=false
 
 # by default, reloading the configuration will uninstall tpm and plugins when no
 # plugins are enabled
@@ -587,13 +585,11 @@ run-shell -b '/home/jc/dev/tmux-autoname/tmux-autoname.tmux'
 # === 切 pane/window/session 时强制 fcitx5 回英文 ===
 # tmux 内部焦点事件不触发 wayland focus-in, fcitx5 不会自动 reset.
 # 主动调 fcitx5-remote -c (deactivate).
-set-hook -ga after-select-pane    "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
-set-hook -ga after-select-window  "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
-set-hook -ga client-session-changed "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
+set-hook -g after-select-pane[100]       "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
+set-hook -g after-select-window[100]     "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
+set-hook -g client-session-changed[100] "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
 
-# system clipboard yank
-set -g @plugin 'tmux-plugins/tmux-yank'
-set -g @yank_selection_mouse 'tmux'  # OSC52 转发, 不再 fork wl-copy
+# Native tmux copy-mode + OSC52 handles keyboard and mouse copy without helper processes.
 
 # Ctrl-h/j/k/l moves across vim splits + tmux panes
 set -g @plugin 'christoomey/vim-tmux-navigator'
@@ -612,14 +608,6 @@ bind b run-shell -b "~/.config/tmux/plugins/tmux-fzf/scripts/clipboard.sh buffer
 # 默认 @palette-key=C-Space 会撞 tmux prefix, 故改 M-p
 set -g @plugin 'eduwass/tmux-palette'
 set -g @palette-key 'M-p'
-
-# layout-only persistence across reboot
-set -g @plugin 'tmux-plugins/tmux-resurrect'
-set -g @plugin 'tmux-plugins/tmux-continuum'
-set -g @resurrect-capture-pane-contents 'on'
-set -g @continuum-save-interval '15'
-set -g @continuum-restore 'on'
-
 
 
 set -g allow-passthrough on
