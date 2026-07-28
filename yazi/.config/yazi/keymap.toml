@@ -1,0 +1,24 @@
+[mgr]
+prepend_keymap = [
+  # Vim-style navigation, explicit and above defaults.
+  { on = "h", run = "leave", desc = "Back to parent directory" },
+  { on = "j", run = "arrow next", desc = "Next file" },
+  { on = "k", run = "arrow prev", desc = "Previous file" },
+  { on = "l", run = "plugin enter-or-open", desc = "Enter directory or open file" },
+
+  { on = "H", run = "back", desc = "Back to previous directory" },
+  { on = "L", run = "forward", desc = "Forward to next directory" },
+
+  { on = [ "g", "g" ], run = "arrow top", desc = "Go to top" },
+  { on = "G", run = "arrow bot", desc = "Go to bottom" },
+  { on = "<C-u>", run = "arrow -50%", desc = "Half page up" },
+  { on = "<C-d>", run = "arrow 50%", desc = "Half page down" },
+  { on = "<C-b>", run = "arrow -100%", desc = "Page up" },
+  { on = "<C-f>", run = "arrow 100%", desc = "Page down" },
+
+  { on = "J", run = "seek 5", desc = "Preview down" },
+  { on = "K", run = "seek -5", desc = "Preview up" },
+
+  { on = "<Enter>", run = "plugin enter-or-open", desc = "Enter directory or open file" },
+  { on = "!", run = 'shell "$SHELL" --block', desc = "Open shell here", for = "unix" },
+]

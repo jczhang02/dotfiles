@@ -1,9 +1,5 @@
-[manager]
+[mgr]
 cwd = { fg = "#179299" }
-
-# Hovered
-hovered         = { fg = "#eff1f5", bg = "#1e66f5" }
-preview_hovered = { underline = true }
 
 # Find
 find_keyword  = { fg = "#df8e1d", italic = true }
@@ -13,11 +9,6 @@ find_position = { fg = "#ea76cb", bg = "reset", italic = true }
 marker_copied   = { fg = "#40a02b", bg = "#40a02b" }
 marker_cut      = { fg = "#d20f39", bg = "#d20f39" }
 marker_selected = { fg = "#1e66f5", bg = "#1e66f5" }
-
-# Tab
-tab_active   = { fg = "#eff1f5", bg = "#4c4f69" }
-tab_inactive = { fg = "#4c4f69", bg = "#bcc0cc" }
-tab_width    = 1
 
 # Count
 count_copied   = { fg = "#eff1f5", bg = "#40a02b" }
@@ -31,15 +22,29 @@ border_style  = { fg = "#8c8fa1" }
 # Highlighting
 syntect_theme = "~/.config/yazi/Catppuccin-latte.tmTheme"
 
-[status]
-separator_open  = ""
-separator_close = ""
-separator_style = { fg = "#bcc0cc", bg = "#bcc0cc" }
+[tabs]
+active   = { fg = "#eff1f5", bg = "#4c4f69" }
+inactive = { fg = "#4c4f69", bg = "#bcc0cc" }
+sep_inner = { open = "", close = "" }
+sep_outer = { open = "", close = "" }
 
-# Mode
-mode_normal = { fg = "#eff1f5", bg = "#1e66f5", bold = true }
-mode_select = { fg = "#eff1f5", bg = "#40a02b", bold = true }
-mode_unset  = { fg = "#eff1f5", bg = "#dd7878", bold = true }
+[mode]
+normal_main = { fg = "#eff1f5", bg = "#1e66f5", bold = true }
+normal_alt  = { fg = "#1e66f5", bg = "#bcc0cc" }
+select_main = { fg = "#eff1f5", bg = "#40a02b", bold = true }
+select_alt  = { fg = "#40a02b", bg = "#bcc0cc" }
+unset_main  = { fg = "#eff1f5", bg = "#dd7878", bold = true }
+unset_alt   = { fg = "#dd7878", bg = "#bcc0cc" }
+
+[indicator]
+parent  = {}
+current = {}
+preview = { underline = true }
+padding = { open = "", close = "" }
+
+[status]
+sep_left  = { open = "", close = "" }
+sep_right = { open = "", close = "" }
 
 # Progress
 progress_label  = { fg = "#ffffff", bold = true }
@@ -47,11 +52,11 @@ progress_normal = { fg = "#1e66f5", bg = "#bcc0cc" }
 progress_error  = { fg = "#d20f39", bg = "#bcc0cc" }
 
 # Permissions
-permissions_t = { fg = "#1e66f5" }
-permissions_r = { fg = "#df8e1d" }
-permissions_w = { fg = "#d20f39" }
-permissions_x = { fg = "#40a02b" }
-permissions_s = { fg = "#8c8fa1" }
+perm_sep   = { fg = "#8c8fa1" }
+perm_type  = { fg = "#1e66f5" }
+perm_read  = { fg = "#df8e1d" }
+perm_write = { fg = "#d20f39" }
+perm_exec  = { fg = "#40a02b" }
 
 [input]
 border   = { fg = "#1e66f5" }
@@ -59,7 +64,7 @@ title    = {}
 value    = {}
 selected = { reversed = true }
 
-[select]
+[pick]
 border   = { fg = "#1e66f5" }
 active   = { fg = "#ea76cb" }
 inactive = {}
@@ -79,31 +84,30 @@ separator_style = { fg = "#acb0be" }
 
 [help]
 on      = { fg = "#ea76cb" }
-exec    = { fg = "#179299" }
+run     = { fg = "#179299" }
 desc    = { fg = "#7c7f93" }
 hovered = { bg = "#acb0be", bold = true }
 footer  = { fg = "#bcc0cc", bg = "#4c4f69" }
 
 [filetype]
-
 rules = [
-	# Images
-	{ mime = "image/*", fg = "#179299" },
+  # Images
+  { mime = "image/*", fg = "#179299" },
 
-	# Videos
-	{ mime = "video/*", fg = "#df8e1d" },
-	{ mime = "audio/*", fg = "#df8e1d" },
+  # Media
+  { mime = "{audio,video}/*", fg = "#df8e1d" },
 
-	# Archives
-	{ mime = "application/zip",             fg = "#ea76cb" },
-	{ mime = "application/gzip",            fg = "#ea76cb" },
-	{ mime = "application/x-tar",           fg = "#ea76cb" },
-	{ mime = "application/x-bzip",          fg = "#ea76cb" },
-	{ mime = "application/x-bzip2",         fg = "#ea76cb" },
-	{ mime = "application/x-7z-compressed", fg = "#ea76cb" },
-	{ mime = "application/x-rar",           fg = "#ea76cb" },
+  # Archives
+  { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "#ea76cb" },
 
-	# Fallback
-	{ name = "*", fg = "#4c4f69" },
-	{ name = "*/", fg = "#1e66f5" }
+  # Documents
+  { mime = "application/{pdf,doc,rtf}", fg = "#179299" },
+
+  # Special files
+  { url = "*", is = "orphan", bg = "#d20f39" },
+  { url = "*", is = "exec", fg = "#40a02b" },
+
+  # Fallback
+  { url = "*", fg = "#4c4f69" },
+  { url = "*/", fg = "#1e66f5" },
 ]

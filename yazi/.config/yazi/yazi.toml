@@ -1,4 +1,4 @@
-[manager]
+[mgr]
 linemode = "size"
 
 [preview]
@@ -8,101 +8,33 @@ max_height = 1000
 
 [opener]
 edit = [
-  { run = '$nvim "$@"', desc = "$EDITOR", block = true },
-  { run = 'neovide "$@"', orphan = true },
+  { run = 'nvim %s', desc = "nvim", block = true, for = "unix" },
+  { run = 'neovide %s', desc = "Neovide", orphan = true, for = "unix" },
 ]
 play = [
-  { run = 'mpv "$@"' },
-  { run = '''mediainfo "$1"; echo "Press enter to exit"; read''', block = true, desc = "Show media info" },
+  { run = 'mpv %s', desc = "mpv", orphan = true, for = "unix" },
+  { run = "mediainfo %s1; echo 'Press enter to exit'; read _", block = true, desc = "Show media info", for = "unix" },
 ]
 archive = [
-  { run = 'extract "$1"', desc = "Extract here" },
-  { run = 'unrar "$1"', orphan = true, desc = "unrar" },
+  { run = 'ya pub extract --list %s', desc = "Extract here" },
+  { run = 'unrar x %s1', desc = "Unrar here", block = true, for = "unix" },
+]
+appimage = [
+  { run = '%s1', desc = "Run AppImage", orphan = true, for = "unix" },
 ]
 
 [open]
-rules = [
-  { name = "*/", use = [
-    "open",
-    "edit",
-    "reveal",
-  ] },
-
-  { mime = "text/*", use = [
-    "edit",
-    "reveal",
-  ] },
-  { mime = "image/*", use = [
-    "open",
-    "reveal",
-  ] },
-  { mime = "video/*", use = [
-    "play",
-    "reveal",
-  ] },
-  { mime = "audio/*", use = [
-    "play",
-    "reveal",
-  ] },
-  { mime = "inode/x-empty", use = [
-    "edit",
-    "reveal",
-  ] },
-
-  { mime = "application/json", use = [
-    "edit",
-    "reveal",
-  ] },
-  { mime = "*/javascript", use = [
-    "edit",
-    "reveal",
-  ] },
-
-  { mime = "application/zip", use = [
-    "extract",
-    "reveal",
-    "archive",
-  ] },
-  { mime = "application/gzip", use = [
-    "extract",
-    "reveal",
-    "archive",
-  ] },
-  { mime = "application/x-tar", use = [
-    "extract",
-    "reveal",
-    "archive",
-  ] },
-  { mime = "application/x-bzip", use = [
-    "extract",
-    "reveal",
-    "archive",
-  ] },
-  { mime = "application/x-bzip2", use = [
-    "extract",
-    "reveal",
-    "archive",
-  ] },
-  { mime = "application/x-7z-compressed", use = [
-    "extract",
-    "reveal",
-    "archive",
-  ] },
-  { mime = "application/x-rar", use = [
-    "extract",
-    "reveal",
-    "archive",
-  ] },
-
-  { mime = "*", use = [
-    "open",
-    "reveal",
-  ] },
+prepend_rules = [
+  { url = "*.{AppImage,appimage}", use = [ "appimage", "reveal" ] },
+  { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", use = [ "extract", "reveal", "archive" ] },
 ]
 
 [plugin]
-prepend_previewers = [{ mime = "audio/*", run = "exifaudio" }]
-append_previewers = [
-  { name = "*", run = "hexyl" },
+prepend_previewers = [
+  { mime = "application/{json,ndjson}", run = "json-pretty" },
+  { mime = "audio/*", run = "exifaudio" },
   { mime = "text/csv", run = "miller" },
+]
+append_previewers = [
+  { url = "*", run = "hexyl" },
 ]
