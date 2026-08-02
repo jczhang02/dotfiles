@@ -1,0 +1,5 @@
+# Standalone release CLIs migrated from ~/.local/bin.
+# Versions are pinned to the verified pre-migration binaries.
+
+[tools]
+"github:cloudflare/cloudflared" = "2026.5.0"

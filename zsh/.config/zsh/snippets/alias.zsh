@@ -21,18 +21,21 @@ function ase() {
 }
 
 function yy() {
-    local tmp cwd status
+    local tmp cwd yazi_status
 
     tmp=$(mktemp -t yazi-cwd.XXXXXX) || return
-    yazi "$@" --cwd-file="$tmp"
-    status=$?
-    cwd=$(command cat -- "$tmp" 2>/dev/null)
-    command rm -f -- "$tmp"
+    {
+        yazi "$@" --cwd-file="$tmp"
+        yazi_status=$?
+        cwd=$(command cat -- "$tmp" 2>/dev/null)
+    } always {
+        command rm -f -- "$tmp"
+    }
 
     if [[ -n $cwd && $cwd != $PWD ]]; then
         builtin cd -- "$cwd"
     fi
-    return $status
+    return $yazi_status
 }
 
 # Intentional interactive substitutions.
@@ -64,5 +67,5 @@ alias gcld='git clone --depth=1'
 
 alias h='tldr'
 alias rgc='rg --color=always'
-alias less='less -r'
+alias less='less -R'
 alias open='xdg-open'

@@ -49,6 +49,7 @@ Each top-level directory is a **stow package** — `stow <package>` symlinks its
 | `git` | Git config and aliases |
 | `ssh` | SSH client config with modular `config.d/` includes |
 | `gnupg` | GPG + gpg-agent (with SSH agent support) |
+| `mise` | User-level CLI tool versions and installation policy |
 | `go` | Go environment |
 | `conda` | Conda package manager |
 | `npm` | npm config |
@@ -82,11 +83,11 @@ Each top-level directory is a **stow package** — `stow <package>` symlinks its
 | `btop` | System monitor |
 | `eix` | Gentoo package search cache config |
 
-### Shell Plugins (vendored)
+### Shell Themes
 
 | Package | Description |
 |---------|-------------|
-| `f-sy-h` | Zsh fast syntax highlighting |
+| `f-sy-h` | Catppuccin themes for F-Sy-H |
 
 ## Usage
 
@@ -95,22 +96,59 @@ Each top-level directory is a **stow package** — `stow <package>` symlinks its
 git clone --recursive https://github.com/jczhang02/dotfiles.git ~/dev/dotfiles
 cd ~/dev/dotfiles
 
-# Deploy a package (e.g. zsh)
-stow zsh
+# Deploy Zsh with its mise and F-Sy-H configuration
+stow zsh mise f-sy-h
 
 # Deploy multiple packages
-stow git ssh gnupg zsh kitty tmux
+stow git ssh gnupg zsh mise f-sy-h kitty tmux
+
+# Install Zi after deploying the Zsh package
+git clone --depth=1 https://github.com/z-shell/zi.git \
+  "${XDG_DATA_HOME:-$HOME/.local/share}/zi/bin"
 
 # Remove a package
 stow -D zsh
 ```
+
+Close terminals using the old configuration, then preserve history and zoxide
+jump data with a one-time copy:
+
+```bash
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/zsh"
+install -d -m 700 "$state_dir"
+cp --no-clobber "$HOME/.config/zsh/.zsh_history" "$state_dir/history"
+chmod 600 "$state_dir/history"
+
+data_dir="${XDG_DATA_HOME:-$HOME/.local/share}"
+install -d -m 700 "$data_dir/zoxide"
+cp --no-clobber "$HOME/.config/zsh/zi/polaris/share/db.zo" \
+  "$data_dir/zoxide/db.zo"
+```
+
+The `cargo:gig-cli` mise entry is built from the unpublished local checkout.
+Recreate its linked installation before running `mise install` on a new machine:
+
+```bash
+mise_data_dir="${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}"
+cargo install --path "$HOME/dev/gig/crates/gig-cli" \
+  --root "$mise_data_dir/linked/gig-cli/0.1.0"
+mise link cargo:gig-cli@0.1.0 \
+  "$mise_data_dir/linked/gig-cli/0.1.0"
+```
+
+The packaged mise 2026.7.5 does not create shims for linked versions even
+after `mise reshim`. Interactive activation still exposes `gig`; shim-only
+consumers should use `mise exec -- gig ...` until a mise upgrade fixes this, or
+until the project has a remote that the Cargo Git backend can install. Do not
+create a shim by hand because `mise reshim` owns that directory.
 
 The `.stowrc` is configured with `--target=$HOME` and `--ignore=.gitmodules` by default.
 
 ## Dependencies
 
 - [GNU Stow](https://www.gnu.org/software/stow/) — symlink farm manager
-- [Zi](https://github.com/z-shell/zi) — zsh plugin manager (auto-bootstrapped)
+- [mise](https://mise.jdx.dev/) — user-level CLI tool manager
+- [Zi](https://github.com/z-shell/zi) — Zsh plugin manager (installed separately)
 - [AwesomeWM](https://awesomewm.org/) — tiling window manager
 - [Neovim](https://neovim.io/) ≥ 0.11
 

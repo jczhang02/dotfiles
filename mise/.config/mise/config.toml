@@ -1,0 +1,39 @@
+# User-level CLI tools managed by mise.
+# Install configured tools: mise install
+# Upgrade configured tools: mise upgrade
+
+[tools]
+# ── LSP servers (npm-based) ──────────────────────────────────────────
+"npm:bash-language-server"        = "latest"
+"npm:vscode-langservers-extracted" = "latest"   # html / jsonls / cssls / eslint
+"npm:yaml-language-server"        = "latest"
+"npm:@delance/runtime"     = "latest"   # delance-langserver (Python)
+
+# ── LSP servers (cargo-based) ────────────────────────────────────────
+"cargo:texlab"                    = "latest"
+
+# ── LSP servers (GitHub release) ─────────────────────────────────────
+"github:ltex-plus/ltex-ls-plus"      = { version = "latest", exe = "ltex-ls-plus" }
+
+# ── Formatters ───────────────────────────────────────────────────────
+"cargo:stylua"                    = "latest"
+"npm:prettier"                    = "latest"
+"npm:bibtex-tidy"                 = "1.14.0"
+"pipx:xmlformatter"               = "latest"
+shfmt                              = "latest"
+# clang-format / latexindent → emerge (system)
+
+# ── Linters ──────────────────────────────────────────────────────────
+"pipx:vim-vint"                   = "latest"
+# shellcheck → emerge (system)
+
+# ── DAP adapters ─────────────────────────────────────────────────────
+"pipx:debugpy"                    = "latest"
+# codelldb remains editor-local because upstream ships VS Code extension archives.
+usage = "latest"
+
+
+# ── Notes ────────────────────────────────────────────────────────────
+# These stay on the system (emerge):
+#   shellcheck, clang-format, latexindent, lua-language-server,
+#   clangd, ruff, rust-analyzer, ripgrep, fd, fzf, lazygit, fcitx5-remote

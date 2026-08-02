@@ -5,6 +5,7 @@ local function_dir=${1:-$XDG_CONFIG_HOME/zsh/functions}
 
 local file description
 for file in "$function_dir"/*(.N); do
+    [[ ${file:t} == *.* ]] && continue
     description=$(command grep -m 1 '^# DESC: ' -- "$file" 2>/dev/null)
     description=${description#\# DESC: }
     printf '%-32s %s\n' "${file:t}" "$description"

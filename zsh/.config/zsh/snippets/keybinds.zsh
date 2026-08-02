@@ -2,6 +2,7 @@
 
 bindkey -v
 KEYTIMEOUT=20
+zmodload zsh/terminfo 2>/dev/null
 
 # Keep terminal navigation keys in application mode without replacing other
 # plugins' zle-line-init/zle-line-finish widgets.
@@ -21,29 +22,36 @@ autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 
-local -A keybindings=(
-    Home beginning-of-line
-    End end-of-line
-    Delete delete-char
-    Up up-line-or-beginning-search
-    Down down-line-or-beginning-search
-    C-Right forward-word
-    C-Left backward-word
-    C-Backspace backward-kill-word
-    Space magic-space
-    C-a beginning-of-line
-    C-e end-of-line
-    C-w backward-kill-word
-    C-u backward-kill-line
-    C-k kill-line
-    C-d delete-char
-    M-q push-line-or-edit
-)
+() {
+    local keymap
+    local -A key=(
+        Home "${terminfo[khome]:-$'\e[H'}"
+        End "${terminfo[kend]:-$'\e[F'}"
+        Delete "${terminfo[kdch1]:-$'\e[3~'}"
+        Up "${terminfo[kcuu1]:-$'\e[A'}"
+        Down "${terminfo[kcud1]:-$'\e[B'}"
+    )
 
-for keymap in viins emacs; do
-    ebindkey -M "$keymap" -A keybindings
-done
-ebindkey -M vicmd Backspace backward-delete-char
+    for keymap in viins emacs; do
+        bindkey -M "$keymap" "$key[Home]" beginning-of-line
+        bindkey -M "$keymap" "$key[End]" end-of-line
+        bindkey -M "$keymap" "$key[Delete]" delete-char
+        bindkey -M "$keymap" "$key[Up]" up-line-or-beginning-search
+        bindkey -M "$keymap" "$key[Down]" down-line-or-beginning-search
+        bindkey -M "$keymap" '^[[1;5C' forward-word
+        bindkey -M "$keymap" '^[[1;5D' backward-word
+        bindkey -M "$keymap" '^H' backward-kill-word
+        bindkey -M "$keymap" ' ' magic-space
+        bindkey -M "$keymap" '^A' beginning-of-line
+        bindkey -M "$keymap" '^E' end-of-line
+        bindkey -M "$keymap" '^W' backward-kill-word
+        bindkey -M "$keymap" '^U' backward-kill-line
+        bindkey -M "$keymap" '^K' kill-line
+        bindkey -M "$keymap" '^D' delete-char
+        bindkey -M "$keymap" '^[q' push-line-or-edit
+    done
+}
+bindkey -M vicmd '^?' backward-delete-char
 bindkey -M viins 'jk' vi-cmd-mode
 
 # Atuin owns Ctrl-R; Up/Down stay with native prefix history search.
@@ -63,32 +71,36 @@ bindkey -M vicmd '/' history-incremental-search-backward
 function fz-find() {
     emulate -L zsh
 
-    local marker prefix token dir selected
+    local marker prefix token leading dir raw_selection selected
+    local -a selected_paths
     if [[ $LBUFFER == *'**' ]]; then
         marker='**'
+        prefix=${LBUFFER[1,-3]}
     elif [[ $LBUFFER == *'*' ]]; then
         marker='*'
+        prefix=${LBUFFER[1,-2]}
     else
         return 0
     fi
 
-    prefix=${LBUFFER%$marker}
     token=${prefix##* }
+    leading=${prefix[1,$(( ${#prefix} - ${#token} ))]}
     dir=${token:-.}
     dir=${dir/#\~/$HOME}
     [[ -d $dir ]] || return 0
 
     if [[ $marker == '**' ]]; then
-        selected=$(fd -0 -H . -- "$dir" \
+        raw_selection=$(fd -0 -H . -- "$dir" \
             | fzf --read0 --print0 --tiebreak=end,length --prompt='path> ')
     else
-        selected=$(fd -0 -H -d 1 . -- "$dir" \
+        raw_selection=$(fd -0 -H -d 1 . -- "$dir" \
             | fzf --read0 --print0 --tiebreak=end,length --prompt='path> ')
     fi
-    selected=${selected%$'\0'}
+    selected_paths=("${(@0)raw_selection}")
+    selected=${selected_paths[1]:-}
     [[ -n $selected ]] || return 0
 
-    LBUFFER="${prefix%$token}${(q)selected}"
+    LBUFFER="${leading}${(q)selected}"
     zle end-of-line
 }
 zle -N fz-find
@@ -120,9 +132,8 @@ bindkey -M emacs . rationalise-dot
 
 autoload -Uz edit-command-line
 function edit-command-line-as-zsh() {
-    TMPSUFFIX=.zsh
+    local TMPSUFFIX=.zsh
     edit-command-line
-    unset TMPSUFFIX
 }
 zle -N edit-command-line-as-zsh
 bindkey -M viins '^X^E' edit-command-line-as-zsh

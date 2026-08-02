@@ -1,0 +1,11 @@
+# Python CLI tools migrated from uv tool environments.
+# Existing user-site libraries are outside this CLI migration and remain untouched.
+
+[tools]
+"pipx:git+https://github.com/Panniantong/agent-reach.git" = "e825f6740d24c6c315c3b0dc41907e6c87ff39a5"
+"pipx:bilibili-cli" = "0.6.2"
+"pipx:twitter-cli" = "0.8.5"
+"pipx:yt-dlp" = "2026.6.9"
+"pipx:zotero-mcp-server" = "0.3.0"
+"pipx:pymupdf" = "1.27.2.3"
+"pipx:weasyprint" = "68.1"

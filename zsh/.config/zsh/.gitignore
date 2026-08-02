@@ -2,7 +2,5 @@
 *.zwc
 history
 .zsh_history
-zi
-zi/*
 *zcompdump*
 zshrc.d/06-hidden.zsh

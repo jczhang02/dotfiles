@@ -1,45 +1,32 @@
 # ==== Prompt and syntax highlighting ====
 
-if (( ${ZSH_PLUGIN_INSTALL:-0} == 1 )); then
-    (( $+functions[_zsh_source_plugin] )) && unfunction _zsh_source_plugin
+if [[ ! -o monitor ]] || (( ${terminfo[colors]:-0} < 256 )); then
+    PROMPT='%n@%m:%~%# '
+    RPROMPT=''
     return 0
 fi
 
-: ${THEME:=p10k}
-
-case $THEME in
-    pure)
-        PROMPT=$'\n%F{cyan}❯ %f'
-        RPROMPT=''
-        zstyle ':prompt:pure:prompt:success' color cyan
-        _zsh_source_plugin \
-            "$ZDOTDIR/zi/plugins/Aloxaf---pure/pure.zsh"
-        ;;
-    p10k)
-        source "$ZDOTDIR/p10k.zsh"
-        _zsh_source_plugin \
-            "$ZDOTDIR/zi/plugins/romkatv---powerlevel10k/powerlevel10k.zsh-theme"
-        ;;
-esac
-
-# Theme data is loaded before zsh-syntax-highlighting, which remains the final
-# plugin to install ZLE hooks.
-_zsh_source_plugin \
-    "$ZDOTDIR/zi/plugins/catppuccin---zsh-syntax-highlighting/themes/catppuccin_latte-zsh-syntax-highlighting.zsh"
-_zsh_source_plugin \
-    "$ZDOTDIR/zi/plugins/zsh-users---zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-
-# Convert entry-file readiness into a runtime guarantee for the core editing
-# path. A second offline shell in zsh-setup relies on this flag.
-if [[ $THEME == p10k ]] && (( ! $+functions[p10k] )); then
-    ZSH_PLUGIN_LOAD_FAILED=1
+if (( ${ZI_AVAILABLE:-0} )); then
+    zi light romkatv/powerlevel10k
+    source "$ZDOTDIR/p10k.zsh"
 fi
-for _required_widget in vi-cmd-mode fzf-tab-complete autopair-insert; do
-    (( ${+widgets[$_required_widget]} )) || ZSH_PLUGIN_LOAD_FAILED=1
-done
-(( $+functions[_zsh_autosuggest_start] )) || ZSH_PLUGIN_LOAD_FAILED=1
-(( $+functions[_zsh_highlight] )) || ZSH_PLUGIN_LOAD_FAILED=1
-(( ZSH_PLUGIN_LOAD_FAILED )) && ZSH_PLUGINS_READY=0
 
-unset ZSH_PLUGIN_LOAD_FAILED _required_widget
-unfunction _zsh_source_plugin
+# F-Sy-H remains the final ZLE hook. An empty secondary theme prevents its
+# optional network fallback; the primary theme is the vendored Catppuccin file.
+typeset _fsyh_theme="$XDG_CONFIG_HOME/f-sy-h/catppuccin-latte.ini"
+typeset -g FAST_WORK_DIR="$XDG_CACHE_HOME/f-sy-h"
+if (( ${ZI_AVAILABLE:-0} )); then
+    command mkdir -p -m 700 -- "$FAST_WORK_DIR"
+    [[ -e $FAST_WORK_DIR/secondary_theme.zsh ]] \
+        || command touch -- "$FAST_WORK_DIR/secondary_theme.zsh"
+
+    if zi light z-shell/F-Sy-H \
+        && (( $+functions[fast-theme] )) \
+        && [[ ${FAST_THEME_NAME:-} != catppuccin-latte \
+            || ! -r $FAST_WORK_DIR/current_theme.zsh \
+            || $_fsyh_theme -nt $FAST_WORK_DIR/current_theme.zsh ]]; then
+        # Vendored from catppuccin/zsh-fsh at a9bdf479; see its MIT license.
+        fast-theme -q "$_fsyh_theme"
+    fi
+fi
+unset _fsyh_theme

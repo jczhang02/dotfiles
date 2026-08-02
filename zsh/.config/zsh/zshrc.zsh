@@ -1,18 +1,14 @@
 # Zsh configuration
 # Chengrui Zhang <jczhang@live.it>
 
-# ==== Optional one-shot startup profile ====
-typeset -gi ZSH_PROFILE_ACTIVE=0
-if [[ ${ZSH_PROFILE:-0} == 1 ]]; then
-    zmodload zsh/zprof
-    ZSH_PROFILE_ACTIVE=1
-fi
+zmodload zsh/terminfo 2>/dev/null
 
 # ==== tmux / sesh sessionizer ====
 function _zsh_maybe_start_sesh() {
     emulate -L zsh
 
     [[ -o interactive && -t 0 && -t 1 ]] || return 0
+    (( ${terminfo[colors]:-0} >= 8 )) || return 0
     [[ -z ${ZSH_NO_SESSIONIZER:-} && -z ${TMUX:-} ]] || return 0
     [[ ${TERM_PROGRAM:-} != Orca ]] || return 0
 
@@ -60,28 +56,40 @@ _zsh_maybe_start_sesh
 unfunction _zsh_maybe_start_sesh
 
 # ==== Powerlevel10k instant prompt ====
-if [[ -r $XDG_CACHE_HOME/p10k-instant-prompt-${(%):-%n}.zsh ]]; then
+if [[ -o monitor ]] \
+    && (( ${terminfo[colors]:-0} >= 256 )) \
+    && [[ -r $XDG_CACHE_HOME/p10k-instant-prompt-${(%):-%n}.zsh ]]; then
     source "$XDG_CACHE_HOME/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
 # ==== Zi ====
 typeset -gA ZI=(
-    BIN_DIR       "$ZDOTDIR/zi/bin"
-    HOME_DIR      "$ZDOTDIR/zi"
-    CONFIG_DIR    "$ZDOTDIR/zi"
-    COMPINIT_OPTS -C
+    BIN_DIR       "$XDG_DATA_HOME/zi/bin"
+    HOME_DIR      "$XDG_DATA_HOME/zi"
+    CACHE_DIR     "$XDG_CACHE_HOME/zi"
+    CONFIG_DIR    "$XDG_CONFIG_HOME/zi"
 )
+# Override values inherited from terminals started before Zi moved out of the
+# dotfiles repository. Zi otherwise keeps an existing ZPFX unchanged.
+typeset -g ZPFX="${ZI[HOME_DIR]}/polaris"
 typeset -gi ZI_AVAILABLE=0
-typeset -gi ZSH_PLUGINS_READY=0
 if [[ -r ${ZI[BIN_DIR]}/zi.zsh ]]; then
     source "${ZI[BIN_DIR]}/zi.zsh"
     ZI_AVAILABLE=1
 elif [[ -o interactive ]]; then
-    print -u2 -- "zsh: Zi is not installed; run zsh-setup from an interactive terminal."
+    print -u2 -- 'zsh: Zi is not installed; install z-shell/zi and restart Zsh.'
 fi
 
 # ==== Functions and numbered configuration ====
-autoload -Uz "$XDG_CONFIG_HOME"/zsh/functions/*(.N:t)
+# Autoload files are Zsh function bodies and therefore intentionally have no
+# extension. Executable helper scripts such as colors.py must not be parsed as
+# shell functions.
+typeset function_file
+for function_file in "$XDG_CONFIG_HOME"/zsh/functions/*(.N); do
+    [[ ${function_file:t} == *.* ]] && continue
+    autoload -Uz "${function_file:t}"
+done
+unset function_file
 autoload -Uz zcalc zmv zargs
 
 for config_file in "$ZDOTDIR"/zshrc.d/*.zsh(N); do
@@ -89,38 +97,11 @@ for config_file in "$ZDOTDIR"/zshrc.d/*.zsh(N); do
 done
 unset config_file
 
-# ==== Machine-local non-secret helpers ====
-function _zsh_source_local_dir() {
-    emulate -L zsh
-    local -r local_dir="$XDG_CONFIG_HOME/zsh-local.d"
-    [[ -d $local_dir ]] || return 0
-
-    local mode file
-    if [[ ! -O $local_dir ]]; then
-        print -u2 -- "zsh: skipping $local_dir: not owned by the current user"
-        return 0
-    fi
-    mode=$(stat -c '%a' -- "$local_dir" 2>/dev/null) || return 0
-    if (( (8#$mode & 8#022) != 0 )); then
-        print -u2 -- "zsh: skipping $local_dir: group/other writable"
-        return 0
-    fi
-
-    for file in "$local_dir"/*.zsh(N); do
-        if [[ ! -O $file ]]; then
-            print -u2 -- "zsh: skipping $file: not owned by the current user"
-            continue
-        fi
-        mode=$(stat -c '%a' -- "$file" 2>/dev/null) || continue
-        if (( (8#$mode & 8#022) != 0 )); then
-            print -u2 -- "zsh: skipping $file: group/other writable"
-            continue
-        fi
-        source "$file"
-    done
-}
-_zsh_source_local_dir
-unfunction _zsh_source_local_dir
+# ==== Machine-local helpers ====
+for local_config in "$XDG_CONFIG_HOME"/zsh-local.d/*.zsh(N); do
+    source "$local_config"
+done
+unset local_config
 
 # Prefer standalone launchers and remove paths inherited from retired managers.
 path=("$HOME/.local/bin" ${path:#$HOME/.local/bin})
@@ -135,14 +116,33 @@ path=(${path:#$HOME/.local/share/bob/nvim-bin})
 path=(${path:#$HOME/.deno/bin})
 path=(${path:#$HOME/.bun/bin})
 path=(${path:#$HOME/.local/share/nvm/*})
-path=(${path:#$ZDOTDIR/zi/plugins/lilydjwg---search-and-view})
+path=(${path:#$ZDOTDIR/zi/*})
+path=(${path:#${ZDOTDIR:A}/zi/*})
 
-if (( ZSH_PROFILE_ACTIVE )); then
-    local_profile_dir="$XDG_CACHE_HOME/zsh"
-    command mkdir -p -m 700 -- "$local_profile_dir"
-    local_profile_file="$local_profile_dir/zprof-$$.log"
-    zprof >| "$local_profile_file"
-    command chmod 600 -- "$local_profile_file"
-    print -u2 -- "zsh profile: $local_profile_file"
-    unset local_profile_dir local_profile_file
+# mise recommends PATH activation for interactive shells. Keep this after all
+# other PATH edits so mise owns the final tool ordering and environment hooks.
+# Clean the saved base PATH inherited from shells started before Zi's XDG move.
+if [[ -n ${__MISE_ORIG_PATH:-} ]]; then
+    () {
+        local -a original_path=("${(@s.:.)__MISE_ORIG_PATH}")
+        original_path=(${original_path:#$ZDOTDIR/zi/*})
+        original_path=(${original_path:#${ZDOTDIR:A}/zi/*})
+        export __MISE_ORIG_PATH="${(j.:.)original_path}"
+    }
+fi
+eval "$(mise activate zsh)"
+path=(${path:#$ZDOTDIR/zi/*})
+path=(${path:#${ZDOTDIR:A}/zi/*})
+
+# mise rebuilds PATH during activation. Restore an inherited active mamba
+# environment with mamba's own reactivation output after that final rebuild.
+if (( ${CONDA_SHLVL:-0} > 0 && $+commands[mamba] )) \
+    && [[ -n ${CONDA_PREFIX:-} ]]; then
+    eval "$(command mamba shell reactivate --shell zsh)"
+fi
+
+# A nested shell inherits VIRTUAL_ENV, but mise may place its bin directory
+# behind system tools while rebuilding PATH. Keep an active standard venv first.
+if [[ -n ${VIRTUAL_ENV:-} && -d $VIRTUAL_ENV/bin ]]; then
+    path=("$VIRTUAL_ENV/bin" ${path:#$VIRTUAL_ENV/bin})
 fi

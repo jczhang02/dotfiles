@@ -31,7 +31,7 @@ _gig() {
             (new)
 _arguments "${_arguments_options[@]}" : \
 '--title=[One-line title for the order]:TITLE:_default' \
-'--slug=[Short slug (used as the folder name later by \`gig init\`)]:SLUG:_default' \
+'--slug=[Short slug used to identify the order]:SLUG:_default' \
 '--quoted-price=[Quoted price in yuan (e.g. 1200 or 1200.50). Optional at create time]:QUOTED_PRICE:_default' \
 '--final-price=[Final price in yuan (e.g. 1200 or 1200.50)]:FINAL_PRICE:_default' \
 '--cut-ratio=[Override default cut ratio (e.g. 0.6)]:CUT_RATIO:_default' \
@@ -49,6 +49,7 @@ _arguments "${_arguments_options[@]}" : \
 '--status=[Filter by status (e.g. lead, accepted, in_progress)]:STATUS:_default' \
 '-a[Show all orders including archived and cancelled]' \
 '--all[Show all orders including archived and cancelled]' \
+'--json[Emit stable machine-readable JSON for the default decision board]' \
 '-h[Print help]' \
 '--help[Print help]' \
 && ret=0
@@ -58,28 +59,17 @@ _arguments "${_arguments_options[@]}" : \
 '--status=[Filter by status (e.g. lead, accepted, in_progress)]:STATUS:_default' \
 '-a[Show all orders including archived and cancelled]' \
 '--all[Show all orders including archived and cancelled]' \
+'--json[Emit stable machine-readable JSON for the default decision board]' \
 '-h[Print help]' \
 '--help[Print help]' \
 && ret=0
 ;;
 (show)
 _arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
 '-h[Print help]' \
 '--help[Print help]' \
 '::id -- Order id or slug (omit to use context from current directory):_default' \
-&& ret=0
-;;
-(init)
-_arguments "${_arguments_options[@]}" : \
-'--slug=[Override the slug / folder name used for the project directory]:SLUG:_default' \
-'--title=[Order title (used when creating a new order without an id)]:TITLE:_default' \
-'--quoted-price=[Quoted price in yuan (used when creating a new order)]:QUOTED_PRICE:_default' \
-'--source=[Source name (used when creating a new order)]:SOURCE:_default' \
-'-i[Interactive mode\: prompt for order details]' \
-'--interactive[Interactive mode\: prompt for order details]' \
-'-h[Print help]' \
-'--help[Print help]' \
-'::id -- Order id or slug. Omit to create a new order for the current directory:_default' \
 && ret=0
 ;;
 (price)
@@ -232,27 +222,6 @@ _arguments "${_arguments_options[@]}" : \
 '--fix[Attempt to fix broken paths by searching dev_root and archive_root]' \
 '-h[Print help]' \
 '--help[Print help]' \
-&& ret=0
-;;
-(pack)
-_arguments "${_arguments_options[@]}" : \
-'--format=[Archive format\: "zip" (default) or "tar.zst"]:FORMAT:_default' \
-'--output=[Override the output path (default\: \$TMPDIR/gig-<slug>.<ext>)]:OUTPUT:_files' \
-'--dry-run[Print the file list without creating the archive]' \
-'-h[Print help]' \
-'--help[Print help]' \
-'::id -- Order id or slug (omit to use context from current directory):_default' \
-&& ret=0
-;;
-(deliver)
-_arguments "${_arguments_options[@]}" : \
-'--uploader=[Uploader name (overrides config default_uploader)]:UPLOADER:_default' \
-'--format=[Archive format used when packing\: "zip" or "tar.zst" (defaults to config pack.default_format)]:FORMAT:_default' \
-'--resend[Skip pack step and re-upload the most recent local archive]' \
-'--dry-run[Print what would be packed/uploaded without actually doing it]' \
-'-h[Print help]' \
-'--help[Print help]' \
-'::id -- Order id or slug (omit to use context from current directory):_default' \
 && ret=0
 ;;
 (stats)
@@ -492,14 +461,6 @@ _arguments "${_arguments_options[@]}" : \
 ':id -- Order id or slug:_default' \
 && ret=0
 ;;
-(upload)
-_arguments "${_arguments_options[@]}" : \
-'--uploader=[Override the uploader (e.g. s3\:aliyun-hk, rclone\:r2)]:UPLOADER:_default' \
-'-h[Print help]' \
-'--help[Print help]' \
-'*::files -- Files to upload:_files' \
-&& ret=0
-;;
 (backup)
 _arguments "${_arguments_options[@]}" : \
 '-h[Print help]' \
@@ -574,6 +535,461 @@ esac
     ;;
 esac
 ;;
+(quote)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__quote_commands" \
+"*::: :->quote" \
+&& ret=0
+
+    case $state in
+    (quote)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-quote-command-$line[1]:"
+        case $line[1] in
+            (new)
+_arguments "${_arguments_options[@]}" : \
+'--slug=[Stable quote draft slug]:SLUG:_default' \
+'--title=[One-line quote title]:TITLE:_default' \
+'--project-type=[Partjob project type, e.g. crawler or frontend_web]:PROJECT_TYPE:_default' \
+'--summary=[Short problem or scope summary]:SUMMARY:_default' \
+'--client-label=[Human-readable client label]:CLIENT_LABEL:_default' \
+'--source-org=[Source group / org identifier]:SOURCE_ORG:_default' \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Quote draft id or slug:_default' \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(price)
+_arguments "${_arguments_options[@]}" : \
+'--min=[Minimum quote in yuan]:MIN:_default' \
+'--recommended=[Recommended quote in yuan]:RECOMMENDED:_default' \
+'--max=[Maximum quote in yuan]:MAX:_default' \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Quote draft id or slug:_default' \
+&& ret=0
+;;
+(mark-sent)
+_arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Quote draft id or slug:_default' \
+&& ret=0
+;;
+(accept)
+_arguments "${_arguments_options[@]}" : \
+'--project-dir=[Existing formal project directory containing .gig/JOB.md and .gig/QUOTE.md]:PROJECT_DIR:_files' \
+'--my-cut-ratio=[Developer cut ratio for the promoted order]:MY_CUT_RATIO:_default' \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Quote draft id or slug:_default' \
+&& ret=0
+;;
+(drop)
+_arguments "${_arguments_options[@]}" : \
+'--reason=[Non-empty reason for dropping the draft]:REASON:_default' \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Quote draft id or slug:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__quote__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-quote-help-command-$line[1]:"
+        case $line[1] in
+            (new)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(price)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(mark-sent)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(accept)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(drop)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(plan)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__plan_commands" \
+"*::: :->plan" \
+&& ret=0
+
+    case $state in
+    (plan)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-plan-command-$line[1]:"
+        case $line[1] in
+            (ready)
+_arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(approve)
+_arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(reject)
+_arguments "${_arguments_options[@]}" : \
+'--reason=[Non-empty reason for rejection]:REASON:_default' \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__plan__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-plan-help-command-$line[1]:"
+        case $line[1] in
+            (ready)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(approve)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(reject)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(work)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__work_commands" \
+"*::: :->work" \
+&& ret=0
+
+    case $state in
+    (work)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-work-command-$line[1]:"
+        case $line[1] in
+            (start)
+_arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__work__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-work-help-command-$line[1]:"
+        case $line[1] in
+            (start)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(acceptance)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__acceptance_commands" \
+"*::: :->acceptance" \
+&& ret=0
+
+    case $state in
+    (acceptance)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-acceptance-command-$line[1]:"
+        case $line[1] in
+            (check)
+_arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(complete)
+_arguments "${_arguments_options[@]}" : \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__acceptance__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-acceptance-help-command-$line[1]:"
+        case $line[1] in
+            (check)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(complete)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(package)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__package_commands" \
+"*::: :->package" \
+&& ret=0
+
+    case $state in
+    (package)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-package-command-$line[1]:"
+        case $line[1] in
+            (check)
+_arguments "${_arguments_options[@]}" : \
+'--delivery-date=[Delivery date matching manifest.toml]:DELIVERY_DATE:_default' \
+'--delivery-dir=[Existing .gig delivery directory]:DELIVERY_DIR:_files' \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(send)
+_arguments "${_arguments_options[@]}" : \
+'--delivery-date=[Delivery date matching manifest.toml]:DELIVERY_DATE:_default' \
+'--delivery-dir=[Existing .gig delivery directory]:DELIVERY_DIR:_files' \
+'--uploader=[Uploader name (overrides config default_uploader)]:UPLOADER:_default' \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__package__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-package-help-command-$line[1]:"
+        case $line[1] in
+            (check)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(send)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(artifact)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_gig__subcmd__artifact_commands" \
+"*::: :->artifact" \
+&& ret=0
+
+    case $state in
+    (artifact)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-artifact-command-$line[1]:"
+        case $line[1] in
+            (send)
+_arguments "${_arguments_options[@]}" : \
+'--uploader=[Uploader name (overrides config default_uploader)]:UPLOADER:_default' \
+'--json[Emit stable machine-readable JSON]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+'*::files -- Files to upload and attach to the order:_files' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__artifact__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-artifact-help-command-$line[1]:"
+        case $line[1] in
+            (send)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(serve)
+_arguments "${_arguments_options[@]}" : \
+'--port=[Localhost port to bind. Use 0 for a random free port]:PORT:_default' \
+'--open[Open the printed URL in the default browser]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':id_or_slug -- Order id or slug:_default' \
+&& ret=0
+;;
+(gui)
+_arguments "${_arguments_options[@]}" : \
+'--port=[Localhost port to bind. Use 0 for a random free port]:PORT:_default' \
+'--no-open[Do not open a browser; only print the local URL]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
 (help)
 _arguments "${_arguments_options[@]}" : \
 ":: :_gig__subcmd__help_commands" \
@@ -595,10 +1011,6 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (show)
-_arguments "${_arguments_options[@]}" : \
-&& ret=0
-;;
-(init)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -667,14 +1079,6 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (doctor)
-_arguments "${_arguments_options[@]}" : \
-&& ret=0
-;;
-(pack)
-_arguments "${_arguments_options[@]}" : \
-&& ret=0
-;;
-(deliver)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -774,10 +1178,6 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
-(upload)
-_arguments "${_arguments_options[@]}" : \
-&& ret=0
-;;
 (backup)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
@@ -810,6 +1210,174 @@ _arguments "${_arguments_options[@]}" : \
     ;;
 esac
 ;;
+(quote)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__quote_commands" \
+"*::: :->quote" \
+&& ret=0
+
+    case $state in
+    (quote)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-quote-command-$line[1]:"
+        case $line[1] in
+            (new)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(price)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(mark-sent)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(accept)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(drop)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(plan)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__plan_commands" \
+"*::: :->plan" \
+&& ret=0
+
+    case $state in
+    (plan)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-plan-command-$line[1]:"
+        case $line[1] in
+            (ready)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(approve)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(reject)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(work)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__work_commands" \
+"*::: :->work" \
+&& ret=0
+
+    case $state in
+    (work)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-work-command-$line[1]:"
+        case $line[1] in
+            (start)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(acceptance)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__acceptance_commands" \
+"*::: :->acceptance" \
+&& ret=0
+
+    case $state in
+    (acceptance)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-acceptance-command-$line[1]:"
+        case $line[1] in
+            (check)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(complete)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(package)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__package_commands" \
+"*::: :->package" \
+&& ret=0
+
+    case $state in
+    (package)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-package-command-$line[1]:"
+        case $line[1] in
+            (check)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(send)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(artifact)
+_arguments "${_arguments_options[@]}" : \
+":: :_gig__subcmd__help__subcmd__artifact_commands" \
+"*::: :->artifact" \
+&& ret=0
+
+    case $state in
+    (artifact)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:gig-help-artifact-command-$line[1]:"
+        case $line[1] in
+            (send)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(serve)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(gui)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (help)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
@@ -830,7 +1398,6 @@ _gig_commands() {
 'ls:List orders' \
 'list:List orders' \
 'show:Show a single order in detail' \
-'init:Initialise a project folder for an accepted order' \
 'price:Update the final price of an order' \
 'change:Record a requirement change' \
 'note:Append a note to an order' \
@@ -842,8 +1409,6 @@ _gig_commands() {
 'lead:Lead subcommands (promote / drop / ls)' \
 'cd:Print the dev_path of an order (for shell \`cd\`)' \
 'doctor:Run consistency checks on paths and data' \
-'pack:Pack a project into an archive (zip or tar.zst)' \
-'deliver:Pack, upload, record artifact, and transition order to delivered' \
 'stats:Show income statistics' \
 'export:Export orders to CSV or JSON' \
 'client:Client subcommands (ls / show)' \
@@ -851,18 +1416,99 @@ _gig_commands() {
 'config:Config subcommands (get / set / edit)' \
 'import:Import existing project directories into the database' \
 'delete:Delete an order from the database' \
-'upload:Upload arbitrary files to the configured cloud storage' \
 'backup:Snapshot the database to the backups directory' \
 'completion:Print shell completion script' \
 'source:Source subcommands (add / ls)' \
+'quote:Quote draft workflow subcommands' \
+'plan:Workflow plan gate subcommands' \
+'work:Workflow work-start gate subcommands' \
+'acceptance:Workflow acceptance gate subcommands' \
+'package:Client package validation subcommands' \
+'artifact:Standalone order artifact upload subcommands' \
+'serve:Serve workflow artifacts over a localhost URL' \
+'gui:Start the local read-only GUI companion' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'gig commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__acceptance_commands] )) ||
+_gig__subcmd__acceptance_commands() {
+    local commands; commands=(
+'check:Check workflow-created acceptance evidence' \
+'complete:Complete acceptance and mark the order ready to deliver' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig acceptance commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__acceptance__subcmd__check_commands] )) ||
+_gig__subcmd__acceptance__subcmd__check_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig acceptance check commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__acceptance__subcmd__complete_commands] )) ||
+_gig__subcmd__acceptance__subcmd__complete_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig acceptance complete commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__acceptance__subcmd__help_commands] )) ||
+_gig__subcmd__acceptance__subcmd__help_commands() {
+    local commands; commands=(
+'check:Check workflow-created acceptance evidence' \
+'complete:Complete acceptance and mark the order ready to deliver' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig acceptance help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__acceptance__subcmd__help__subcmd__check_commands] )) ||
+_gig__subcmd__acceptance__subcmd__help__subcmd__check_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig acceptance help check commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__acceptance__subcmd__help__subcmd__complete_commands] )) ||
+_gig__subcmd__acceptance__subcmd__help__subcmd__complete_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig acceptance help complete commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__acceptance__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__acceptance__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig acceptance help help commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__archive_commands] )) ||
 _gig__subcmd__archive_commands() {
     local commands; commands=()
     _describe -t commands 'gig archive commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__artifact_commands] )) ||
+_gig__subcmd__artifact_commands() {
+    local commands; commands=(
+'send:Upload standalone files and record artifacts without changing order status' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig artifact commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__artifact__subcmd__help_commands] )) ||
+_gig__subcmd__artifact__subcmd__help_commands() {
+    local commands; commands=(
+'send:Upload standalone files and record artifacts without changing order status' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig artifact help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__artifact__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__artifact__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig artifact help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__artifact__subcmd__help__subcmd__send_commands] )) ||
+_gig__subcmd__artifact__subcmd__help__subcmd__send_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig artifact help send commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__artifact__subcmd__send_commands] )) ||
+_gig__subcmd__artifact__subcmd__send_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig artifact send commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__backup_commands] )) ||
 _gig__subcmd__backup_commands() {
@@ -992,11 +1638,6 @@ _gig__subcmd__delete_commands() {
     local commands; commands=()
     _describe -t commands 'gig delete commands' commands "$@"
 }
-(( $+functions[_gig__subcmd__deliver_commands] )) ||
-_gig__subcmd__deliver_commands() {
-    local commands; commands=()
-    _describe -t commands 'gig deliver commands' commands "$@"
-}
 (( $+functions[_gig__subcmd__doctor_commands] )) ||
 _gig__subcmd__doctor_commands() {
     local commands; commands=()
@@ -1007,13 +1648,17 @@ _gig__subcmd__export_commands() {
     local commands; commands=()
     _describe -t commands 'gig export commands' commands "$@"
 }
+(( $+functions[_gig__subcmd__gui_commands] )) ||
+_gig__subcmd__gui_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig gui commands' commands "$@"
+}
 (( $+functions[_gig__subcmd__help_commands] )) ||
 _gig__subcmd__help_commands() {
     local commands; commands=(
 'new:Create a new order' \
 'ls:List orders' \
 'show:Show a single order in detail' \
-'init:Initialise a project folder for an accepted order' \
 'price:Update the final price of an order' \
 'change:Record a requirement change' \
 'note:Append a note to an order' \
@@ -1025,8 +1670,6 @@ _gig__subcmd__help_commands() {
 'lead:Lead subcommands (promote / drop / ls)' \
 'cd:Print the dev_path of an order (for shell \`cd\`)' \
 'doctor:Run consistency checks on paths and data' \
-'pack:Pack a project into an archive (zip or tar.zst)' \
-'deliver:Pack, upload, record artifact, and transition order to delivered' \
 'stats:Show income statistics' \
 'export:Export orders to CSV or JSON' \
 'client:Client subcommands (ls / show)' \
@@ -1034,18 +1677,55 @@ _gig__subcmd__help_commands() {
 'config:Config subcommands (get / set / edit)' \
 'import:Import existing project directories into the database' \
 'delete:Delete an order from the database' \
-'upload:Upload arbitrary files to the configured cloud storage' \
 'backup:Snapshot the database to the backups directory' \
 'completion:Print shell completion script' \
 'source:Source subcommands (add / ls)' \
+'quote:Quote draft workflow subcommands' \
+'plan:Workflow plan gate subcommands' \
+'work:Workflow work-start gate subcommands' \
+'acceptance:Workflow acceptance gate subcommands' \
+'package:Client package validation subcommands' \
+'artifact:Standalone order artifact upload subcommands' \
+'serve:Serve workflow artifacts over a localhost URL' \
+'gui:Start the local read-only GUI companion' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'gig help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__acceptance_commands] )) ||
+_gig__subcmd__help__subcmd__acceptance_commands() {
+    local commands; commands=(
+'check:Check workflow-created acceptance evidence' \
+'complete:Complete acceptance and mark the order ready to deliver' \
+    )
+    _describe -t commands 'gig help acceptance commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__acceptance__subcmd__check_commands] )) ||
+_gig__subcmd__help__subcmd__acceptance__subcmd__check_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help acceptance check commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__acceptance__subcmd__complete_commands] )) ||
+_gig__subcmd__help__subcmd__acceptance__subcmd__complete_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help acceptance complete commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__help__subcmd__archive_commands] )) ||
 _gig__subcmd__help__subcmd__archive_commands() {
     local commands; commands=()
     _describe -t commands 'gig help archive commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__artifact_commands] )) ||
+_gig__subcmd__help__subcmd__artifact_commands() {
+    local commands; commands=(
+'send:Upload standalone files and record artifacts without changing order status' \
+    )
+    _describe -t commands 'gig help artifact commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__artifact__subcmd__send_commands] )) ||
+_gig__subcmd__help__subcmd__artifact__subcmd__send_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help artifact send commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__help__subcmd__backup_commands] )) ||
 _gig__subcmd__help__subcmd__backup_commands() {
@@ -1119,11 +1799,6 @@ _gig__subcmd__help__subcmd__delete_commands() {
     local commands; commands=()
     _describe -t commands 'gig help delete commands' commands "$@"
 }
-(( $+functions[_gig__subcmd__help__subcmd__deliver_commands] )) ||
-_gig__subcmd__help__subcmd__deliver_commands() {
-    local commands; commands=()
-    _describe -t commands 'gig help deliver commands' commands "$@"
-}
 (( $+functions[_gig__subcmd__help__subcmd__doctor_commands] )) ||
 _gig__subcmd__help__subcmd__doctor_commands() {
     local commands; commands=()
@@ -1134,6 +1809,11 @@ _gig__subcmd__help__subcmd__export_commands() {
     local commands; commands=()
     _describe -t commands 'gig help export commands' commands "$@"
 }
+(( $+functions[_gig__subcmd__help__subcmd__gui_commands] )) ||
+_gig__subcmd__help__subcmd__gui_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help gui commands' commands "$@"
+}
 (( $+functions[_gig__subcmd__help__subcmd__help_commands] )) ||
 _gig__subcmd__help__subcmd__help_commands() {
     local commands; commands=()
@@ -1143,11 +1823,6 @@ _gig__subcmd__help__subcmd__help_commands() {
 _gig__subcmd__help__subcmd__import_commands() {
     local commands; commands=()
     _describe -t commands 'gig help import commands' commands "$@"
-}
-(( $+functions[_gig__subcmd__help__subcmd__init_commands] )) ||
-_gig__subcmd__help__subcmd__init_commands() {
-    local commands; commands=()
-    _describe -t commands 'gig help init commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__help__subcmd__lead_commands] )) ||
 _gig__subcmd__help__subcmd__lead_commands() {
@@ -1188,20 +1863,110 @@ _gig__subcmd__help__subcmd__note_commands() {
     local commands; commands=()
     _describe -t commands 'gig help note commands' commands "$@"
 }
-(( $+functions[_gig__subcmd__help__subcmd__pack_commands] )) ||
-_gig__subcmd__help__subcmd__pack_commands() {
+(( $+functions[_gig__subcmd__help__subcmd__package_commands] )) ||
+_gig__subcmd__help__subcmd__package_commands() {
+    local commands; commands=(
+'check:Validate workflow-created package without uploading' \
+'send:Validate and upload workflow-created package, then mark sent' \
+    )
+    _describe -t commands 'gig help package commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__package__subcmd__check_commands] )) ||
+_gig__subcmd__help__subcmd__package__subcmd__check_commands() {
     local commands; commands=()
-    _describe -t commands 'gig help pack commands' commands "$@"
+    _describe -t commands 'gig help package check commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__package__subcmd__send_commands] )) ||
+_gig__subcmd__help__subcmd__package__subcmd__send_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help package send commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__help__subcmd__paid_commands] )) ||
 _gig__subcmd__help__subcmd__paid_commands() {
     local commands; commands=()
     _describe -t commands 'gig help paid commands' commands "$@"
 }
+(( $+functions[_gig__subcmd__help__subcmd__plan_commands] )) ||
+_gig__subcmd__help__subcmd__plan_commands() {
+    local commands; commands=(
+'ready:Mark workflow-created plan files ready for review' \
+'approve:Approve a ready plan' \
+'reject:Reject a ready plan and record the reason' \
+    )
+    _describe -t commands 'gig help plan commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__plan__subcmd__approve_commands] )) ||
+_gig__subcmd__help__subcmd__plan__subcmd__approve_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help plan approve commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__plan__subcmd__ready_commands] )) ||
+_gig__subcmd__help__subcmd__plan__subcmd__ready_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help plan ready commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__plan__subcmd__reject_commands] )) ||
+_gig__subcmd__help__subcmd__plan__subcmd__reject_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help plan reject commands' commands "$@"
+}
 (( $+functions[_gig__subcmd__help__subcmd__price_commands] )) ||
 _gig__subcmd__help__subcmd__price_commands() {
     local commands; commands=()
     _describe -t commands 'gig help price commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__quote_commands] )) ||
+_gig__subcmd__help__subcmd__quote_commands() {
+    local commands; commands=(
+'new:Record a pre-acceptance quote draft' \
+'show:Show a quote draft' \
+'list:List quote drafts' \
+'price:Price a quote draft' \
+'mark-sent:Mark a priced quote as sent outside gig' \
+'accept:Accept a priced quote and register workflow paths' \
+'drop:Drop a quote draft' \
+    )
+    _describe -t commands 'gig help quote commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__quote__subcmd__accept_commands] )) ||
+_gig__subcmd__help__subcmd__quote__subcmd__accept_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help quote accept commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__quote__subcmd__drop_commands] )) ||
+_gig__subcmd__help__subcmd__quote__subcmd__drop_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help quote drop commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__quote__subcmd__list_commands] )) ||
+_gig__subcmd__help__subcmd__quote__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help quote list commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__quote__subcmd__mark-sent_commands] )) ||
+_gig__subcmd__help__subcmd__quote__subcmd__mark-sent_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help quote mark-sent commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__quote__subcmd__new_commands] )) ||
+_gig__subcmd__help__subcmd__quote__subcmd__new_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help quote new commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__quote__subcmd__price_commands] )) ||
+_gig__subcmd__help__subcmd__quote__subcmd__price_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help quote price commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__quote__subcmd__show_commands] )) ||
+_gig__subcmd__help__subcmd__quote__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help quote show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__serve_commands] )) ||
+_gig__subcmd__help__subcmd__serve_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig help serve commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__help__subcmd__show_commands] )) ||
 _gig__subcmd__help__subcmd__show_commands() {
@@ -1265,20 +2030,22 @@ _gig__subcmd__help__subcmd__template__subcmd__show_commands() {
     local commands; commands=()
     _describe -t commands 'gig help template show commands' commands "$@"
 }
-(( $+functions[_gig__subcmd__help__subcmd__upload_commands] )) ||
-_gig__subcmd__help__subcmd__upload_commands() {
+(( $+functions[_gig__subcmd__help__subcmd__work_commands] )) ||
+_gig__subcmd__help__subcmd__work_commands() {
+    local commands; commands=(
+'start:Start execution after the plan is approved' \
+    )
+    _describe -t commands 'gig help work commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__help__subcmd__work__subcmd__start_commands] )) ||
+_gig__subcmd__help__subcmd__work__subcmd__start_commands() {
     local commands; commands=()
-    _describe -t commands 'gig help upload commands' commands "$@"
+    _describe -t commands 'gig help work start commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__import_commands] )) ||
 _gig__subcmd__import_commands() {
     local commands; commands=()
     _describe -t commands 'gig import commands' commands "$@"
-}
-(( $+functions[_gig__subcmd__init_commands] )) ||
-_gig__subcmd__init_commands() {
-    local commands; commands=()
-    _describe -t commands 'gig init commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__lead_commands] )) ||
 _gig__subcmd__lead_commands() {
@@ -1350,20 +2117,221 @@ _gig__subcmd__note_commands() {
     local commands; commands=()
     _describe -t commands 'gig note commands' commands "$@"
 }
-(( $+functions[_gig__subcmd__pack_commands] )) ||
-_gig__subcmd__pack_commands() {
+(( $+functions[_gig__subcmd__package_commands] )) ||
+_gig__subcmd__package_commands() {
+    local commands; commands=(
+'check:Validate workflow-created package without uploading' \
+'send:Validate and upload workflow-created package, then mark sent' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig package commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__package__subcmd__check_commands] )) ||
+_gig__subcmd__package__subcmd__check_commands() {
     local commands; commands=()
-    _describe -t commands 'gig pack commands' commands "$@"
+    _describe -t commands 'gig package check commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__package__subcmd__help_commands] )) ||
+_gig__subcmd__package__subcmd__help_commands() {
+    local commands; commands=(
+'check:Validate workflow-created package without uploading' \
+'send:Validate and upload workflow-created package, then mark sent' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig package help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__package__subcmd__help__subcmd__check_commands] )) ||
+_gig__subcmd__package__subcmd__help__subcmd__check_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig package help check commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__package__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__package__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig package help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__package__subcmd__help__subcmd__send_commands] )) ||
+_gig__subcmd__package__subcmd__help__subcmd__send_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig package help send commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__package__subcmd__send_commands] )) ||
+_gig__subcmd__package__subcmd__send_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig package send commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__paid_commands] )) ||
 _gig__subcmd__paid_commands() {
     local commands; commands=()
     _describe -t commands 'gig paid commands' commands "$@"
 }
+(( $+functions[_gig__subcmd__plan_commands] )) ||
+_gig__subcmd__plan_commands() {
+    local commands; commands=(
+'ready:Mark workflow-created plan files ready for review' \
+'approve:Approve a ready plan' \
+'reject:Reject a ready plan and record the reason' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig plan commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__plan__subcmd__approve_commands] )) ||
+_gig__subcmd__plan__subcmd__approve_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig plan approve commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__plan__subcmd__help_commands] )) ||
+_gig__subcmd__plan__subcmd__help_commands() {
+    local commands; commands=(
+'ready:Mark workflow-created plan files ready for review' \
+'approve:Approve a ready plan' \
+'reject:Reject a ready plan and record the reason' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig plan help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__plan__subcmd__help__subcmd__approve_commands] )) ||
+_gig__subcmd__plan__subcmd__help__subcmd__approve_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig plan help approve commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__plan__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__plan__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig plan help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__plan__subcmd__help__subcmd__ready_commands] )) ||
+_gig__subcmd__plan__subcmd__help__subcmd__ready_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig plan help ready commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__plan__subcmd__help__subcmd__reject_commands] )) ||
+_gig__subcmd__plan__subcmd__help__subcmd__reject_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig plan help reject commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__plan__subcmd__ready_commands] )) ||
+_gig__subcmd__plan__subcmd__ready_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig plan ready commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__plan__subcmd__reject_commands] )) ||
+_gig__subcmd__plan__subcmd__reject_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig plan reject commands' commands "$@"
+}
 (( $+functions[_gig__subcmd__price_commands] )) ||
 _gig__subcmd__price_commands() {
     local commands; commands=()
     _describe -t commands 'gig price commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote_commands] )) ||
+_gig__subcmd__quote_commands() {
+    local commands; commands=(
+'new:Record a pre-acceptance quote draft' \
+'show:Show a quote draft' \
+'list:List quote drafts' \
+'price:Price a quote draft' \
+'mark-sent:Mark a priced quote as sent outside gig' \
+'accept:Accept a priced quote and register workflow paths' \
+'drop:Drop a quote draft' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig quote commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__accept_commands] )) ||
+_gig__subcmd__quote__subcmd__accept_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote accept commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__drop_commands] )) ||
+_gig__subcmd__quote__subcmd__drop_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote drop commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help_commands] )) ||
+_gig__subcmd__quote__subcmd__help_commands() {
+    local commands; commands=(
+'new:Record a pre-acceptance quote draft' \
+'show:Show a quote draft' \
+'list:List quote drafts' \
+'price:Price a quote draft' \
+'mark-sent:Mark a priced quote as sent outside gig' \
+'accept:Accept a priced quote and register workflow paths' \
+'drop:Drop a quote draft' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig quote help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help__subcmd__accept_commands] )) ||
+_gig__subcmd__quote__subcmd__help__subcmd__accept_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote help accept commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help__subcmd__drop_commands] )) ||
+_gig__subcmd__quote__subcmd__help__subcmd__drop_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote help drop commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__quote__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help__subcmd__list_commands] )) ||
+_gig__subcmd__quote__subcmd__help__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote help list commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help__subcmd__mark-sent_commands] )) ||
+_gig__subcmd__quote__subcmd__help__subcmd__mark-sent_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote help mark-sent commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help__subcmd__new_commands] )) ||
+_gig__subcmd__quote__subcmd__help__subcmd__new_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote help new commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help__subcmd__price_commands] )) ||
+_gig__subcmd__quote__subcmd__help__subcmd__price_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote help price commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__help__subcmd__show_commands] )) ||
+_gig__subcmd__quote__subcmd__help__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote help show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__list_commands] )) ||
+_gig__subcmd__quote__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote list commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__mark-sent_commands] )) ||
+_gig__subcmd__quote__subcmd__mark-sent_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote mark-sent commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__new_commands] )) ||
+_gig__subcmd__quote__subcmd__new_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote new commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__price_commands] )) ||
+_gig__subcmd__quote__subcmd__price_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote price commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__quote__subcmd__show_commands] )) ||
+_gig__subcmd__quote__subcmd__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig quote show commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__serve_commands] )) ||
+_gig__subcmd__serve_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig serve commands' commands "$@"
 }
 (( $+functions[_gig__subcmd__show_commands] )) ||
 _gig__subcmd__show_commands() {
@@ -1483,10 +2451,36 @@ _gig__subcmd__template__subcmd__show_commands() {
     local commands; commands=()
     _describe -t commands 'gig template show commands' commands "$@"
 }
-(( $+functions[_gig__subcmd__upload_commands] )) ||
-_gig__subcmd__upload_commands() {
+(( $+functions[_gig__subcmd__work_commands] )) ||
+_gig__subcmd__work_commands() {
+    local commands; commands=(
+'start:Start execution after the plan is approved' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig work commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__work__subcmd__help_commands] )) ||
+_gig__subcmd__work__subcmd__help_commands() {
+    local commands; commands=(
+'start:Start execution after the plan is approved' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'gig work help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__work__subcmd__help__subcmd__help_commands] )) ||
+_gig__subcmd__work__subcmd__help__subcmd__help_commands() {
     local commands; commands=()
-    _describe -t commands 'gig upload commands' commands "$@"
+    _describe -t commands 'gig work help help commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__work__subcmd__help__subcmd__start_commands] )) ||
+_gig__subcmd__work__subcmd__help__subcmd__start_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig work help start commands' commands "$@"
+}
+(( $+functions[_gig__subcmd__work__subcmd__start_commands] )) ||
+_gig__subcmd__work__subcmd__start_commands() {
+    local commands; commands=()
+    _describe -t commands 'gig work start commands' commands "$@"
 }
 
 if [ "$funcstack[1]" = "_gig" ]; then

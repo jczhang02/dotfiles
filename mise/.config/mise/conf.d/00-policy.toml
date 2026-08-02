@@ -1,0 +1,8 @@
+# User-level CLI installation policy.
+# Portage owns runtimes; mise owns user-level global CLI tools.
+
+[settings]
+not_found_auto_install = false
+
+[settings.npm]
+package_manager = "bun"

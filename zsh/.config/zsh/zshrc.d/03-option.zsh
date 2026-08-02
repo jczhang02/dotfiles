@@ -5,18 +5,6 @@
 # 禁用旧补全系统
 zstyle ':completion:*' use-compctl false
 
-compctl() {
-    print -P "\n%F{red}Don't use compctl anymore%f"
-}
-
-# 缓存补全结果
-zstyle ':completion:*:complete:*' use-cache true
-zstyle ':completion:*:complete:*' cache-policy _aloxaf_caching_policy
-_aloxaf_caching_policy() {
-    # 缓存策略：若不存在或 14 天以前则认定为失效
-    [[ ! -f $1 || -n $1(#qNm+14) ]]
-}
-
 # 补全顺序:
 # _complete - 普通补全函数  _extensions - 通过 *.\t 选择扩展名
 # _match    - 和 _complete 类似但允许使用通配符
@@ -70,12 +58,6 @@ zstyle ':completion:*:mamba:*' tag-order  '! (|*-)directories' -
 zstyle ':completion:*:conda:*' ignored-patterns 'base|rsyslog'
 zstyle ':completion:*:mamba:*' ignored-patterns 'base|rsyslog'
 
-# zwc 什么的忽略掉吧
-# FIXME: 导致 zmodload 的补全结果出现其他文件
-# zstyle ':completion:*:*:*:*'   file-patterns '^*.(zwc|pyc):compiled-files' '*:all-files'
-# zstyle ':completion:*:*:rm:*'  file-patterns '*:all-files'
-# zstyle ':completion:*:*:gio:*' file-patterns '*:all-files'
-
 # 允许 docker 补全时识别 -it 之类的组合命令
 zstyle ':completion:*:*:docker:*' option-stacking yes
 zstyle ':completion:*:*:docker-*:*' option-stacking yes
@@ -90,8 +72,6 @@ zstyle ':completion:*:jobs' numbers true
 ## MANPAGER
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 export MANROFFOPT='-c'
-
-zstyle ':fzf-tab:sources' config-directory $XDG_CONFIG_HOME/zsh/plugins/fzf-tab-source
 
 # 单词中也进行补全
 setopt complete_in_word
@@ -133,24 +113,21 @@ ZSH_AUTOSUGGEST_USE_ASYNC=1
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 ZSH_AUTOSUGGEST_COMPLETION_IGNORE='( |man |pikaur -S )*'
 ZSH_AUTOSUGGEST_HISTORY_IGNORE='?(#c50,)'
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="bold,underline"
-
-
-
-## gencomp
-GENCOMP_DIR=$XDG_CONFIG_HOME/zsh/completions
+if (( ${terminfo[colors]:-0} >= 256 )); then
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#9ca0b0'
+else
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=cyan'
+fi
 
 ## zce
 zstyle ':zce:*' keys 'asdghklqwertyuiopzxcvbnmfj;23456789'
 
 ## fzf-tab
-zstyle ':fzf-tab:complete:_zlua:*' query-string input
-zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w -w'
+zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid="$word" -o cmd --no-headers -w -w'
 zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
 zstyle ':fzf-tab:complete:kill:*' popup-pad 30 0
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --ignore-glob="*.bbl|*.aux|*.blg|*.fdb_latexmk|*.fls|*.log|*.synctex.gz|indent.log|*.pyg" $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --ignore-glob="*.bbl|*.aux|*.blg|*.fdb_latexmk|*.fls|*.log|*.synctex.gz|indent.log|*.pyg" "$realpath"'
 zstyle ':fzf-tab:complete:cd:*' popup-pad 0 3
-zstyle ':fzf-tab:*' fzf-flags --color=light
 zstyle ':fzf-tab:*' popup-min-size 100 8
 
 # ftb-tmux-popup 在 A3 grouped session 下浮到 main 而非当前 view-* client,
@@ -159,47 +136,34 @@ zstyle ':fzf-tab:*' popup-min-size 100 8
 # zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 zstyle ':fzf-tab:*' switch-group ',' '.'
 
-zstyle ':fzf-tab:*' default-color $'\033[94m'
-
 zstyle ":completion:*:git-checkout:*" sort false
 zstyle ':completion:*' file-sort modification
-zstyle ':completion:*:exa' sort false
+zstyle ':completion:*:*:eza:*' sort false
 zstyle ':completion:files' sort false
 zstyle ':fzf-tab:*:*argument-rest*' popup-pad 100 8
 zstyle ':fzf-tab:*:*argument-rest*' fzf-preview
 
 zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview \
-    'git diff $word | delta'
+    'git diff -- "$word" | delta'
 zstyle ':fzf-tab:complete:git-log:*' fzf-preview \
-    'git log --color=always $word'
+    'git log --color=always "$word" --'
 zstyle ':fzf-tab:complete:git-help:*' fzf-preview \
-    'git help $word | bat -plman --color=always'
+    'git help "$word" | bat -plman --color=always'
 zstyle ':fzf-tab:complete:git-show:*' fzf-preview \
     'case "$group" in
-	"commit tag") git show --color=always $word ;;
-	*) git show --color=always $word | delta ;;
+	"commit tag") git show --color=always "$word" -- ;;
+	*) git show --color=always "$word" -- | delta ;;
 esac'
 zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
     'case "$group" in
-	"modified file") git diff $word | delta ;;
-	"recent commit object name") git show --color=always $word | delta ;;
-	*) git log --color=always $word ;;
+	"modified file") git diff -- "$word" | delta ;;
+	"recent commit object name") git show --color=always "$word" -- | delta ;;
+	*) git log --color=always "$word" -- ;;
 esac'
 
-## Vim mode
-KEYTIMEOUT=20
-
-
-## zsh-z
-ZSHZ_DATA="$XDG_CONFIG_HOME/zsh/history/zsh_z.data"
-ZSHZ_CASE=smart
-
-## zoxide
-_ZO_CMD_PREFIX="j"
-# _ZO_DATA_DIR
-
 ## history
-HISTFILE="$ZDOTDIR/.zsh_history"
+command mkdir -p -m 700 -- "$XDG_STATE_HOME/zsh"
+HISTFILE="$XDG_STATE_HOME/zsh/history"
 HISTSIZE=20000
 SAVEHIST=20000
 
