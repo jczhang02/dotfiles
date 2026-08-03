@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Dotfiles Deployment",
+    "subtitle": "Configuration and tool ownership on one Gentoo workstation",
+    "output": "dotfiles-deployment.html"
+  },
+  "components": [
+    {
+      "id": "repo",
+      "type": "external",
+      "label": "dotfiles repository",
+      "sublabel": "33 Stow packages",
+      "tag": "source of truth",
+      "pos": [40, 220],
+      "size": [160, 66]
+    },
+    {
+      "id": "stow",
+      "type": "backend",
+      "label": "GNU Stow",
+      "sublabel": "links · --no-folding",
+      "pos": [270, 220],
+      "size": [140, 66]
+    },
+    {
+      "id": "home-config",
+      "type": "database",
+      "label": "$HOME config tree",
+      "sublabel": "~/.config + dotfiles",
+      "tag": "tracked symlinks",
+      "pos": [500, 220],
+      "size": [170, 66]
+    },
+    {
+      "id": "apps",
+      "type": "frontend",
+      "label": "Configured apps",
+      "sublabel": "shell · editor · desktop",
+      "tag": "read configuration",
+      "pos": [1020, 220],
+      "size": [170, 66]
+    },
+    {
+      "id": "mise",
+      "type": "backend",
+      "label": "mise",
+      "sublabel": "user tool manager",
+      "pos": [500, 390],
+      "size": [170, 66]
+    },
+    {
+      "id": "user-tools",
+      "type": "cloud",
+      "label": "User CLI tools",
+      "sublabel": "~/.local/share/mise",
+      "pos": [760, 390],
+      "size": [180, 66]
+    },
+    {
+      "id": "portage",
+      "type": "external",
+      "label": "Portage",
+      "sublabel": "system package manager",
+      "pos": [500, 70],
+      "size": [170, 66]
+    },
+    {
+      "id": "system-tools",
+      "type": "cloud",
+      "label": "System programs",
+      "sublabel": "commands + runtimes",
+      "pos": [760, 70],
+      "size": [180, 66]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Portage-owned system layer",
+      "wraps": ["portage", "system-tools"]
+    },
+    {
+      "kind": "region",
+      "label": "User-owned $HOME",
+      "wraps": ["home-config", "mise", "user-tools"]
+    }
+  ],
+  "connections": [
+    {
+      "from": "repo",
+      "to": "stow",
+      "label": "packages",
+      "variant": "emphasis"
+    },
+    {
+      "from": "stow",
+      "to": "home-config",
+      "label": "symlinks",
+      "variant": "emphasis"
+    },
+    {
+      "from": "home-config",
+      "to": "apps",
+      "variant": "emphasis"
+    },
+    {
+      "from": "home-config",
+      "to": "mise",
+      "label": "config.toml",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [585, 338]
+    },
+    {
+      "from": "mise",
+      "to": "user-tools",
+      "label": "installs"
+    },
+    {
+      "from": "portage",
+      "to": "system-tools",
+      "label": "emerge"
+    },
+    {
+      "from": "system-tools",
+      "to": "apps",
+      "fromSide": "right",
+      "toSide": "top",
+      "via": [[980, 103], [980, 185], [1105, 185]]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Deployment",
+      "items": [
+        "Stow links tracked files into ordinary $HOME directories",
+        "--no-folding leaves application-generated state local"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Tool ownership",
+      "items": [
+        "Portage owns system programs and language runtimes",
+        "mise owns user-level global CLI tools"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Scope",
+      "items": [
+        "Root-owned configuration stays outside the repository",
+        "No repository-specific bootstrap wrapper"
+      ]
+    }
+  ]
+}

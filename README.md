@@ -38,19 +38,13 @@ machine.
 
 ## How deployment works
 
-```mermaid
-flowchart LR
-    Repo["dotfiles/&lt;package&gt;"]
-    Home["$HOME"]
-    Shell["Zsh configuration"]
-    Mise["mise configuration"]
-    Tools["User CLI tools"]
+<p align="center">
+  <img src="docs/architecture/dotfiles-deployment.svg" alt="Dotfiles deployment architecture: GNU Stow links repository packages into the home configuration tree, Portage owns system programs, and mise installs user CLI tools." width="100%">
+</p>
 
-    Repo -->|"GNU Stow · default"| Home
-    Home --> Shell
-    Home --> Mise
-    Mise --> Tools
-```
+<p align="center">
+  <sub>Open the <a href="docs/architecture/dotfiles-deployment.html">interactive diagram</a> locally for theme switching and image export.</sub>
+</p>
 
 Stow manages configuration files and symbolic links. mise installs and selects
 user-level CLI tools; it does not replace Portage for system programs or
