@@ -465,10 +465,12 @@ unbind -T copy-mode-vi Y
 # Kill 快捷键
 # prefix X   → 杀当前 session, 带确认
 # prefix W   → 杀当前 window, 带确认 (替代默认 prefix+&)
+# prefix Q   → legacy window kill binding, with confirmation
 # prefix C-x → fzf 多选杀 session (Tab 多选, Enter 确认)
 bind X confirm-before -y -p "kill session #S? (Y/n)" kill-session
 
 bind W confirm-before -y -p "kill window #W? (Y/n)" kill-window
+bind Q confirm-before -y -p "kill window #W? (Y/n)" kill-window
 
 # 覆盖 oh-my-tmux 默认 prefix+x / prefix+& — Enter 即默认 yes
 bind x confirm-before -y -p "kill-pane #P? (Y/n)" kill-pane
@@ -553,34 +555,8 @@ tmux_conf_uninstall_plugins_on_reload=true
 # to enable a plugin, use the 'set -g @plugin' syntax:
 # visit https://github.com/tmux-plugins for available plugins
 
-# -- disabled old tmux-window-name plugin --------------------------------------
-# set -g @plugin 'ofirgall/tmux-window-name'
-# set -g @tmux_window_dir_programs "['nvim', 'vim', 'vi', 'git', 'lazygit', 'btop', 'htop']"
-# set -g @tmux_window_name_shells  "['bash', 'fish', 'sh', 'zsh']"
-# set -g @tmux_window_name_max_name_len "25"
-# set -g @tmux_window_name_use_tilde "True"
-# set -g @tmux_window_name_show_program_args "True"
-# set -g @tmux_window_name_substitute_sets "[ \
-# ('claude', '🤖cc'), \
-# ('opencode', '🤖oc'), \
-# ('codex', '🤖cx'), \
-# ('aider', '🤖ad'), \
-# ('gemini', '🤖gm'), \
-# ('npm run dev', '⚡dev'), \
-# ('pnpm dev', '⚡dev'), \
-# ('cargo run', '🦀run'), \
-# ('cargo build', '🦀build'), \
-# ('uv run', '🐍run'), \
-# ('pytest', '🧪test'), \
-# ('docker compose', '🐳'), \
-# ('journalctl', '📋log') \
-# ]"
-# set-hook -ga after-select-pane  "run-shell -b '~/.config/tmux/plugins/tmux-window-name/scripts/rename_session_windows.py'"
-# set-hook -ga after-resize-pane  "run-shell -b '~/.config/tmux/plugins/tmux-window-name/scripts/rename_session_windows.py'"
-
 # semantic auto-renaming for pi/claude + dev tools
-# Local dev plugin is TPM-compatible, but sourced directly so TPM does not try to clone it.
-run-shell -b '/home/jc/dev/tmux-autoname/tmux-autoname.tmux'
+set -g @plugin 'jczhang02/tmux-autoname'
 
 # === 切 pane/window/session 时强制 fcitx5 回英文 ===
 # tmux 内部焦点事件不触发 wayland focus-in, fcitx5 不会自动 reset.
