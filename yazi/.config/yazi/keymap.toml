@@ -1,24 +1,31 @@
+# Vim-specific additions; Yazi's matching default bindings remain active.
+
 [mgr]
 prepend_keymap = [
-  # Vim-style navigation, explicit and above defaults.
-  { on = "h", run = "leave", desc = "Back to parent directory" },
-  { on = "j", run = "arrow next", desc = "Next file" },
-  { on = "k", run = "arrow prev", desc = "Previous file" },
-  { on = "l", run = "plugin enter-or-open", desc = "Enter directory or open file" },
+  { on = "l", run = "plugin smart-enter", desc = "Enter directory or open file" },
+  { on = "<Enter>", run = "plugin smart-enter", desc = "Enter directory or open file" },
 
-  { on = "H", run = "back", desc = "Back to previous directory" },
-  { on = "L", run = "forward", desc = "Forward to next directory" },
+  # Keep f<char> for Vim-style jumps and move filtering to F.
+  { on = "f", run = "plugin jump-to-char", desc = "Jump to character" },
+  { on = "F", run = "filter --smart", desc = "Filter files" },
 
-  { on = [ "g", "g" ], run = "arrow top", desc = "Go to top" },
-  { on = "G", run = "arrow bot", desc = "Go to bottom" },
-  { on = "<C-u>", run = "arrow -50%", desc = "Half page up" },
-  { on = "<C-d>", run = "arrow 50%", desc = "Half page down" },
-  { on = "<C-b>", run = "arrow -100%", desc = "Page up" },
-  { on = "<C-f>", run = "arrow 100%", desc = "Page down" },
+  # Numeric Vim motions: 3j, 12k, 10gg, 2yy, 3dd, and similar commands.
+  { on = "1", run = "plugin relative-motions 1", desc = "Vim count motion" },
+  { on = "2", run = "plugin relative-motions 2", desc = "Vim count motion" },
+  { on = "3", run = "plugin relative-motions 3", desc = "Vim count motion" },
+  { on = "4", run = "plugin relative-motions 4", desc = "Vim count motion" },
+  { on = "5", run = "plugin relative-motions 5", desc = "Vim count motion" },
+  { on = "6", run = "plugin relative-motions 6", desc = "Vim count motion" },
+  { on = "7", run = "plugin relative-motions 7", desc = "Vim count motion" },
+  { on = "8", run = "plugin relative-motions 8", desc = "Vim count motion" },
+  { on = "9", run = "plugin relative-motions 9", desc = "Vim count motion" },
 
-  { on = "J", run = "seek 5", desc = "Preview down" },
-  { on = "K", run = "seek -5", desc = "Preview up" },
-
-  { on = "<Enter>", run = "plugin enter-or-open", desc = "Enter directory or open file" },
   { on = "!", run = 'shell "$SHELL" --block', desc = "Open shell here", for = "unix" },
+  { on = [ "g", "r" ], run = 'shell -- ya emit cd "$(git rev-parse --show-toplevel)"', desc = "Git root" },
+]
+
+[cmp]
+prepend_keymap = [
+  { on = "<C-k>", run = "arrow prev", desc = "Previous completion" },
+  { on = "<C-j>", run = "arrow next", desc = "Next completion" },
 ]

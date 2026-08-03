@@ -1,40 +1,71 @@
+# Vim-oriented Yazi configuration, updated for Yazi 26.x.
+
 [mgr]
+ratio = [1, 4, 3]
+sort_by = "natural"
+sort_sensitive = false
+sort_reverse = false
+sort_dir_first = true
+sort_translit = true
 linemode = "size"
+show_hidden = true
+show_symlink = true
+scrolloff = 5
 
 [preview]
+wrap = "no"
 tab_size = 2
 max_width = 1000
-max_height = 1000
+max_height = 1350
+image_filter = "triangle"
+image_quality = 75
 
 [opener]
 edit = [
-  { run = 'nvim %s', desc = "nvim", block = true, for = "unix" },
-  { run = 'neovide %s', desc = "Neovide", orphan = true, for = "unix" },
+  { run = 'nvim %s', block = true, desc = "nvim", for = "unix" },
+  { run = 'neovide %s', orphan = true, desc = "Neovide", for = "unix" },
+  { run = 'xdg-open %s1', orphan = true, desc = "xdg-open", for = "linux" },
+]
+folder = [
+  { run = 'nvim %s1', block = true, desc = "nvim", for = "unix" },
+  { run = 'xdg-open %s1', orphan = true, desc = "File manager", for = "linux" },
 ]
 play = [
-  { run = 'mpv %s', desc = "mpv", orphan = true, for = "unix" },
-  { run = "mediainfo %s1; echo 'Press enter to exit'; read _", block = true, desc = "Show media info", for = "unix" },
+  { run = 'mpv %s', orphan = true, desc = "mpv", for = "unix" },
+  { run = "mediainfo %s1; echo 'Press enter to exit'; read _", block = true, desc = "Media info", for = "unix" },
 ]
-archive = [
-  { run = 'ya pub extract --list %s', desc = "Extract here" },
-  { run = 'unrar x %s1', desc = "Unrar here", block = true, for = "unix" },
+pdf = [
+  { run = 'setsid -f zathura %s1 >/dev/null 2>&1', orphan = true, desc = "zathura", for = "linux" },
+  { run = 'setsid -f xdg-open %s1 >/dev/null 2>&1', orphan = true, desc = "xdg-open", for = "linux" },
+]
+document = [
+  { run = 'setsid -f xdg-open %s1 >/dev/null 2>&1', orphan = true, desc = "xdg-open", for = "linux" },
 ]
 appimage = [
-  { run = '%s1', desc = "Run AppImage", orphan = true, for = "unix" },
+  { run = '%s1', orphan = true, desc = "Run AppImage", for = "unix" },
 ]
 
 [open]
 prepend_rules = [
+  { url = "*/", use = [ "folder", "open", "reveal" ] },
   { url = "*.{AppImage,appimage}", use = [ "appimage", "reveal" ] },
-  { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", use = [ "extract", "reveal", "archive" ] },
+  { mime = "text/*", use = [ "edit", "reveal" ] },
+  { mime = "application/{json,ndjson,javascript,wine-extension-ini}", use = [ "edit", "reveal" ] },
+  { mime = "{audio,video}/*", use = [ "play", "reveal" ] },
+  { mime = "application/pdf", use = [ "pdf", "reveal" ] },
+  { mime = "application/{epub+zip,x-mobipocket-ebook,doc,rtf}", use = [ "document", "reveal" ] },
 ]
 
 [plugin]
+prepend_fetchers = [
+  { url = "*", run = "git", group = "git" },
+  { url = "*/", run = "git", group = "git" },
+]
 prepend_previewers = [
-  { mime = "application/{json,ndjson}", run = "json-pretty" },
-  { mime = "audio/*", run = "exifaudio" },
-  { mime = "text/csv", run = "miller" },
+  { url = "*/", run = 'piper -- eza -TL=3 --color=never --icons=never --group-directories-first --no-quotes "$1"' },
+  { url = "*.md", run = 'piper -- bat -p --color=always "$1"' },
+  { url = "*.csv", run = 'piper -- bat -p --color=always "$1"' },
 ]
 append_previewers = [
-  { url = "*", run = "hexyl" },
+  { url = "*", run = 'piper -- xxd -g 1 -c 16 "$1"' },
 ]

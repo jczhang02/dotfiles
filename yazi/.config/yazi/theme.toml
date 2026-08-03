@@ -1,1 +1,18 @@
-catppuccin/latte.toml
+[flavor]
+dark = "catppuccin-latte"
+light = "catppuccin-latte"
+
+# Git status overrides using the Catppuccin Latte palette.
+[git]
+modified = { fg = "#df8e1d", bold = true }
+added = { fg = "#40a02b", bold = true }
+untracked = { fg = "#ea76cb", bold = true }
+deleted = { fg = "#d20f39" }
+ignored = { fg = "#8c8fa1" }
+
+unknown_sign = " "
+modified_sign = " "
+deleted_sign = " "
+added_sign = " "
+untracked_sign = " "
+ignored_sign = "◌ "
