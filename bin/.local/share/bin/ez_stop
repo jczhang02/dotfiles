@@ -1,8 +1,0 @@
-#!/bin/bash
-## vim:ft=bash
-
-NAME="easyconnect"
-NET="svpn"
-
-podman kill "$NAME"
-podman network rm "$NET"
