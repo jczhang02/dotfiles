@@ -6,7 +6,6 @@
 "npm:@openai/codex" = "0.146.0"
 "npm:@bitwarden/cli" = "2023.12.1"
 "npm:hexo-cli" = "4.3.1"
-"npm:picgo" = { version = "1.5.6", bun_args = "--trust" }
 "npm:agent-browser" = { version = "0.26.0", bun_args = "--trust" }
 "npm:codeburn" = "0.2.0"
 "npm:commitizen" = { version = "4.3.2", bun_args = "cz-git@1.13.1" }

@@ -1,8 +1,7 @@
 # Rust CLI tools migrated from cargo install and standalone release installers.
-# gig-cli is an unpublished local build; see the README for link setup.
 
 [tools]
-"cargo:gig-cli" = "0.1.0"
+"cargo:https://github.com/jczhang02/gig" = { version = "rev:ffab0ca75146732d3eab41e00f59bc12715153f8", crate = "gig-cli", bin = "gig" }
 "cargo:miniserve" = "0.35.0"
 "cargo:sccache" = "0.15.0"
 "cargo:tauri-driver" = "2.0.6"

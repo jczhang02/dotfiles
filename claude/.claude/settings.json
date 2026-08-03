@@ -1,6 +1,4 @@
 {
-  "theme": "auto",
-  "model": "gpt-5.6-sol",
   "env": {
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.6-sol",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.6-sol",
@@ -11,5 +9,8 @@
     "ENABLE_TOOL_SEARCH": "false",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "API_TIMEOUT_MS": "600000"
-  }
+  },
+  "model": "gpt-5.6-sol",
+  "theme": "auto",
+  "editorMode": "normal"
 }
