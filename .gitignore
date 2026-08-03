@@ -1,6 +1,10 @@
-# App configs with credentials
-aliyunpan/.config/aliyunpan/aliyunpan_config.json
-picgo/.picgo/config.json
+# Generated runtime files
+btop/.config/btop/btop.log
+fcitx/.config/fcitx5/conf/cached_layouts
+fontconfig/.config/fontconfig/conf.d/*.bak.*
+
+# Local review handoff (contains host-specific operational details)
+/DOTFILES-REVIEW.md
 
 # OMC session/state (per-session, never commit)
 .omc/
@@ -12,10 +16,10 @@ picgo/.picgo/config.json
 *.pfx
 *.jks
 *.keystore
-id_rsa
-id_ed25519
-id_ecdsa
-id_dsa
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
 
 # Secrets & credentials
 .env
@@ -33,4 +37,3 @@ secrets.yaml
 .boto
 .s3cfg
 kubeconfig
-

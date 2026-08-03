@@ -1,2 +1,4 @@
 --target=~
+--no-folding
 --ignore=node_modules
+--ignore='\.ruff_cache'
