@@ -113,11 +113,7 @@ ZSH_AUTOSUGGEST_USE_ASYNC=1
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 ZSH_AUTOSUGGEST_COMPLETION_IGNORE='( |man |pikaur -S )*'
 ZSH_AUTOSUGGEST_HISTORY_IGNORE='?(#c50,)'
-if (( ${terminfo[colors]:-0} >= 256 )); then
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#9ca0b0'
-else
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=cyan'
-fi
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='bold,underline'
 
 ## zce
 zstyle ':zce:*' keys 'asdghklqwertyuiopzxcvbnmfj;23456789'
