@@ -1,8 +1,5 @@
 # vim: ft=yaml
-envs_dirs:
-  - /home/jc/.conda/envs/
-pkgs_dirs:
-  - /home/jc/.conda/pkgs/
+# MAMBA_ROOT_PREFIX is set by the shell and direnv to the XDG data directory.
 changeps1: false
 show_channel_urls: true
 # add_pip_as_python_dependency: true

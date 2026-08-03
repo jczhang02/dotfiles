@@ -1,3 +1,0 @@
-#compdef better-rmdir
-local expl
-_wanted directories expl directory _files -/ "$@" -

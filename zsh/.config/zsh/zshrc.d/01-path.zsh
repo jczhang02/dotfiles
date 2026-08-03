@@ -86,7 +86,7 @@ export FZF_CTRL_T_OPTS="--preview 'fzf-preview {}' --preview-window=right:60%:wr
 export FZF_ALT_C_OPTS="--preview 'fzf-preview {}' --preview-window=right:60%:wrap"
 
 # ==== Application-specific XDG paths ====
-export ALIYUNPAN_CONFIG_DIR="$XDG_CONFIG_HOME/aliyunpan"
+export LESSHISTFILE="$XDG_STATE_HOME/lesshst"
 
 if [[ -x $HOME/.maestro/bin/maestro ]]; then
     path=("$HOME/.maestro/bin" $path)

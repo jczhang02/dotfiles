@@ -1,4 +1,0 @@
-GO111MODULE=on
-GOPRIVATE=xxx.como
-GOPROXY=https://goproxy.cn,direct
-GOSUMDB=off

@@ -1,122 +1,33 @@
-########################################################################
-##
-## yano's .bashrc
-##
-########################################################################
+# shellcheck shell=bash
 
-########################################
-## general settings
-########################################
+[[ $- != *i* ]] && return
 
-umask 002
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-# if not running interactively, don't do anything
-[ -z "$PS1" ] && return
-
-# Source global definitions
-if [ -f /etc/bashrc ]; then
-	. /etc/bashrc
-fi
-
-# don't put duplicate lines in the history. See bash(1) for more options
-# don't overwrite GNU Midnight Commander's setting of `ignorespace'.
-export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
-# ... or force ignoredups and ignorespace
+export EDITOR=nvim
+export VISUAL=nvim
 export HISTCONTROL=ignoreboth
 
-# append to the history file, don't overwrite it
-shopt -s histappend
-
-# ignore simple, repetitive commands
-export HISTIGNORE="&:ls:ll:la:cd:exit:clear"
-
-# enable bash_completion if available
-if [ -f /etc/bash_completion ]; then
-	. /etc/bash_completion
+# Maestro is installed separately from mise.
+if [[ -x "$HOME/.maestro/bin/maestro" ]]; then
+    case ":$PATH:" in
+        *":$HOME/.maestro/bin:"*) ;;
+        *) export PATH="$HOME/.maestro/bin:$PATH" ;;
+    esac
 fi
 
-# enable programmable completion features
-if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-	. /etc/bash_completion
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate bash)"
+elif [[ -x "$HOME/.local/bin/mise" ]]; then
+    eval "$("$HOME/.local/bin/mise" activate bash)"
 fi
 
-########################################
-## environmental variables
-########################################
-
-# set VIM as my default text editor
-export EDITOR='nvim'
-
-# set bash as shell
-export SHELL=/bin/bash
-
-# ensures programs know to use 256-colours
-if [[ $TERM == "xterm" ]]; then
-	export TERM="xterm-256color"
-elif [[ $TERM == "screen" ]]; then
-	export TERM="screen-256color"
+if command -v mamba >/dev/null 2>&1; then
+    export MAMBA_ROOT_PREFIX="$XDG_DATA_HOME/mamba"
+    eval "$(mamba shell hook --shell bash)"
 fi
 
-# Provide a kickass prompt
-PS1='\[\033[0;36m\]$(date "+%H:%M") \[\033[01;32m\][\[\033[01;31m\]\w\[\033[01;32m\]]\n\[\033[01;31m\](\[\033[01;32m\]\u@\h\[\033[01;31m\]) #\[\033[00m\] '
-
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
-	debian_chroot=$(cat /etc/debian_chroot)
-fi
-
-# force colour prompt
-if [ -n "$force_color_prompt" ]; then
-	if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-		# We have color support; assume it's compliant with Ecma-48
-		# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-		# a case would tend to support setf rather than setaf.)
-		color_prompt=yes
-	else
-		color_prompt=
-	fi
-fi
-
-# enable sudo completion
-complete -cf sudo
-
-########################################
-## aliases
-########################################
-
-# enable color support of ls and also add handy aliases
-if [ -x /usr/bin/dircolors ]; then
-	test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-	alias ls='ls --color=auto'
-	alias dir='dir --color=auto'
-	alias vdir='vdir --color=auto'
-	alias grep='grep --color=auto'
-	alias fgrep='fgrep --color=auto'
-	alias egrep='egrep --color=auto'
-fi
-
-alias ls='ls --color=auto -h'
-alias ll='ls -la'
-alias la='ls -a'
-alias l='ls -CF'
-alias vim="nvim"
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/usr/bin/conda' 'shell.bash' 'hook' 2>/dev/null)"
-if [ $? -eq 0 ]; then
-	eval "$__conda_setup"
-else
-	if [ -f "/usr/etc/profile.d/conda.sh" ]; then
-		. "/usr/etc/profile.d/conda.sh"
-	else
-		export PATH="/usr/bin:$PATH"
-	fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash
-
-export PATH=$PATH:$HOME/.maestro/bin
-export PATH=$PATH:$HOME/.maestro/bin
+alias vim=nvim
