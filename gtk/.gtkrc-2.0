@@ -1,8 +1,5 @@
-# DO NOT EDIT! This file will be overwritten by LXAppearance.
-# Any customization should be done in ~/.gtkrc-2.0.mine instead.
-
-include "/home/jc/.gtkrc-2.0.mine"
-gtk-theme-name="WhiteSur-light"
+# GTK 2 settings aligned with the system light theme.
+gtk-theme-name="Adwaita"
 gtk-icon-theme-name="Papirus-Light"
 gtk-font-name="LXGW WenKai 10"
 gtk-cursor-theme-name="capitaine-cursors"
@@ -18,4 +15,3 @@ gtk-xft-hinting=1
 gtk-xft-hintstyle="hintslight"
 gtk-xft-rgba="rgb"
 gtk-im-module="fcitx"
-

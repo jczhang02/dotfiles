@@ -11,8 +11,6 @@
 
 # using gpg-agent for SSH
 # export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
-# export XDG_CURRENT_DESKTOP=awesome
-# autorandr --change
 # export GLFW_IM_MODULE=ibus
 # export GTK_IM_MODULE=fcitx
 
