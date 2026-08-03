@@ -31,13 +31,13 @@ function _zsh_maybe_start_sesh() {
     local -a picker_options=(
         --no-sort --ansi
         --border --border-label=' sesh ' --prompt='⚡ ' --height=80%
-        --header='^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find'
+        --header='^a sessions  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find'
         --bind='tab:down,btab:up'
-        --bind='ctrl-a:change-prompt(⚡ )+reload(sesh list --icons)'
+        --bind='ctrl-a:change-prompt(⚡ )+reload(sesh list -t -c -d --icons)'
         --bind='ctrl-t:change-prompt(🪟 )+reload(sesh list -t --icons)'
         --bind='ctrl-g:change-prompt(⚙  )+reload(sesh list -c --icons)'
         --bind='ctrl-x:change-prompt(📁 )+reload(sesh list -z --icons)'
-        --bind='ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡ )+reload(sesh list --icons)'
+        --bind='ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡ )+reload(sesh list -t -c -d --icons)'
     )
     if (( $+commands[fd] )); then
         picker_options+=(
@@ -46,7 +46,7 @@ function _zsh_maybe_start_sesh() {
     fi
 
     local target
-    target=$(sesh list --icons 2>/dev/null | fzf "${picker_options[@]}")
+    target=$(sesh list -t -c -d --icons 2>/dev/null | fzf "${picker_options[@]}")
 
     [[ -n $target ]] || return 0
     target=${target#* }

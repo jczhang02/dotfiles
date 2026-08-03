@@ -417,8 +417,8 @@ set -g mode-keys  vi
 
 # DO NOT exit-unattached: A3 grouped sessions need server to outlive last client
 set -g exit-unattached off
-# Stay inside tmux and return to the previous session after killing the current one.
-set -g detach-on-destroy previous
+# Detach the client when its session is destroyed instead of switching sessions.
+set -g detach-on-destroy on
 
 # Prefix → Ctrl-Space (主) + Ctrl-a (备)
 unbind C-b
@@ -427,20 +427,20 @@ set -g prefix2 C-a
 bind C-Space send-prefix
 bind C-a     send-prefix -2
 
-# prefix s → sesh popup picker (live sessions + zoxide + sesh.toml)
+# prefix s → sesh popup picker (live + configured; zoxide/find on demand)
 # 覆盖 tmux 默认 choose-tree
 unbind s
 bind s display-popup -E -w 80% -h 80% -B \
-    "sesh connect \"\$(sesh list --icons | fzf \
+    "sesh connect \"\$(sesh list -t -c -d --icons | fzf \
         --no-sort --ansi --border --border-label ' sesh ' --prompt '⚡ ' \
-        --header '^a all  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find' \
+        --header '^a sessions  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find' \
         --bind 'tab:down,btab:up' \
-        --bind 'ctrl-a:change-prompt(⚡ )+reload(sesh list --icons)' \
+        --bind 'ctrl-a:change-prompt(⚡ )+reload(sesh list -t -c -d --icons)' \
         --bind 'ctrl-t:change-prompt(🪟 )+reload(sesh list -t --icons)' \
         --bind 'ctrl-g:change-prompt(⚙  )+reload(sesh list -c --icons)' \
         --bind 'ctrl-x:change-prompt(📁 )+reload(sesh list -z --icons)' \
         --bind 'ctrl-f:change-prompt(🔎 )+reload(fd -H -d 2 -t d -E .git . ~/dev)' \
-        --bind 'ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡ )+reload(sesh list --icons)' \
+        --bind 'ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡ )+reload(sesh list -t -c -d --icons)' \
     )\""
 
 # vi-mode: y → tmux 内部 buffer + OSC52 转发给外层终端 (ghostty 写系统剪贴板)
