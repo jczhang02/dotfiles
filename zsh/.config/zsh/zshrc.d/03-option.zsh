@@ -129,22 +129,18 @@ zstyle ':fzf-tab:*' popup-min-size 100 8
 # fzf-tab 使用 tmux popup 浮窗, 智能跟随光标位置 (空间不足时翻到光标上方).
 # 2026-05-19: A3 grouped session 下 popup 浮到其他 client, 按 Tab 如同卡死
 # (popup 进程在另一 session 无人交互). 故 grouped / detached session 回退行内
-# fzf; 非 tmux 环境或未安装 fzf-tab 脚本时同样回退. 同名函数 + command 调用
-# 外部脚本, 让 fzf-tab 仍识别为 ftb-tmux-popup 以保持其 popup 专用终端处理.
-# fzf-tab 新版把 ftb-tmux-popup 移到 lib/ 不在 PATH, 这里自愈软链到 ~/.local/bin.
-() {
-    (( $+commands[ftb-tmux-popup] )) && return
-    local popup_script="${ZI[HOME_DIR]:-$XDG_DATA_HOME/zi}/plugins/Aloxaf---fzf-tab/lib/ftb-tmux-popup"
-    [[ -x $popup_script ]] || return
-    command mkdir -p -- "$HOME/.local/bin"
-    command ln -sf -- "$popup_script" "$HOME/.local/bin/ftb-tmux-popup"
-}
+# fzf; 非 tmux 环境或未安装 fzf-tab helper 时同样回退.
+#
+# lib/ftb-tmux-popup 是 zsh autoload 函数体 (首行是 #!/hint/zsh), 依赖调用
+# shell 的补全状态和 PID, 不能通过软链作为外部命令执行; 必须在当前 shell source.
+# 保留同名函数, 让 fzf-tab 识别 popup 模式并使用其专用终端处理.
 function ftb-tmux-popup() {
+    local popup_script="${ZI[HOME_DIR]:-$XDG_DATA_HOME/zi}/plugins/Aloxaf---fzf-tab/lib/ftb-tmux-popup"
     # grouped=1 时 popup 会浮到其他 client; attached=0 (detached) 时 popup 无人可见.
     local -a tmux_state=( ${(s: :)$(command tmux display-message -p '#{session_grouped} #{session_attached}' 2>/dev/null)} )
-    if (( $+commands[ftb-tmux-popup] )) && [[ -n ${TMUX_PANE:-} ]] \
+    if [[ -r $popup_script && -n ${TMUX_PANE:-} ]] \
         && [[ ${tmux_state[1]:-1} != 1 && ${tmux_state[2]:-0} -ge 1 ]]; then
-        command ftb-tmux-popup "$@"
+        source "$popup_script" "$@"
     else
         command fzf "$@"
     fi
