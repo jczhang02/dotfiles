@@ -27,3 +27,6 @@ fi
 
 export MAMBA_ROOT_PREFIX="$XDG_DATA_HOME/mamba"
 export LESSHISTFILE="$XDG_STATE_HOME/lesshst"
+
+# rclone FUSE mount: stat 会触发 ~1.1s 的远程握手, 排除以免拖慢 zoxide/sesh picker
+export _ZO_EXCLUDE_DIRS="$HOME/Documents/sync/**"
