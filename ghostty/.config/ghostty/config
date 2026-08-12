@@ -31,8 +31,9 @@ font-thicken-strength = 128
 # Window
 window-height = 50
 window-width = 150
-window-padding-x = 0
+window-padding-x = 2
 window-padding-y = 0
+window-padding-balance = true
 window-decoration = auto
 window-show-tab-bar = never
 confirm-close-surface = false
