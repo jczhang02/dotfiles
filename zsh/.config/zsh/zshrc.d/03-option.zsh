@@ -2,6 +2,8 @@
 
 # completion
 
+SPROMPT="%B%F{yellow}zsh: correct '%R' be '%r' [nyae]?%f%b "
+
 # 禁用旧补全系统
 zstyle ':completion:*' use-compctl false
 
@@ -68,10 +70,6 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 # fg/bg 补全时使用 jobs id
 zstyle ':completion:*:jobs' verbose true
 zstyle ':completion:*:jobs' numbers true
-
-## MANPAGER
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-export MANROFFOPT='-c'
 
 # 单词中也进行补全
 setopt complete_in_word
