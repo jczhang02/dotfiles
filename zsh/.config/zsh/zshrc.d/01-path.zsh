@@ -4,7 +4,6 @@ typeset -U path PATH
 typeset -U fpath FPATH
 
 path=(
-    "$HOME/.local/bin"
     "$XDG_CONFIG_HOME/zsh/commands"
     "$XDG_DATA_HOME/bin"
     $path
@@ -51,20 +50,6 @@ else
     unset RUSTUP_DIST_SERVER
 fi
 
-export GOPATH="$XDG_DATA_HOME/gomodule"
-export R_LIBS_USER="$XDG_DATA_HOME/R"
-
-# ==== Jupyter XDG directories ====
-export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME/jupyter"
-export JUPYTER_DATA_DIR="$XDG_DATA_HOME/jupyter"
-export JUPYTERLAB_SETTINGS_DIR="$JUPYTER_CONFIG_DIR/lab/user-settings"
-export JUPYTERLAB_WORKSPACES_DIR="$JUPYTER_CONFIG_DIR/lab/workspaces"
-if [[ -n ${XDG_RUNTIME_DIR:-} ]]; then
-    export JUPYTER_RUNTIME_DIR="$XDG_RUNTIME_DIR/jupyter"
-else
-    unset JUPYTER_RUNTIME_DIR
-fi
-
 # ==== Completion and fuzzy finding ====
 SPROMPT="%B%F{yellow}zsh: correct '%R' be '%r' [nyae]?%f%b "
 
@@ -84,9 +69,6 @@ export FZF_CTRL_T_COMMAND=$FZF_DEFAULT_COMMAND
 export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
 export FZF_CTRL_T_OPTS="--preview 'fzf-preview {}' --preview-window=right:60%:wrap"
 export FZF_ALT_C_OPTS="--preview 'fzf-preview {}' --preview-window=right:60%:wrap"
-
-# ==== Application-specific XDG paths ====
-export LESSHISTFILE="$XDG_STATE_HOME/lesshst"
 
 if [[ -x $HOME/.maestro/bin/maestro ]]; then
     path=("$HOME/.maestro/bin" $path)

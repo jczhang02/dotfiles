@@ -26,7 +26,6 @@ fi
 (( $+functions[zpcdreplay] )) && zpcdreplay
 
 if (( $+commands[mamba] )); then
-    export MAMBA_ROOT_PREFIX="$XDG_DATA_HOME/mamba"
     command mkdir -p -- "$MAMBA_ROOT_PREFIX"
     eval "$(mamba shell hook --shell zsh)"
 

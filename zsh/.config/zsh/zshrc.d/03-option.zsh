@@ -104,7 +104,7 @@ autoload -U select-word-style
 select-word-style bash
 
 ## FUNCNEST
-export FUNCNEST=1000
+FUNCNEST=1000
 
 ## zsh-autosuggestions
 ZSH_AUTOSUGGEST_STRATEGY+=(match_prev_cmd completion)
