@@ -85,24 +85,24 @@ tmux_conf_24b_colour=false  # RGB is declared idempotently in terminal-features[
 #   - tmux_conf_theme_synchronized
 tmux_conf_theme=enabled
 
-# Catppuccin Latte palette mapped onto oh-my-tmux theme slots
-tmux_conf_theme_colour_1="#eff1f5"    # Base       — status bar bg
-tmux_conf_theme_colour_2="#bcc0cc"    # Surface1   — separators / inactive border
-tmux_conf_theme_colour_3="#5c5f77"    # Subtext1   — status bar fg
+# Oh my tmux!'s original colour roles, mapped to Catppuccin Latte.
+tmux_conf_theme_colour_1="#e6e9ef"    # Mantle     — status bar bg
+tmux_conf_theme_colour_2="#ccd0da"    # Surface0   — last window / pane border
+tmux_conf_theme_colour_3="#5c5f77"    # Subtext1   — inactive window fg
 tmux_conf_theme_colour_4="#1e66f5"    # Blue       — active pane/window accent
-tmux_conf_theme_colour_5="#df8e1d"    # Yellow     — prefix indicator bg
-tmux_conf_theme_colour_6="#4c4f69"    # Text       — prefix indicator fg
-tmux_conf_theme_colour_7="#4c4f69"    # Text       — status right fg highlight
-tmux_conf_theme_colour_8="#eff1f5"    # Base       — status right bg
-tmux_conf_theme_colour_9="#fe640b"    # Peach      — copy mode indicator
-tmux_conf_theme_colour_10="#8839ef"   # Mauve      — hostname / clock accent
-tmux_conf_theme_colour_11="#40a02b"   # Green      — current window bg
-tmux_conf_theme_colour_12="#9ca0b0"   # Overlay0   — inactive window fg
-tmux_conf_theme_colour_13="#4c4f69"   # Text       — current window fg
-tmux_conf_theme_colour_14="#e6e9ef"   # Mantle     — current window bg highlight
-tmux_conf_theme_colour_15="#e6e9ef"   # Mantle     — status left bg
-tmux_conf_theme_colour_16="#d20f39"   # Red        — alert/bell bg
-tmux_conf_theme_colour_17="#eff1f5"   # Base       — alert/bell fg
+tmux_conf_theme_colour_5="#df8e1d"    # Yellow     — messages / copy mode
+tmux_conf_theme_colour_6="#11111b"    # Ink        — text on yellow
+tmux_conf_theme_colour_7="#ffffff"    # White      — text on mauve
+tmux_conf_theme_colour_8="#11111b"    # Ink        — text on green
+tmux_conf_theme_colour_9="#df8e1d"    # Yellow     — session section
+tmux_conf_theme_colour_10="#8839ef"   # Mauve      — uptime section
+tmux_conf_theme_colour_11="#40a02b"   # Green      — path section
+tmux_conf_theme_colour_12="#4c4f69"   # Text       — clock section fg
+tmux_conf_theme_colour_13="#ffffff"   # White      — username section fg
+tmux_conf_theme_colour_14="#4c4f69"   # Text       — hostname section fg
+tmux_conf_theme_colour_15="#e6e9ef"   # Mantle     — clock section bg
+tmux_conf_theme_colour_16="#d20f39"   # Red        — username / alert bg
+tmux_conf_theme_colour_17="#dce0e8"   # Crust      — hostname section bg
 
 # default theme (ansi)
 #tmux_conf_theme_colour_1="colour0"
@@ -152,17 +152,17 @@ tmux_conf_theme_pane_indicator="$tmux_conf_theme_colour_4"
 tmux_conf_theme_pane_active_indicator="$tmux_conf_theme_colour_4"
 
 # status line style
-tmux_conf_theme_message_fg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_message_fg="$tmux_conf_theme_colour_6"
 tmux_conf_theme_message_bg="$tmux_conf_theme_colour_5"
 tmux_conf_theme_message_attr="bold"
 
 # status line command style (<prefix> : Escape)
-tmux_conf_theme_message_command_fg="$tmux_conf_theme_colour_5"
+tmux_conf_theme_message_command_fg="$tmux_conf_theme_colour_3"
 tmux_conf_theme_message_command_bg="$tmux_conf_theme_colour_1"
 tmux_conf_theme_message_command_attr="bold"
 
 # window modes style
-tmux_conf_theme_mode_fg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_mode_fg="$tmux_conf_theme_colour_6"
 tmux_conf_theme_mode_bg="$tmux_conf_theme_colour_5"
 tmux_conf_theme_mode_attr="bold"
 
@@ -196,7 +196,7 @@ tmux_conf_theme_terminal_title="#h ❐ #S ● #I #W"
 tmux_conf_theme_window_status_fg="$tmux_conf_theme_colour_3"
 tmux_conf_theme_window_status_bg="$tmux_conf_theme_colour_1"
 tmux_conf_theme_window_status_attr="none"
-tmux_conf_theme_window_status_format="#{?#{e|<|:#{client_width},100},#I #{=/8/…:window_name},#I #W}#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -213,23 +213,23 @@ tmux_conf_theme_window_status_format="#{?#{e|<|:#{client_width},100},#I #{=/8/�
 tmux_conf_theme_window_status_current_fg="#ffffff"
 tmux_conf_theme_window_status_current_bg="$tmux_conf_theme_colour_4"
 tmux_conf_theme_window_status_current_attr="bold"
-tmux_conf_theme_window_status_current_format="#{?#{e|<|:#{client_width},100},#I #{=/16/…:window_name},#I #W}#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_current_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
 # window activity status style
-tmux_conf_theme_window_status_activity_fg="$tmux_conf_theme_colour_10"
+tmux_conf_theme_window_status_activity_fg="default"
 tmux_conf_theme_window_status_activity_bg="default"
-tmux_conf_theme_window_status_activity_attr="none"
+tmux_conf_theme_window_status_activity_attr="underscore"
 
 # window bell status style
-tmux_conf_theme_window_status_bell_fg="$tmux_conf_theme_colour_16"
-tmux_conf_theme_window_status_bell_bg="default"
-tmux_conf_theme_window_status_bell_attr="bold"
+tmux_conf_theme_window_status_bell_fg="#ffffff"
+tmux_conf_theme_window_status_bell_bg="$tmux_conf_theme_colour_16"
+tmux_conf_theme_window_status_bell_attr="blink,bold"
 
 # window last status style
-tmux_conf_theme_window_status_last_fg="$tmux_conf_theme_colour_3"
-tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_14"
+tmux_conf_theme_window_status_last_fg="$tmux_conf_theme_colour_14"
+tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_2"
 tmux_conf_theme_window_status_last_attr="none"
 
 # status left/right sections separators
@@ -269,19 +269,19 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_status_left=" ❐ #S "
+tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
-tmux_conf_theme_status_right=' #{prefix}#{synchronized}#(if [ "#{client_width}" -ge 100 ]; then git -C #{q:pane_current_path} symbolic-ref --quiet --short HEAD 2>/dev/null | sed "s/^/ · /"; fi)#{?#{==:#{hostname_ssh},},, · #{hostname_ssh}} '
+tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status, #{battery_status},}#{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage},} , %R , %d %b | #{username}#{root} | #{hostname} "
 
 # status left style
-tmux_conf_theme_status_left_fg="#ffffff"
-tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_10"
-tmux_conf_theme_status_left_attr="bold"
+tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
+tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_9,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_11"
+tmux_conf_theme_status_left_attr="bold,none,none"
 
 # status right style
-tmux_conf_theme_status_right_fg="$tmux_conf_theme_colour_3"
-tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_1"
-tmux_conf_theme_status_right_attr="none"
+tmux_conf_theme_status_right_fg="$tmux_conf_theme_colour_12,$tmux_conf_theme_colour_13,$tmux_conf_theme_colour_14"
+tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_17"
+tmux_conf_theme_status_right_attr="none,none,bold"
 
 # pairing indicator
 tmux_conf_theme_pairing="⚇"                 # U+2687
@@ -555,6 +555,12 @@ tmux_conf_uninstall_plugins_on_reload=true
 # to enable a plugin, use the 'set -g @plugin' syntax:
 # visit https://github.com/tmux-plugins for available plugins
 
+
+set -g pane-border-lines heavy
+
+# set -g pane-border-status top
+# set -g pane-border-format ' #P #{pane_current_command} '
+
 # semantic auto-renaming for pi/claude + dev tools
 set -g @plugin 'jczhang02/tmux-autoname'
 
@@ -573,13 +579,6 @@ set -g @plugin 'christoomey/vim-tmux-navigator'
 # prefix u → fuzzy pick URL from current pane, open in browser
 set -g @plugin 'wfxr/tmux-fzf-url'
 
-# prefix F → tmux-fzf menu (session/window/pane/command/keybinding/clipboard/process)
-# prefix b → 直接进 clipboard (paste-buffer 选择器)
-set -g @plugin 'sainnhe/tmux-fzf'
-TMUX_FZF_LAUNCH_KEY="F"
-unbind b
-bind b run-shell -b "~/.config/tmux/plugins/tmux-fzf/scripts/clipboard.sh buffer"
-
 # M-p (no-prefix) → tmux-palette: Raycast-like command palette (Bun-based)
 # 默认 @palette-key=C-Space 会撞 tmux prefix, 故改 M-p
 set -g @plugin 'eduwass/tmux-palette'
@@ -587,56 +586,4 @@ set -g @palette-key 'M-p'
 
 
 set -g allow-passthrough on
-# -- custom variables ----------------------------------------------------------
 
-# to define a custom #{foo} variable, define a POSIX shell function between the
-# '# EOF' and the '# "$@"' lines. Please note that the opening brace { character
-# must be on the same line as the function name otherwise the parse won't detect
-# it.
-#
-# then, use #{foo} in e.g. the 'tmux_conf_theme_status_left' or the
-# 'tmux_conf_theme_status_right' variables.
-
-# ------------------------------------------------------------------------------
-
-# # /!\ do not remove the following line
-# EOF
-#
-# # /!\ do not "uncomment" the functions: the leading "# " characters are needed
-#
-# # usage: #{weather}
-# weather() {                                         # see https://github.com/chubin/wttr.in#one-line-output
-#   curl -f -s -m 2 'wttr.in?format=3' || printf '\n' # /!\ make sure curl is installed
-#   sleep 900                                         # sleep for 15 minutes, throttle network requests whatever the value of status-interval
-# }
-#
-# # usage: #{online}
-# online() {
-#   ping -c 1 1.1.1.1 >/dev/null 2>&1 && printf '✔' || printf '✘'
-# }
-#
-# # usage: #{wan_ip_v4}
-# wan_ip_v4() {
-#   curl -f -s -m 2 -4 ifconfig.me
-#   sleep 300                                         # sleep for 5 minutes, throttle network requests whatever the value of status-interval
-# }
-#
-# # usage: #{wan_ip_v6}
-# wan_ip_v6() {
-#   curl -f -s -m 2 -6 ifconfig.me
-#   sleep 300                                         # sleep for 5 minutes, throttle network requests whatever the value of status-interval
-# }
-#
-# # usage: #{github_stars}, #{github_stars tmux/tmux}, ...
-# github_stars() {
-#   repository=${1##*https://github.com/}
-#   repository=${repository%% *}
-#   repository=${repository%%.git}
-#   url="https://api.github.com/repos/${repository:-gpakosz/.tmux}"
-#   curl -s "$url" | perl -MJSON::PP=decode_json -CO -0777 -E '$response = decode_json(readline *STDIN); say ($response->{stargazers_count})'
-#   sleep 300                                         # sleep for 5 minutes, throttle network requests whatever the value of status-interval
-# }
-#
-# "$@"
-# # /!\ do not remove the previous line
-# #     do not write below this line

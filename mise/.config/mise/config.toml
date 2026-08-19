@@ -31,6 +31,9 @@ shfmt                              = "latest"
 "pipx:debugpy"                    = "latest"
 # codelldb remains editor-local because upstream ships VS Code extension archives.
 usage = "latest"
+"npm:pake-cli" = "latest"
+"npm:open-computer-use" = "latest"
+"cargo:worktrunk" = "latest"
 
 
 # ── Notes ────────────────────────────────────────────────────────────

@@ -1,23 +1,18 @@
+# vim:ft=cfg
 # Theme: auto dark/light switching
 window-theme = system
 theme = light:catppuccin-latte.conf,dark:catppuccin-mocha.conf
 
 # Font
-font-family = Iosevka Nerd Font Mono
-font-family = Symbols Nerd Font
+font-family = JetBrainsMono Nerd Font Mono
+font-family = Symbols Nerd Font Mono
 font-family = LXGW WenKai Mono
 font-size = 12
 
 # Hardwire CJK codepoints to LXGW WenKai Mono — bypasses fontconfig fuzzy scoring
 # that lets Iosevka NF Mono (no zh coverage) outrank LXGW for monospace:lang=zh.
 # Ranges: CJK Symbols & Punct, Ext-A, CJK Unified, Compat Ideographs, Halfwidth/Fullwidth, Ext-B, Ext-C
-font-codepoint-map = U+3000-U+303F=LXGW WenKai Mono
-font-codepoint-map = U+3400-U+4DBF=LXGW WenKai Mono
-font-codepoint-map = U+4E00-U+9FFF=LXGW WenKai Mono
-font-codepoint-map = U+F900-U+FAFF=LXGW WenKai Mono
-font-codepoint-map = U+FF00-U+FFEF=LXGW WenKai Mono
-font-codepoint-map = U+20000-U+2A6DF=LXGW WenKai Mono
-font-codepoint-map = U+2A700-U+2B73F=LXGW WenKai Mono
+
 
 # Disable ligatures
 font-feature = -calt
@@ -26,13 +21,13 @@ font-feature = -liga
 
 # Compensate fractional scaling blur (DP-1 @ 1.25x, no subpixel rendering)
 font-thicken = true
-font-thicken-strength = 128
+# font-thicken-strength = 128
 
 # Window
 window-height = 50
 window-width = 150
 window-padding-x = 2
-window-padding-y = 0
+window-padding-y = 2
 window-padding-balance = true
 window-decoration = auto
 window-show-tab-bar = never
@@ -45,7 +40,7 @@ app-notifications=no-clipboard-copy
 
 # Cursor — force block, disable shell-integration auto-shaping
 cursor-style = block
-cursor-style-blink = false
+cursor-style-blink = true
 shell-integration-features = no-cursor
 
 
