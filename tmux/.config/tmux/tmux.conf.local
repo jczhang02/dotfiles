@@ -147,7 +147,7 @@ tmux_conf_theme_pane_active_border="$tmux_conf_theme_colour_4"
 tmux_conf_theme_pane_active_border="#{?pane_in_mode,$tmux_conf_theme_colour_9,#{?synchronize-panes,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_4}}"
 %endif
 
-# pane indicator colours (when you hit <prefix> + q)
+# pane indicator colours (display-panes)
 tmux_conf_theme_pane_indicator="$tmux_conf_theme_colour_4"
 tmux_conf_theme_pane_active_indicator="$tmux_conf_theme_colour_4"
 
@@ -465,11 +465,12 @@ unbind -T copy-mode-vi Y
 # Kill 快捷键
 # prefix X   → 杀当前 session, 带确认
 # prefix W   → 杀当前 window, 带确认 (替代默认 prefix+&)
-# prefix Q   → legacy window kill binding, with confirmation
+# prefix q/Q → 杀当前 window, 带确认
 # prefix C-x → fzf 多选杀 session (Tab 多选, Enter 确认)
 bind X confirm-before -y -p "kill session #S? (Y/n)" kill-session
 
 bind W confirm-before -y -p "kill window #W? (Y/n)" kill-window
+bind q confirm-before -y -p "kill window #W? (Y/n)" kill-window
 bind Q confirm-before -y -p "kill window #W? (Y/n)" kill-window
 
 # 覆盖 oh-my-tmux 默认 prefix+x / prefix+& — Enter 即默认 yes
