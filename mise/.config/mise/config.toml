@@ -18,7 +18,7 @@
 # ── Formatters ───────────────────────────────────────────────────────
 "cargo:stylua"                    = "latest"
 "npm:prettier"                    = "latest"
-"npm:bibtex-tidy"                 = "1.14.0"
+"npm:bibtex-tidy"                 = "1.15.1"
 "pipx:xmlformatter"               = "latest"
 shfmt                              = "latest"
 # clang-format / latexindent → emerge (system)
@@ -30,10 +30,17 @@ shfmt                              = "latest"
 # ── DAP adapters ─────────────────────────────────────────────────────
 "pipx:debugpy"                    = "latest"
 # codelldb remains editor-local because upstream ships VS Code extension archives.
-usage = "latest"
 "npm:pake-cli" = "latest"
-"npm:open-computer-use" = "latest"
 "cargo:worktrunk" = "latest"
+"aqua:dolthub/dolt" = "2.3.1"
+hunk = "latest"
+"npm:@openai/codex" = "latest"
+
+[settings]
+minimum_release_age = "0s"
+
+[settings.github]
+credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
 
 
 # ── Notes ────────────────────────────────────────────────────────────

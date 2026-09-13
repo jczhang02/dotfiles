@@ -10,139 +10,15 @@
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "API_TIMEOUT_MS": "600000"
   },
-  "model": "gpt-5.6-sol",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "StopFailure": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/home/jc/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/home/jc/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/home/jc/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
+  "permissions": {
+    "defaultMode": "auto"
   },
+  "model": "gpt-5.6-sol",
+  "hooks": {},
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
   },
   "theme": "auto",
-  "editorMode": "normal",
-  "tui": "fullscreen"
+  "editorMode": "normal"
 }

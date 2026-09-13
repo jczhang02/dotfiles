@@ -2,4 +2,4 @@
 # Versions are pinned to the verified pre-migration binaries.
 
 [tools]
-"github:cloudflare/cloudflared" = "2026.5.0"
+"github:cloudflare/cloudflared" = "2026.8.2"

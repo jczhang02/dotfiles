@@ -18,7 +18,6 @@ if [[ -x $HOME/.maestro/bin/maestro ]]; then
 fi
 
 export PI_CODING_AGENT_DIR="$XDG_CONFIG_HOME/pi"
-export PI_CODING_AGENT_SESSION_DIR="$XDG_STATE_HOME/pi/sessions"
 
 export GOPATH="$XDG_DATA_HOME/gomodule"
 export R_LIBS_USER="$XDG_DATA_HOME/R"
