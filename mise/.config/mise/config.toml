@@ -17,7 +17,7 @@
 
 # ── Formatters ───────────────────────────────────────────────────────
 "cargo:stylua"                    = "latest"
-"npm:prettier"                    = "latest"
+"npm:oxfmt"                       = "latest"
 "npm:bibtex-tidy"                 = "1.15.1"
 "pipx:xmlformatter"               = "latest"
 shfmt                              = "latest"
