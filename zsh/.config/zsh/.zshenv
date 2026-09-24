@@ -6,6 +6,9 @@ export OP_CONFIG_DIR=${OP_CONFIG_DIR:-$XDG_CONFIG_HOME/op}
 
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 
+export EDITOR=nvim
+export VISUAL=nvim
+
 typeset -U path PATH
 path=(
     "$HOME/.local/bin"

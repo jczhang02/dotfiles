@@ -406,7 +406,10 @@ set -g history-limit 100000
 # mouse + Vi keys
 set -g mouse on
 # Disable tmux right-click menus.
-unbind -T root MouseDown3Pane
+# Pane right-click is bound to a no-op instead of unbound: an unbound mouse
+# key is forwarded to the app, and Claude Code pastes on right-click.
+bind -T root MouseDown3Pane select-pane -t =
+bind -T root MouseUp3Pane select-pane -t =
 unbind -T root MouseDown3Status
 unbind -T root MouseDown3StatusLeft
 unbind -T root M-MouseDown3Pane
