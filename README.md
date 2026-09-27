@@ -164,8 +164,7 @@ gnome-extensions enable gsconnect-screenshot-share@local
 
 Notable package boundaries:
 
-- `mpv` uses one native configuration file with the built-in UI and keymap; the
-  rationale is recorded in [MPV-RESEARCH.md](MPV-RESEARCH.md).
+- `mpv` uses one native configuration file with the built-in UI and keymap.
 - `xdg` deploys the stable portal selection and hand-written `environment.d`
   files. GNOME keeps the dynamic default-application and user-directory files
   as ordinary local files.
