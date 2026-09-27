@@ -275,6 +275,10 @@ Neovim submodule has its own documented local checks.
   plugin's private local configuration.
 - `cua-driver` is the one CLI installed outside Portage and mise; its own
   installer manages `~/.cua-driver` and the `~/.local/bin/cua-driver` link.
+- Two font sets are hand-installed in `~/.local/share/fonts` and must be copied
+  to a new machine: Microsoft fonts (`microsoft_cn`, `microsoft_en`) and the
+  `kami` typesetting fonts (TsangerJinKai, Source Han Serif KR) that the kami
+  skill expects. Every other font comes from `@dotfiles`.
 - One administrator cleanup remains outside this repository: uninstall the
   system `net-misc/aliyunpan` package. Its dotfiles are already gone, but
   `/usr/bin/aliyunpan` is still installed by Portage.
