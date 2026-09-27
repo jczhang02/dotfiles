@@ -173,6 +173,7 @@ Notable package boundaries:
   rationale is recorded in [MPV-RESEARCH.md](MPV-RESEARCH.md).
 - `xdg` deploys only the stable portal selection. GNOME keeps the dynamic
   default-application and user-directory files as ordinary local files.
+- `gtk` leaves `bookmarks` local since file managers rewrite it at runtime.
 - `nvim` tracks `jczhang02/nvim` on `main` and is the only submodule.
 - `f-sy-h` vendors the four Catppuccin syntax-highlighting themes and their
   license.

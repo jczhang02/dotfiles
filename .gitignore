@@ -3,6 +3,9 @@ btop/.config/btop/btop.log
 fcitx/.config/fcitx5/conf/cached_layouts
 fontconfig/.config/fontconfig/conf.d/*.bak.*
 
+# GTK bookmarks are rewritten by file managers; keep local
+gtk/.config/gtk-3.0/bookmarks
+
 # Local review handoff (contains host-specific operational details)
 /DOTFILES-REVIEW.md
 
