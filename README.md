@@ -62,13 +62,26 @@ configuration intentionally stays outside this repository.
 
 ### Prerequisites
 
-Make these commands available through Portage before deploying the repository:
+System programs and fonts that the configuration expects are listed in one
+Portage set, [`system/portage/sets/dotfiles`](system/portage/sets/dotfiles).
+Some come from overlays, so enable those first, then clone the repository and
+install the set:
 
-| Purpose                  | Required commands                   |
-| ------------------------ | ----------------------------------- |
-| Repository bootstrap     | `git`, `stow`, `zsh`, `mise`        |
-| Configured mise backends | `bun`, `go`, `cargo`, `rustc`, `uv` |
-| Credentials and access   | `ssh`, `gpg`, `gh`                  |
+```bash
+sudo eselect repository enable guru gentoo-zh jaredallard
+sudo eselect repository add jc git https://github.com/jczhang02/jc_overlay.git
+sudo emaint sync -r guru -r gentoo-zh -r jaredallard -r jc
+
+sudo emerge --noreplace dev-vcs/git
+git clone https://github.com/jczhang02/dotfiles.git ~/dev/dotfiles
+cd ~/dev/dotfiles
+
+sudo install -Dm644 system/portage/sets/dotfiles /etc/portage/sets/dotfiles
+sudo emerge -av @dotfiles
+```
+
+`system/` is not a Stow package. Portage reads the set from `/etc`, so copy it
+again after editing it. User-level CLIs are declared in `mise/` instead.
 
 The complete configured toolset has been tested with mise 2026.7.5. That is a
 tested version, not a claim about the minimum supported version.
@@ -78,7 +91,6 @@ tested version, not a claim about the minimum supported version.
 The shell setup does not require any submodules:
 
 ```bash
-git clone https://github.com/jczhang02/dotfiles.git ~/dev/dotfiles
 cd ~/dev/dotfiles
 
 stow --simulate --verbose zsh mise f-sy-h
@@ -155,11 +167,12 @@ stow git
 
 ## Package map
 
-There are 34 Stow packages in the current tree.
+There are 35 Stow packages in the current tree; `docs/` and `system/` are not
+packages.
 
 | Area               | Packages                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
-| Desktop            | `X11`, `gtk`, `fontconfig`, `fcitx`                                                                    |
+| Desktop            | `X11`, `gtk`, `fontconfig`, `fcitx`, `gnome-shell`                                                     |
 | Shell and terminal | `zsh`, `bash`, `f-sy-h`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`           |
 | Editors and agents | `nvim`, `claude`, `agents`                                                                             |
 | Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                                 |
@@ -182,6 +195,8 @@ Notable package boundaries:
   skills. `skills-restore` reinstalls third-party skills from the lock;
   `jc-writing-style/references/` stays local, and tool-installed skills
   (`plannotator*`, `beads`, `cua-driver`) are left to their installers.
+- `gnome-shell` tracks the self-authored GSConnect screenshot-share extension
+  and the `gsconnect-send-file` helper it calls by path.
 - `nvim` tracks `jczhang02/nvim` on `main` and is the only submodule.
 - `f-sy-h` vendors the four Catppuccin syntax-highlighting themes and their
   license.
@@ -204,6 +219,10 @@ Notable package boundaries:
 - Install declared mise tools only when they are needed.
 - Prefer XDG locations unless an application requires a traditional path.
 - Keep machine-local overrides outside the repository when practical.
+- Track only files that people edit by hand; files an application rewrites on
+  its own stay local.
+- Keep `~/.local/bin` free of loose binaries: Portage and mise install
+  programs, and Stow links only self-authored scripts.
 - Use Catppuccin Latte as the primary light palette without forcing every
   application to ignore the system theme.
 
@@ -254,6 +273,8 @@ Neovim submodule has its own documented local checks.
   [`jczhang02/tmux-autoname`](https://github.com/jczhang02/tmux-autoname)
   through the built-in TPM integration. LLM naming remains opt-in in the
   plugin's private local configuration.
+- `cua-driver` is the one CLI installed outside Portage and mise; its own
+  installer manages `~/.cua-driver` and the `~/.local/bin/cua-driver` link.
 - One administrator cleanup remains outside this repository: uninstall the
   system `net-misc/aliyunpan` package. Its dotfiles are already gone, but
   `/usr/bin/aliyunpan` is still installed by Portage.

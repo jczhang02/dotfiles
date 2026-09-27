@@ -1,0 +1,88 @@
+# Portage set: programs and fonts the stowed configuration depends on.
+# Install: see README "Portage dependencies". Overlay packages are marked.
+# User-level CLIs belong in mise (mise/), not here.
+
+# Bootstrap
+app-admin/stow
+dev-vcs/git
+app-shells/zsh
+# ::jaredallard
+dev-util/mise
+
+# mise backends (bun, go, cargo, uv)
+dev-lang/bun-bin
+dev-lang/go
+dev-lang/rust-bin
+dev-python/uv
+
+# Shell tools used by zsh, sesh-pick and skills-restore
+app-shells/fzf
+sys-apps/fd
+app-shells/zoxide
+app-shells/atuin
+sys-apps/eza
+sys-apps/bat
+sys-apps/ripgrep
+app-misc/jq
+app-misc/trash-cli
+app-text/tree
+# ::guru
+app-shells/vivid
+app-shells/direnv
+
+# Terminal and multiplexer
+x11-terms/ghostty
+app-misc/tmux
+app-misc/tmuxp
+# ::jc
+app-shells/sesh
+
+# Git, signing and credentials
+dev-util/git-delta
+dev-util/github-cli
+dev-util/shellcheck-bin
+app-crypt/gnupg
+app-crypt/pinentry
+# ::jaredallard
+app-admin/op-cli-bin
+
+# Editor and applications
+# ::jc
+app-editors/neovim
+# ::gentoo-zh
+app-misc/yazi
+dev-util/mamba
+app-text/zathura
+app-text/zathura-pdf-poppler
+dev-tex/latexmk
+media-video/mpv
+sys-process/btop
+app-containers/podman
+app-portage/eix
+
+# Desktop: input method, audio, GNOME Shell extension
+app-i18n/fcitx
+app-i18n/fcitx-chinese-addons
+app-i18n/fcitx-rime
+app-i18n/fcitx-gtk
+app-i18n/fcitx-qt
+media-video/pipewire
+media-video/wireplumber
+gnome-extra/gnome-shell-extension-gsconnect
+x11-libs/libnotify
+
+# Fonts named in fontconfig/ and ghostty/
+media-fonts/iosevka
+media-fonts/lxgw-wenkai
+media-fonts/noto
+media-fonts/noto-cjk
+media-fonts/noto-emoji
+media-fonts/twemoji
+media-fonts/liberation-fonts
+media-fonts/tex-gyre
+media-fonts/libertinus
+# ::gentoo-zh
+media-fonts/nerd-fonts
+media-fonts/lxgw-neo-xihei
+media-fonts/lxgw-neo-zhisong
+media-fonts/lxgw-bright
