@@ -18,13 +18,7 @@ if [[ ${FORGIT_INSTALL_DIR:-} == $ZDOTDIR/zi/* \
     || ${FORGIT_INSTALL_DIR:-} == ${ZDOTDIR:A}/zi/* ]]; then
     unset FORGIT_INSTALL_DIR
 fi
-unset NVM_DIR NVM_COMPLETION NPM_CONFIG_USERCONFIG
-
-if (( $+commands[rustup] )); then
-    export RUSTUP_DIST_SERVER=https://mirrors.tuna.tsinghua.edu.cn/rustup
-else
-    unset RUSTUP_DIST_SERVER
-fi
+unset NVM_DIR NVM_COMPLETION NPM_CONFIG_USERCONFIG RUSTUP_DIST_SERVER
 
 if (( ${terminfo[colors]:-0} >= 256 )); then
     if (( $+commands[vivid] )); then
