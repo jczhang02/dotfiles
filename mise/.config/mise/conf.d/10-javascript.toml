@@ -1,9 +1,10 @@
 # JavaScript CLI tools migrated from npm, pnpm, Yarn, and Bun globals.
-# Versions are initially pinned to the pre-migration versions.
+# Older entries are pinned to their pre-migration versions; later additions
+# track latest.
 
 [tools]
 "npm:@jackwener/opencli" = { version = "1.8.7", bun_args = "--trust" }
-"npm:@openai/codex" = "0.153.4"
+"npm:@openai/codex" = "latest"
 "npm:agent-browser" = { version = "0.35.1", bun_args = "--trust" }
 "npm:commitizen" = { version = "4.3.2", bun_args = "cz-git@1.13.1" }
 "npm:czg" = "1.14.0"
@@ -11,3 +12,4 @@
 "npm:create-tauri-app" = "4.6.2"
 "npm:create-test-project" = "1.0.3"
 "npm:@wecom/cli" = "latest"
+"npm:ccstatusline" = "latest"

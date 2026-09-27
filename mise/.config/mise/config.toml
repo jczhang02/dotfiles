@@ -34,7 +34,6 @@ shfmt                              = "latest"
 "cargo:worktrunk" = "latest"
 "aqua:dolthub/dolt" = "2.3.1"
 hunk = "latest"
-"npm:@openai/codex" = "latest"
 claude-code = "latest"
 "http:moshi-hook" = { version = "latest", url = "https://cdn.getmoshi.app/hook/v{{version}}/moshi-hook_Linux_x86_64.tar.gz", version_list_url = "https://cdn.getmoshi.app/hook/latest/version.txt" }
 "github:backnotprop/plannotator" = { version = "latest", asset_pattern = "plannotator-linux-x64", bin = "plannotator" }

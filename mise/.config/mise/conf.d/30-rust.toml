@@ -5,5 +5,4 @@
 "cargo:miniserve" = "0.35.0"
 "cargo:sccache" = "0.17.0"
 "cargo:tauri-driver" = "2.0.6"
-"cargo:https://github.com/rtk-ai/rtk" = { version = "tag:v0.45.0", crate = "rtk" }
 "github:iii-hq/iii" = "iii/v0.22.1"
