@@ -1,7 +1,7 @@
 {
-  "claude_binary": "/home/jc/.local/share/mise/installs/claude-code/latest/claude",
+  "claude_binary": "~/.local/share/mise/installs/claude-code/latest/claude",
   "model": "haiku",
-  "rules_file": "/home/jc/.codex/hooks/pi-session-name/rules.txt",
+  "rules_file": "~/.codex/hooks/pi-session-name/rules.txt",
   "max_length": 80,
   "timeout_seconds": 15,
   "installed_at": 1790304217

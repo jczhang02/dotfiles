@@ -1,1 +1,1 @@
-global-bin-dir=/home/jc/.local/share/pnpm/bin
+global-bin-dir=${HOME}/.local/share/pnpm/bin

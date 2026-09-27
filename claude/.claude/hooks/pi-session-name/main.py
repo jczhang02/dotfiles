@@ -82,7 +82,7 @@ def terminate(proc):
 
 
 def generate(prompt, settings):
-    rules = Path(settings["rules_file"]).read_text().strip()
+    rules = Path(settings["rules_file"]).expanduser().read_text().strip()
     if not rules or len(rules) > 8000:
         raise ValueError("invalid naming rules")
     if len(prompt) > 2000:
@@ -92,7 +92,7 @@ def generate(prompt, settings):
               "Start the description after the colon with a lowercase action verb, such as investigate, compare, "
               "add, fix, refactor, document, or update; do not use a bare noun phrase. "
               f"at most {settings['max_length']} Unicode characters. " + rules)
-    args = [settings["claude_binary"], "-p", "--safe-mode", "--no-session-persistence",
+    args = [os.path.expanduser(settings["claude_binary"]), "-p", "--safe-mode", "--no-session-persistence",
             "--model", settings["model"], "--effort", "low", "--tools", "",
             "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
             "--system-prompt", system, "--output-format", "json"]
