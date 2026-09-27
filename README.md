@@ -60,12 +60,14 @@ configuration intentionally stays outside this repository.
 
 ## Quick start
 
-### Prerequisites
+A new machine is set up in six ordered steps. Every Stow command can be
+previewed first with `stow --simulate --verbose`.
+
+### 1. System packages
 
 System programs and fonts that the configuration expects are listed in one
 Portage set, [`system/portage/sets/dotfiles`](system/portage/sets/dotfiles).
-Some come from overlays, so enable those first, then clone the repository and
-install the set:
+Some come from overlays, so enable those first:
 
 ```bash
 sudo eselect repository enable guru gentoo-zh jaredallard
@@ -83,96 +85,77 @@ sudo emerge -av @dotfiles
 `system/` is not a Stow package. Portage reads the set from `/etc`, so copy it
 again after editing it. User-level CLIs are declared in `mise/` instead.
 
-The complete configured toolset has been tested with mise 2026.7.5. That is a
-tested version, not a claim about the minimum supported version.
+### 2. Keys and credentials
 
-### Shell
-
-The shell setup does not require any submodules:
-
-```bash
-cd ~/dev/dotfiles
-
-stow --simulate --verbose zsh mise f-sy-h
-stow zsh mise f-sy-h
-
-git clone --depth=1 https://github.com/z-shell/zi.git \
-  "${XDG_DATA_HOME:-$HOME/.local/share}/zi/bin"
-
-exec zsh
-```
-
-Install one declared CLI when it is needed, or install the complete configured
-toolset:
+Private keys are intentionally absent from this repository. Create the private
+directories with the right permissions, restore the SSH keys from an encrypted
+backup, import the GPG signing key, and authenticate GitHub:
 
 ```bash
-mise install npm:prettier
-mise install
+install -d -m 700 "$HOME/.ssh" "$HOME/.gnupg"
+gpg --import /secure/path/to/signing-key.asc
+gh auth login
 ```
 
-Deploy any other user package with the same dry-run-first workflow:
+### 3. Upstream checkouts
 
-```bash
-stow --simulate --verbose git ghostty bat
-stow git ghostty bat
-```
-
-Yazi uses its official package manager for five plugins and the Catppuccin
-Latte flavor. Stow links the tracked files into an ordinary live configuration
-directory, where `ya pkg` can keep downloaded package contents local:
-
-```bash
-stow --simulate --verbose yazi
-stow yazi
-ya pkg install
-```
-
-oh-my-tmux remains an upstream checkout; this repository owns the local overlay
-and one reusable tmuxp workspace template. On a new machine, install the
-official configuration before deploying them:
+oh-my-tmux, Zi, and the Neovim configuration are upstream checkouts that the
+tracked files build on:
 
 ```bash
 tmux_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/tmux"
 install -d "$tmux_config_dir"
-git clone --depth=1 https://github.com/gpakosz/.tmux.git \
-  "$tmux_config_dir/.tmux"
+git clone --depth=1 https://github.com/gpakosz/.tmux.git "$tmux_config_dir/.tmux"
 ln -s .tmux/.tmux.conf "$tmux_config_dir/tmux.conf"
 
-stow --simulate --verbose tmux
-stow tmux
+git clone --depth=1 https://github.com/z-shell/zi.git \
+  "${XDG_DATA_HOME:-$HOME/.local/share}/zi/bin"
+
+git -C ~/dev/dotfiles submodule update --init nvim/.config/nvim
 ```
 
-Create private SSH and GnuPG directories before their first deployment so they
-start with the correct permissions. Stow then links only the tracked
-configuration files into these ordinary directories:
+### 4. Deploy every package
 
 ```bash
-install -d -m 700 "$HOME/.ssh" "$HOME/.gnupg"
-stow --simulate --verbose ssh gnupg
-stow ssh gnupg
+cd ~/dev/dotfiles
+packages=$(ls -d */ | grep -vxE 'docs/|system/' | tr -d /)
+stow --simulate --verbose $packages
+stow $packages
 ```
 
-Private keys are intentionally absent from this repository. On a new machine,
-restore the SSH keys from an encrypted backup, import the GPG signing key, and
-authenticate GitHub before deploying the Git package:
+### 5. Per-package follow-up
 
 ```bash
-gpg --import /secure/path/to/signing-key.asc
-gpg --list-secret-keys
-gh auth login
+mise install        # user-level CLIs declared in mise/
+skills-restore      # third-party agent skills from the tracked lock
+ya pkg install      # Yazi plugins and flavor
+fc-cache -f         # fonts from @dotfiles and the hand-installed sets below
+```
 
-stow --simulate --verbose git
-stow git
+- Copy the hand-installed font sets listed under
+  [Known constraints](#known-constraints) into `~/.local/share/fonts`.
+- Install `cua-driver` with its own installer.
+- tmux installs its plugins through oh-my-tmux's TPM integration on first start.
+
+The complete configured mise toolset has been tested with mise 2026.7.5. That is
+a tested version, not a claim about the minimum supported version.
+
+### 6. Log in again
+
+`environment.d`, fcitx, and GNOME Shell pick up their settings only in a new
+session. After logging back in, enable the tracked extension:
+
+```bash
+gnome-extensions enable gsconnect-screenshot-share@local
 ```
 
 ## Package map
 
-There are 35 Stow packages in the current tree; `docs/` and `system/` are not
-packages.
+`docs/` and `system/` are not Stow packages.
 
 | Area               | Packages                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
-| Desktop            | `X11`, `gtk`, `fontconfig`, `fcitx`, `gnome-shell`                                                     |
+| Desktop            | `gtk`, `fontconfig`, `fcitx`, `gnome-shell`                                                            |
 | Shell and terminal | `zsh`, `bash`, `f-sy-h`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`           |
 | Editors and agents | `nvim`, `claude`, `agents`                                                                             |
 | Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                                 |
@@ -181,11 +164,11 @@ packages.
 
 Notable package boundaries:
 
-- `X11` contains `.Xresources`, `.xprofile`, and `.xsession`.
 - `mpv` uses one native configuration file with the built-in UI and keymap; the
   rationale is recorded in [MPV-RESEARCH.md](MPV-RESEARCH.md).
-- `xdg` deploys only the stable portal selection. GNOME keeps the dynamic
-  default-application and user-directory files as ordinary local files.
+- `xdg` deploys the stable portal selection and hand-written `environment.d`
+  files. GNOME keeps the dynamic default-application and user-directory files
+  as ordinary local files.
 - `gtk` leaves `bookmarks` local since file managers rewrite it at runtime.
 - `claude` tracks only hand-written Claude Code files: `CLAUDE.md`, subagents,
   keybindings, themes, and the `pi-session-name` hook. `settings.json` stays
@@ -285,7 +268,6 @@ Neovim submodule has its own documented local checks.
 
 ## Reuse
 
-This repository does not currently declare a repository-wide license.
-Third-party material remains subject to its upstream terms; verify the relevant
-source before reuse. Major bundled themes and derived configuration are mapped
-in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+This repository does not declare a license. Bundled Catppuccin themes and the
+oh-my-tmux overlay come from their upstream projects and remain under those
+projects' terms.
