@@ -15,7 +15,7 @@ dev-lang/go
 dev-lang/rust-bin
 dev-python/uv
 
-# Shell tools used by zsh, sesh-pick and skills-restore
+# Shell tools used by zsh, fzf-preview, sesh-pick and skills-restore
 app-shells/fzf
 sys-apps/fd
 app-shells/zoxide
@@ -25,7 +25,10 @@ sys-apps/bat
 sys-apps/ripgrep
 app-misc/jq
 app-misc/trash-cli
+app-misc/tealdeer
 app-text/tree
+app-text/highlight
+app-admin/doas
 # ::guru
 app-shells/vivid
 app-shells/direnv
@@ -39,6 +42,7 @@ app-shells/sesh
 
 # Git, signing and credentials
 dev-util/git-delta
+dev-vcs/git-lfs
 dev-util/github-cli
 dev-util/shellcheck-bin
 app-crypt/gnupg
@@ -56,6 +60,7 @@ app-text/zathura
 app-text/zathura-pdf-poppler
 dev-tex/latexmk
 media-video/mpv
+media-video/mediainfo
 sys-process/btop
 app-containers/podman
 app-portage/eix
