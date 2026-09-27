@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+# sesh-pick — shared fzf picker for sesh (zsh startup + tmux `prefix s` popup).
+#
+#   sesh-pick           pick, then `sesh connect` (tmux popup)
+#   sesh-pick --print   pick, print the target; caller connects (zsh startup)
+#
+# Internal, used by fzf bindings:
+#   sesh-pick --list MODE     MODE: all | tmux | config | zoxide | find | current
+#   sesh-pick --kill NAME     kill NAME only if it is a live tmux session
+#                             other than the one we are attached to
+#
+# Enter on a query with no match: an existing directory becomes a session at
+# that path; anything else becomes a new tmux session in $HOME.
+
+set -uo pipefail
+
+self=${BASH_SOURCE[0]}
+export _ZO_EXCLUDE_DIRS=${_ZO_EXCLUDE_DIRS:-$HOME/Documents/sync/**}
+
+# Nerd Font glyphs, matching `sesh list --icons`.
+P_ALL=$'\xef\x83\xa7 '
+P_TMUX=$'\xee\xaf\x88 '
+P_CONFIG=$'\xee\x98\x95 '
+P_ZOXIDE=$'\xef\x84\x94 '
+P_FIND=$'\xef\x80\x82 '
+FIND_ICON=$'\e[36m\xef\x84\x94\e[39m'
+
+list() {
+    case $1 in
+        all) sesh list -d -t -c -z --icons ;;
+        tmux) sesh list -t --icons ;;
+        config) sesh list -c --icons ;;
+        zoxide) sesh list -z --icons ;;
+        find)
+            # Same "icon name" shape as sesh output so parsing/preview stay uniform.
+            command -v fd >/dev/null || return 0
+            fd -H -d 2 -t d -E .git . "$HOME/dev" |
+                sed -e "s|^$HOME|~|" -e 's|/$||' -e "s|^|$FIND_ICON |"
+            ;;
+        current)
+            case ${FZF_PROMPT:-} in
+                "$P_TMUX") list tmux ;;
+                "$P_CONFIG") list config ;;
+                "$P_ZOXIDE") list zoxide ;;
+                "$P_FIND") list find ;;
+                *) list all ;;
+            esac
+            ;;
+    esac
+}
+
+kill_session() {
+    local name=$1
+    tmux has-session -t "=$name" 2>/dev/null || return 0
+    if [[ -n ${TMUX:-} && $name == "$(tmux display-message -p '#S')" ]]; then
+        return 0
+    fi
+    tmux kill-session -t "=$name"
+}
+
+# Turn an unmatched query into something `sesh connect` accepts.
+new_target() {
+    local query=$1 name
+    if [[ -d ${query/#\~/$HOME} ]]; then
+        printf '%s\n' "$query"
+        return
+    fi
+    name=${query//[.:]/_} # tmux forbids . and : in session names
+    tmux has-session -t "=$name" 2>/dev/null || tmux new-session -d -s "$name" -c "$HOME"
+    printf '%s\n' "$name"
+}
+
+pick() {
+    local mode=$1 entries esc_hint query selection main_pos
+    entries=$(list all)
+
+    # shellcheck disable=SC2054 # commas belong to fzf options
+    local -a opts=(
+        --ansi --tiebreak=begin,index --sync
+        --layout=reverse --info=inline-right
+        --border=rounded --border-label=' sesh ' --prompt="$P_ALL"
+        --print-query
+        --preview='sesh preview {2..}'
+        --preview-window='right,55%,border-left,<100(down,45%,border-top)'
+        --bind='tab:down,btab:up'
+        --bind='enter:accept-or-print-query'
+        --bind="ctrl-a:change-prompt($P_ALL)+reload($self --list all)"
+        --bind="ctrl-t:change-prompt($P_TMUX)+reload($self --list tmux)"
+        --bind="ctrl-g:change-prompt($P_CONFIG)+reload($self --list config)"
+        --bind="ctrl-x:change-prompt($P_ZOXIDE)+reload($self --list zoxide)"
+        --bind="ctrl-d:execute-silent($self --kill {2..})+reload($self --list current)"
+    )
+    if command -v fd >/dev/null; then
+        opts+=(--bind="ctrl-f:change-prompt($P_FIND)+reload($self --list find)")
+    fi
+    # Soften the header when the Catppuccin palette is active.
+    [[ -n ${FZF_DEFAULT_OPTS:-} ]] && opts+=(--color='header:#8c8fa1')
+
+    if [[ $mode == print ]]; then
+        esc_hint='esc shell'
+        opts+=(--height=80%)
+        # Start on `main` so a plain Enter lands in the everyday session.
+        main_pos=$(sed 's/\x1b\[[0-9;]*m//g' <<<"$entries" | awk '$2 == "main" { print NR; exit }')
+        [[ -n $main_pos ]] && opts+=(--bind="start:pos($main_pos)")
+    else
+        esc_hint='esc close'
+    fi
+    opts+=(--header="^a all  ^t tmux  ^g config  ^x zoxide  ^f ~/dev
+^d kill  ⏎ no match → new  $esc_hint")
+
+    local out
+    out=$(fzf "${opts[@]}" <<<"$entries") || return 1
+    { IFS= read -r query; IFS= read -r selection; } <<<"$out"
+
+    if [[ -n $selection ]]; then
+        printf '%s\n' "${selection#* }"
+    elif [[ -n $query ]]; then
+        new_target "$query"
+    else
+        return 1
+    fi
+}
+
+case ${1:-} in
+    --list) list "${2:-all}" ;;
+    --kill) kill_session "${2:?}" ;;
+    --print) pick print ;;
+    '')
+        target=$(pick connect) || exit 0
+        exec sesh connect "$target"
+        ;;
+    *)
+        echo "usage: sesh-pick [--print]" >&2
+        exit 2
+        ;;
+esac

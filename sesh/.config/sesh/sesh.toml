@@ -1,0 +1,28 @@
+# sesh — tmux session manager
+# https://github.com/joshmedeski/sesh
+# Picker: ~/.local/bin/sesh-pick (zsh startup + tmux `prefix s`).
+
+# Regexes matched against the displayed name (zoxide paths use `~`).
+# Must stay above the first [table], or TOML scopes it into that table.
+# Hidden entries remain reachable with ^f (fd over ~/dev) or by typing a path.
+blacklist = [
+    "^/(tmp|var|dev|proc|sys|run|usr|boot)(/|$)",
+    "node_modules",
+    "/\\.worktrees(/|$)",
+    "/\\.cache(/|$)",
+]
+
+# === Custom named sessions ===
+# Each entry is selectable in `sesh connect` regardless of zoxide presence.
+
+[[session]]
+name = "main"
+path = "~"
+
+[[session]]
+name = "dotfiles"
+path = "~/dev/dotfiles"
+
+[[session]]
+name = "pi-config"
+path = "~/.config/pi/"

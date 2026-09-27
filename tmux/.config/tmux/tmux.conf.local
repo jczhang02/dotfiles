@@ -430,21 +430,12 @@ set -g prefix2 C-a
 bind C-Space send-prefix
 bind C-a     send-prefix -2
 
-# prefix s → sesh popup picker (live + configured; zoxide/find on demand)
+# prefix s → sesh popup picker (shared with zsh startup; see ~/.local/bin/sesh-pick)
 # 覆盖 tmux 默认 choose-tree
 unbind s
-bind s display-popup -E -w 80% -h 80% -B \
-    "export _ZO_EXCLUDE_DIRS=\$HOME/Documents/sync/**; sesh connect \"\$(sesh list -t -c -z --icons | fzf \
-        --no-sort --ansi --border --border-label ' sesh ' --prompt '⚡ ' \
-        --header '^a sessions  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find' \
-        --bind 'tab:down,btab:up' \
-        --bind 'ctrl-a:change-prompt(⚡ )+reload(sesh list -t -c -z --icons)' \
-        --bind 'ctrl-t:change-prompt(🪟 )+reload(sesh list -t --icons)' \
-        --bind 'ctrl-g:change-prompt(⚙  )+reload(sesh list -c --icons)' \
-        --bind 'ctrl-x:change-prompt(📁 )+reload(sesh list -z --icons)' \
-        --bind 'ctrl-f:change-prompt(🔎 )+reload(fd -H -d 2 -t d -E .git . ~/dev)' \
-        --bind 'ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡ )+reload(sesh list -t -c -z --icons)' \
-    )\""
+bind s display-popup -E -w 80% -h 80% -B "~/.local/bin/sesh-pick"
+# prefix S → 切回上一个 session
+bind S run-shell -b "sesh last >/dev/null 2>&1 || tmux display-message 'sesh: no previous session'"
 
 # vi-mode: y → tmux 内部 buffer + OSC52 转发给外层终端 (ghostty 写系统剪贴板)
 # 避开 fork wl-copy 守护进程, 顺带消除 dash-to-dock 误触发的"新应用"动画

@@ -26,30 +26,12 @@ function _zsh_maybe_start_sesh() {
             ;;
     esac
 
-    (( $+commands[sesh] && $+commands[fzf] && $+commands[tmux] )) || return 0
+    (( $+commands[sesh] && $+commands[fzf] && $+commands[tmux] && $+commands[sesh-pick] )) || return 0
 
-    local -a picker_options=(
-        --no-sort --ansi
-        --border --border-label=' sesh ' --prompt='⚡ ' --height=80%
-        --header='^a sessions  ^t tmux  ^g configs  ^x zoxide  ^d kill  ^f find'
-        --bind='tab:down,btab:up'
-        --bind='ctrl-a:change-prompt(⚡ )+reload(sesh list -t -c -z --icons)'
-        --bind='ctrl-t:change-prompt(🪟 )+reload(sesh list -t --icons)'
-        --bind='ctrl-g:change-prompt(⚙  )+reload(sesh list -c --icons)'
-        --bind='ctrl-x:change-prompt(📁 )+reload(sesh list -z --icons)'
-        --bind='ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡ )+reload(sesh list -t -c -z --icons)'
-    )
-    if (( $+commands[fd] )); then
-        picker_options+=(
-            --bind='ctrl-f:change-prompt(🔎 )+reload(fd -H -d 2 -t d -E .git . ~/dev)'
-        )
-    fi
-
+    # Picker lives in sesh-pick (shared with tmux `prefix s`); esc falls through to a plain shell.
     local target
-    target=$(sesh list -t -c -z --icons 2>/dev/null | fzf "${picker_options[@]}")
-
+    target=$(sesh-pick --print) || return 0
     [[ -n $target ]] || return 0
-    target=${target#* }
     exec sesh connect "$target"
 }
 _zsh_maybe_start_sesh

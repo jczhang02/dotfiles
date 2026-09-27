@@ -155,16 +155,16 @@ stow git
 
 ## Package map
 
-There are 33 Stow packages in the current tree.
+There are 34 Stow packages in the current tree.
 
-| Area               | Packages                                                                                       |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| Desktop            | `X11`, `gtk`, `fontconfig`, `fcitx`                                                            |
-| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `ghostty`, `kitty`, `tmux`, `bat`, `eza`, `yazi`, `zathura`, `direnv` |
-| Editors and agents | `nvim`, `claude`                                                                               |
-| Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                         |
-| Apps and media     | `mpv`                                                                                          |
-| User system        | `pipewire`, `containers`, `lxc`, `xdg`, `btop`, `eix`                                          |
+| Area               | Packages                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| Desktop            | `X11`, `gtk`, `fontconfig`, `fcitx`                                                                    |
+| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `ghostty`, `kitty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv` |
+| Editors and agents | `nvim`, `claude`                                                                                       |
+| Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                                 |
+| Apps and media     | `mpv`                                                                                                  |
+| User system        | `pipewire`, `containers`, `lxc`, `xdg`, `btop`, `eix`                                                  |
 
 Notable package boundaries:
 
@@ -181,6 +181,8 @@ Notable package boundaries:
   it no longer depends on a local linked build.
 - `yazi` tracks configuration and `package.toml`; `ya pkg` installs its five
   plugins and Catppuccin Latte flavor into the live configuration directory.
+- `sesh` tracks `sesh.toml` and `sesh-pick`, the fzf session picker shared by
+  the zsh startup prompt and tmux `prefix s`.
 - `tmux` tracks the oh-my-tmux overlay and a parameterized `tmuxp` workspace;
   project-specific or retired workspaces stay local.
 
