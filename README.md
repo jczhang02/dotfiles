@@ -160,7 +160,7 @@ gnome-extensions enable gsconnect-screenshot-share@local
 | Editors and agents | `nvim`, `claude`, `agents`                                                                             |
 | Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                                 |
 | Apps and media     | `mpv`                                                                                                  |
-| User system        | `pipewire`, `containers`, `lxc`, `xdg`, `btop`, `eix`                                                  |
+| User system        | `containers`, `lxc`, `xdg`, `btop`, `eix`                                                              |
 
 Notable package boundaries:
 
