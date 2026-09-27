@@ -155,12 +155,12 @@ stow git
 
 ## Package map
 
-There are 34 Stow packages in the current tree.
+There are 33 Stow packages in the current tree.
 
 | Area               | Packages                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
 | Desktop            | `X11`, `gtk`, `fontconfig`, `fcitx`                                                                    |
-| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `ghostty`, `kitty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv` |
+| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`           |
 | Editors and agents | `nvim`, `claude`                                                                                       |
 | Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                                 |
 | Apps and media     | `mpv`                                                                                                  |
