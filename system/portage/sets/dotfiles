@@ -72,6 +72,7 @@ app-i18n/fcitx-chinese-addons
 app-i18n/fcitx-rime
 app-i18n/fcitx-gtk
 app-i18n/fcitx-qt
+gui-apps/wl-clipboard
 media-video/pipewire
 media-video/wireplumber
 gnome-extra/gnome-shell-extension-gsconnect
