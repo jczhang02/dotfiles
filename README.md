@@ -262,9 +262,6 @@ Neovim submodule has its own documented local checks.
   to a new machine: Microsoft fonts (`microsoft_cn`, `microsoft_en`) and the
   `kami` typesetting fonts (TsangerJinKai, Source Han Serif KR) that the kami
   skill expects. Every other font comes from `@dotfiles`.
-- One administrator cleanup remains outside this repository: uninstall the
-  system `net-misc/aliyunpan` package. Its dotfiles are already gone, but
-  `/usr/bin/aliyunpan` is still installed by Portage.
 
 ## Reuse
 
