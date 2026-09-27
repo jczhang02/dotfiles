@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP='GSConnect Screenshot Share'
+FILE=${1:-}
+
+notify() {
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send "$APP" "$1" || true
+  fi
+}
+
+fail() {
+  printf '%s\n' "$1" >&2
+  notify "$1"
+  exit "${2:-1}"
+}
+
+if [[ -z "$FILE" ]]; then
+  fail 'Usage: gsconnect-send-file FILE' 64
+fi
+
+if [[ ! -f "$FILE" ]]; then
+  fail "File not found: $FILE" 66
+fi
+
+DEFAULT_DAEMON='/usr/share/gnome-shell/extensions/gsconnect@andyholmes.github.io/service/daemon.js'
+LOCAL_DAEMON="$HOME/.local/share/gnome-shell/extensions/gsconnect@andyholmes.github.io/service/daemon.js"
+DAEMON=${GSCONNECT_DAEMON:-$DEFAULT_DAEMON}
+
+if [[ ! -f "$DAEMON" && -f "$LOCAL_DAEMON" ]]; then
+  DAEMON=$LOCAL_DAEMON
+fi
+
+if [[ ! -f "$DAEMON" ]]; then
+  fail 'GSConnect daemon.js not found' 69
+fi
+
+CONFIG_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/gsconnect-screenshot-share
+DEVICE_FILE=$CONFIG_DIR/device
+DEVICE_ID_FILE=$CONFIG_DIR/device-id
+DEVICE_NAME_FILE=$CONFIG_DIR/device-name
+
+DEVICE=${GSCONNECT_DEVICE:-}
+DEVICE_NAME=${GSCONNECT_DEVICE_NAME:-}
+
+if [[ -z "$DEVICE" && -r "$DEVICE_FILE" ]]; then
+  DEVICE=$(tr -d '[:space:]' < "$DEVICE_FILE")
+elif [[ -z "$DEVICE" && -r "$DEVICE_ID_FILE" ]]; then
+  DEVICE=$(tr -d '[:space:]' < "$DEVICE_ID_FILE")
+fi
+
+if [[ -z "$DEVICE_NAME" && -r "$DEVICE_NAME_FILE" ]]; then
+  DEVICE_NAME=$(sed 's/^[[:space:]]*//;s/[[:space:]]*$//' "$DEVICE_NAME_FILE")
+fi
+
+if [[ -n "$DEVICE" ]]; then
+  "$DAEMON" --device "$DEVICE" --share-file "$FILE"
+  printf 'Sent to %s\n' "$DEVICE"
+  exit 0
+fi
+
+if [[ -n "$DEVICE_NAME" ]]; then
+  "$DAEMON" --name "$DEVICE_NAME" --share-file "$FILE"
+  printf 'Sent to %s\n' "$DEVICE_NAME"
+  exit 0
+fi
+
+mapfile -t CONNECTED < <("$DAEMON" --list-devices 2>/dev/null | awk 'NF {print $1}')
+
+case "${#CONNECTED[@]}" in
+  0)
+    ALL=$("$DAEMON" --list-all 2>/dev/null || true)
+    if [[ -n "$ALL" ]]; then
+      fail "No connected paired GSConnect device. Known devices:\n$ALL" 70
+    fi
+    fail 'No paired GSConnect device found' 70
+    ;;
+  1)
+    "$DAEMON" --device "${CONNECTED[0]}" --share-file "$FILE"
+    printf 'Sent to %s\n' "${CONNECTED[0]}"
+    ;;
+  *)
+    printf -v DEVICE_LIST '%s\n' "${CONNECTED[@]}"
+    fail "Multiple connected GSConnect devices. Save one id to $DEVICE_FILE:\n$DEVICE_LIST" 71
+    ;;
+esac

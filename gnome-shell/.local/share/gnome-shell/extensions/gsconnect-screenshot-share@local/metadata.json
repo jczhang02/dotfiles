@@ -1,0 +1,8 @@
+{
+  "uuid": "gsconnect-screenshot-share@local",
+  "name": "GSConnect Screenshot Share",
+  "description": "Adds Copy Image and Send to Phone actions to GNOME screenshot notifications.",
+  "version": 2,
+  "shell-version": ["49"],
+  "url": "https://github.com/GSConnect/gnome-shell-extension-gsconnect"
+}
