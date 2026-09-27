@@ -23,7 +23,7 @@ export _ZO_EXCLUDE_DIRS=${_ZO_EXCLUDE_DIRS:-$HOME/Documents/sync/**}
 format() {
     # stdout is a pipe here, so ask the tty; fzf exports FZF_COLUMNS on reload.
     local width=${FZF_COLUMNS:-}
-    [[ -n $width ]] || width=$(stty size </dev/tty 2>/dev/null | cut -d' ' -f2)
+    [[ -n $width ]] || width=$({ stty size </dev/tty; } 2>/dev/null | cut -d' ' -f2)
     width=${width:-100}
     jq -r --arg home "$HOME" --argjson width "$width" --argjson dedupe "${1:-false}" '
         def tilde: if startswith($home) then "~" + .[($home | length):] else . end;
