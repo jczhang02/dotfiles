@@ -3,6 +3,6 @@
   "model": "haiku",
   "rules_file": "~/.codex/hooks/pi-session-name/rules.txt",
   "max_length": 80,
-  "timeout_seconds": 15,
+  "timeout_seconds": 20,
   "installed_at": 1790304217
 }
