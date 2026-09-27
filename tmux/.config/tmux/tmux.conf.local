@@ -433,7 +433,7 @@ bind C-a     send-prefix -2
 # prefix s → sesh popup picker (shared with zsh startup; see ~/.local/bin/sesh-pick)
 # 覆盖 tmux 默认 choose-tree
 unbind s
-bind s display-popup -E -w 80% -h 80% -B "~/.local/bin/sesh-pick"
+bind s display-popup -E -w 70% -h 70% -B "~/.local/bin/sesh-pick"
 # prefix S → 切回上一个 session
 bind S run-shell -b "sesh last >/dev/null 2>&1 || tmux display-message 'sesh: no previous session'"
 
