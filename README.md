@@ -155,13 +155,13 @@ stow git
 
 ## Package map
 
-There are 33 Stow packages in the current tree.
+There are 34 Stow packages in the current tree.
 
 | Area               | Packages                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
 | Desktop            | `X11`, `gtk`, `fontconfig`, `fcitx`                                                                    |
 | Shell and terminal | `zsh`, `bash`, `f-sy-h`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`           |
-| Editors and agents | `nvim`, `claude`                                                                                       |
+| Editors and agents | `nvim`, `claude`, `agents`                                                                             |
 | Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                                 |
 | Apps and media     | `mpv`                                                                                                  |
 | User system        | `pipewire`, `containers`, `lxc`, `xdg`, `btop`, `eix`                                                  |
@@ -174,6 +174,14 @@ Notable package boundaries:
 - `xdg` deploys only the stable portal selection. GNOME keeps the dynamic
   default-application and user-directory files as ordinary local files.
 - `gtk` leaves `bookmarks` local since file managers rewrite it at runtime.
+- `claude` tracks only hand-written Claude Code files: `CLAUDE.md`, subagents,
+  keybindings, themes, and the `pi-session-name` hook. `settings.json` stays
+  local because Claude Code replaces it on every settings change; the herdr hook
+  is owned by herdr.
+- `agents` tracks the global `npx skills` lock, `rules/`, and self-authored
+  skills. `skills-restore` reinstalls third-party skills from the lock;
+  `jc-writing-style/references/` stays local, and tool-installed skills
+  (`plannotator*`, `beads`, `cua-driver`) are left to their installers.
 - `nvim` tracks `jczhang02/nvim` on `main` and is the only submodule.
 - `f-sy-h` vendors the four Catppuccin syntax-highlighting themes and their
   license.

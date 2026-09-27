@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# skills-restore — reinstall global `npx skills` skills from the tracked lock.
+#
+#   skills-restore [--dry-run]
+#
+# The lock (~/.agents/.skill-lock.json, stowed from dotfiles) records each
+# third-party skill's source; the skill contents themselves are not tracked.
+# `skills experimental_install` only restores project-level locks, hence this.
+# Self-authored skills are stowed directly and are not in the lock.
+
+set -euo pipefail
+
+lock=${XDG_STATE_HOME:+$XDG_STATE_HOME/skills/.skill-lock.json}
+[[ -n $lock && -e $lock ]] || lock=$HOME/.agents/.skill-lock.json
+[[ -r $lock ]] || { echo "skills-restore: no lock at $lock" >&2; exit 1; }
+
+dry_run=false
+[[ ${1:-} == --dry-run ]] && dry_run=true
+
+# Install to Claude Code plus whatever agents the last interactive add chose.
+mapfile -t agents < <(jq -r '["claude-code"] + (.lastSelectedAgents // []) | unique[]' "$lock")
+
+# One `skills add` per source repository.
+while IFS=$'\t' read -r source names; do
+    read -ra skills <<<"$names"
+    cmd=(npx -y skills add "$source" -g -y -s "${skills[@]}" -a "${agents[@]}")
+    if $dry_run; then
+        printf '%q ' "${cmd[@]}"
+        echo
+    else
+        echo "==> $source (${#skills[@]} skill(s))"
+        "${cmd[@]}" </dev/null || echo "skills-restore: failed: $source" >&2
+    fi
+done < <(jq -r '
+    .skills | to_entries
+    | group_by(.value.sourceUrl // .value.source)
+    | .[] | [(.[0].value.sourceUrl // .[0].value.source), (map(.key) | join(" "))]
+    | @tsv' "$lock")

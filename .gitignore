@@ -40,3 +40,6 @@ secrets.yaml
 .boto
 .s3cfg
 kubeconfig
+
+# Private calibration sources for the writing-style skill
+agents/.agents/skills/jc-writing-style/references/
