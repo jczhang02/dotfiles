@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -82,7 +83,10 @@ def terminate(proc):
 
 
 def generate(prompt, settings):
-    rules = Path(settings["rules_file"]).expanduser().read_text().strip()
+    rules_path = Path(settings["rules_file"]).expanduser()
+    if not rules_path.is_absolute():
+        rules_path = HERE / rules_path
+    rules = rules_path.read_text().strip()
     if not rules or len(rules) > 8000:
         raise ValueError("invalid naming rules")
     # The opening states the intent; long prompts only slow the model past the timeout.
@@ -93,7 +97,10 @@ def generate(prompt, settings):
               "Start the description after the colon with a lowercase action verb, such as investigate, compare, "
               "add, fix, refactor, document, or update; do not use a bare noun phrase. "
               f"at most {settings['max_length']} Unicode characters. " + rules)
-    args = [os.path.expanduser(settings["claude_binary"]), "-p", "--safe-mode", "--no-session-persistence",
+    binary = shutil.which(os.path.expanduser(settings["claude_binary"]))
+    if binary is None:
+        raise FileNotFoundError("claude binary not found")
+    args = [binary, "-p", "--safe-mode", "--no-session-persistence",
             "--model", settings["model"], "--effort", "low", "--tools", "",
             "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
             "--system-prompt", system, "--output-format", "json"]
