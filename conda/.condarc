@@ -25,5 +25,4 @@ custom_channels:
 #   - ipykernel
 #   - jupyter
 #   - pip
-safety_checks: disabled
 auto_activate_base: false
