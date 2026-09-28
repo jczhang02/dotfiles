@@ -174,10 +174,9 @@ Notable package boundaries:
   local because Claude Code replaces it on every settings change; the herdr hook
   is owned by herdr.
 - `agents` tracks the global `npx skills` lock, `rules/`, and self-authored
-  skills. `skills-restore` reinstalls third-party skills from the lock;
-  `jc-writing-style` stays local because it embeds private writing samples,
-  and tool-installed skills (`plannotator*`, `beads`, `cua-driver`) are left
-  to their installers.
+  skills. `skills-restore` reinstalls third-party skills from the lock, and
+  tool-installed skills (`plannotator*`, `beads`, `cua-driver`) are left to
+  their installers.
 - `gnome-shell` tracks the self-authored GSConnect screenshot-share extension
   and the `gsconnect-send-file` helper it calls by path, plus
   `hide-wl-clipboard`, which keeps wl-copy's focus window out of the dock.

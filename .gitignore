@@ -41,5 +41,3 @@ secrets.yaml
 .s3cfg
 kubeconfig
 
-# Personal writing-style skill embeds private manuscript excerpts; kept local
-agents/.agents/skills/jc-writing-style/
