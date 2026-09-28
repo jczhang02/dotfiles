@@ -261,12 +261,16 @@ Neovim submodule has its own documented local checks.
   to a new machine: Microsoft fonts (`microsoft_cn`, `microsoft_en`) and the
   `kami` typesetting fonts (TsangerJinKai, Source Han Serif KR) that the kami
   skill expects. Every other font comes from `@dotfiles`.
-- `/tmp` is a ZFS dataset (`rpool/tmp`, `mountpoint=legacy`, 64G quota,
-  `sync=disabled`) instead of tmpfs, so files that agents and their build jobs
-  leave in `/tmp` no longer pin RAM and swap. A `tmp.mount` drop-in in
-  `/etc/systemd/system/tmp.mount.d/` points the stock unit at the dataset, and
-  `/etc/tmpfiles.d/tmp.conf` keeps the tmpfs semantics of clearing `/tmp` at
-  boot. Both files are root-owned and stay outside this repository.
+- `/tmp` and `/var/tmp/portage` are unsnapshotted ZFS datasets with
+  `sync=disabled` instead of tmpfs, so files that agents and builds leave
+  behind no longer pin RAM and swap. `rpool/tmp` (`mountpoint=legacy`, 64G
+  quota) is mounted by a `tmp.mount` drop-in in
+  `/etc/systemd/system/tmp.mount.d/`, and `/etc/tmpfiles.d/tmp.conf` keeps the
+  tmpfs habit of clearing `/tmp` at boot. `rpool/portage-tmp` is mounted by
+  ZFS itself; `/etc/tmpfiles.d/portage-tmpdir.conf` overrides Portage's
+  shipped file to age out failed build directories after seven days, so
+  `package.env` no longer needs a `notmpfs` escape for large packages. These
+  files are root-owned and stay outside this repository.
 
 ## Reuse
 
