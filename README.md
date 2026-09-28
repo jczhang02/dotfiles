@@ -156,7 +156,7 @@ gnome-extensions enable gsconnect-screenshot-share@local
 | Area               | Packages                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
 | Desktop            | `gtk`, `fontconfig`, `fcitx`, `gnome-shell`                                                            |
-| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`           |
+| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `atuin`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`  |
 | Editors and agents | `nvim`, `claude`, `agents`                                                                             |
 | Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                                 |
 | Apps and media     | `mpv`                                                                                                  |
@@ -184,6 +184,8 @@ Notable package boundaries:
 - `nvim` tracks `jczhang02/nvim` on `main` and is the only submodule.
 - `f-sy-h` vendors the four Catppuccin syntax-highlighting themes and their
   license.
+- `atuin` tracks `config.toml` and vendors the Catppuccin Latte (mauve) theme
+  and its license; the history database, key, and session stay local.
 - `gig-cli` is installed by mise from
   [jczhang02/gig](https://github.com/jczhang02/gig) at a pinned Git revision;
   it no longer depends on a local linked build.
