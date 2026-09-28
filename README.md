@@ -179,7 +179,8 @@ Notable package boundaries:
   and tool-installed skills (`plannotator*`, `beads`, `cua-driver`) are left
   to their installers.
 - `gnome-shell` tracks the self-authored GSConnect screenshot-share extension
-  and the `gsconnect-send-file` helper it calls by path.
+  and the `gsconnect-send-file` helper it calls by path, plus
+  `hide-wl-clipboard`, which keeps wl-copy's focus window out of the dock.
 - `nvim` tracks `jczhang02/nvim` on `main` and is the only submodule.
 - `f-sy-h` vendors the four Catppuccin syntax-highlighting themes and their
   license.

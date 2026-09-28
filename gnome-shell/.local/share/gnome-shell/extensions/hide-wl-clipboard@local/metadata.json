@@ -1,0 +1,7 @@
+{
+  "uuid": "hide-wl-clipboard@local",
+  "name": "Hide wl-clipboard",
+  "description": "Keeps wl-copy's transient focus window out of the Dash and Dash to Dock.",
+  "version": 1,
+  "shell-version": ["49"]
+}
