@@ -3,6 +3,6 @@
   "name": "GSConnect Screenshot Share",
   "description": "Adds Copy Image and Send to Phone actions to GNOME screenshot notifications.",
   "version": 2,
-  "shell-version": ["49"],
+  "shell-version": ["49", "50"],
   "url": "https://github.com/GSConnect/gnome-shell-extension-gsconnect"
 }
