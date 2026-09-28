@@ -256,8 +256,10 @@ Neovim submodule has its own documented local checks.
 
 - The Tmux overlay installs
   [`jczhang02/tmux-autoname`](https://github.com/jczhang02/tmux-autoname)
-  through the built-in TPM integration. LLM naming remains opt-in in the
-  plugin's private local configuration.
+  through the built-in TPM integration. It names windows
+  `<activity>:<workspace>[/<area>]` without AI;
+  `zsh/.config/zsh/zshrc.d/06-tmux-autoname.zsh` loads its zsh integration so
+  names update on command start, finish, and `cd`.
 - `cua-driver` is the one CLI installed outside Portage and mise; its own
   installer manages `~/.cua-driver` and the `~/.local/bin/cua-driver` link.
 - Two font sets are hand-installed in `~/.local/share/fonts` and must be copied

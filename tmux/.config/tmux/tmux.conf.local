@@ -546,7 +546,8 @@ set -g pane-border-lines heavy
 # set -g pane-border-status top
 # set -g pane-border-format ' #P #{pane_current_command} '
 
-# semantic auto-renaming for pi/claude + dev tools
+
+# window names as <activity>:<workspace>[/<area>]
 set -g @plugin 'jczhang02/tmux-autoname'
 
 # === 切 pane/window/session 时强制 fcitx5 回英文 ===
