@@ -465,7 +465,7 @@ Second round, admitting the original text was unclear:
 
 **流程**：
 
-1. **定位文件**。本文件真实路径是 `~/dev/dotfiles/agents/.agents/skills/jc-writing-style/SKILL.md`。`~/.claude/skills/` 和 `~/.agents/skills/` 下的都是符号链接；不确定时用 `readlink -f` 解析。这个文件被 dotfiles 的 git 忽略，改完不要 commit。
+1. **定位文件**。本文件真实路径是 `~/dev/dotfiles/agents/.agents/skills/jc-writing-style/SKILL.md`。`~/.claude/skills/` 和 `~/.agents/skills/` 下的都是符号链接；不确定时用 `readlink -f` 解析。这个文件由公开的 dotfiles 仓库追踪；改完不要自行 commit，除非 JC 要求。
 2. **归因**。先引用出问题的输出原文，再找出是本文件哪一处导致的，可能是某条规则写得不对、某条缺失，或者是模型照搬了某个样例的句式。归到以下其中一处：§2 画像、§3 某个体裁骨架、§4 检查或白名单、§5 校准、§7 样例。如果是本文件缺少这条规则，也要明说。
 3. **判断范围**。区分这是**一次性偏好**（只针对这一篇，比如这次听众特殊）还是**持久规则**（以后都这样）。一次性偏好只改输出，不改 skill。判断不了就问一句。
 4. **起草改动**。遵循以下原则：
