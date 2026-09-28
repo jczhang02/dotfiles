@@ -261,6 +261,12 @@ Neovim submodule has its own documented local checks.
   to a new machine: Microsoft fonts (`microsoft_cn`, `microsoft_en`) and the
   `kami` typesetting fonts (TsangerJinKai, Source Han Serif KR) that the kami
   skill expects. Every other font comes from `@dotfiles`.
+- `/tmp` is a ZFS dataset (`rpool/tmp`, `mountpoint=legacy`, 64G quota,
+  `sync=disabled`) instead of tmpfs, so files that agents and their build jobs
+  leave in `/tmp` no longer pin RAM and swap. A `tmp.mount` drop-in in
+  `/etc/systemd/system/tmp.mount.d/` points the stock unit at the dataset, and
+  `/etc/tmpfiles.d/tmp.conf` keeps the tmpfs semantics of clearing `/tmp` at
+  boot. Both files are root-owned and stay outside this repository.
 
 ## Reuse
 
