@@ -1,6 +1,8 @@
 # Generated runtime files
 btop/.config/btop/btop.log
 fcitx/.config/fcitx5/conf/cached_layouts
+# fcitx5 rewrites its profile (enabled input methods) on its own; keep local
+fcitx/.config/fcitx5/profile
 fontconfig/.config/fontconfig/conf.d/*.bak.*
 
 # GTK bookmarks are rewritten by file managers; keep local
