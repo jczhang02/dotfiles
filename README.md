@@ -130,6 +130,7 @@ mise install        # user-level CLIs declared in mise/
 skills-restore      # third-party agent skills from the tracked lock
 ya pkg install      # Yazi plugins and flavor
 fc-cache -f         # fonts from @dotfiles and the hand-installed sets below
+systemctl --user enable --now kd-server.service  # dictionary daemon
 ```
 
 - Copy the hand-installed font sets listed under
@@ -156,7 +157,7 @@ gnome-extensions enable gsconnect-screenshot-share@local
 | Area               | Packages                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
 | Desktop            | `gtk`, `fontconfig`, `fcitx`, `gnome-shell`                                                            |
-| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `atuin`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`  |
+| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `atuin`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`, `kd`  |
 | Editors and agents | `nvim`, `claude`, `agents`                                                                             |
 | Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`                                 |
 | Apps and media     | `mpv`                                                                                                  |

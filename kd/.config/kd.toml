@@ -1,0 +1,22 @@
+# Bilingual definitions and examples.
+english_only = false
+
+# Preserve ANSI colors and leave results visible after exiting the pager.
+paging = true
+pager_command = "less -RFX"
+
+# Light terminal background, matching the workstation's default palette.
+theme = "canvas"
+clear_screen = false
+enable_emoji = true
+
+# kd v0.0.14 hangs on long-text queries when frequency alerts are enabled.
+freq_alert = false
+
+# Inherit the environment's proxy settings when needed.
+http_proxy = ""
+
+[logging]
+enable = true
+path = ""
+level = "WARN"

@@ -1,0 +1,13 @@
+[Unit]
+Description=kd command-line dictionary server
+
+[Service]
+Type=simple
+WorkingDirectory=%h
+ExecStart=%h/.local/share/mise/shims/kd --server --log-to-stream
+# kd exits successfully after installing its offline database.
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target
