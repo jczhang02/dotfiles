@@ -47,15 +47,6 @@
       "installedAt": "2026-06-14T08:23:52.369Z",
       "updatedAt": "2026-09-24T00:20:43.999Z"
     },
-    "partjob-workflow": {
-      "source": "jczhang02/partjob-workflow",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/jczhang02/partjob-workflow.git",
-      "skillPath": "SKILL.md",
-      "skillFolderHash": "eb0491743be9830e9f0827f9c9d76e27b2abf12a",
-      "installedAt": "2026-06-14T08:24:26.730Z",
-      "updatedAt": "2026-06-14T08:24:26.730Z"
-    },
     "codebase-design": {
       "source": "mattpocock/skills",
       "sourceType": "github",
