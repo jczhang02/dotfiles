@@ -13,6 +13,9 @@ import uuid
 HERE = Path(__file__).resolve().parent
 CHILD_ENV = "SESSION_TITLE_CHILD"
 FORMAT = r"(?:research|feat|fix|refactor|docs|chore): \S(?:.*\S)?"
+COMMAND = re.compile(r"/[\w:.-]+(?:\s|$)")
+# A transcript this large is past its first prompt; don't parse it on every prompt.
+FIRST_PROMPT_MAX_BYTES = 1024 * 1024
 
 
 def text_of(entry):
@@ -23,28 +26,47 @@ def text_of(entry):
     return content if isinstance(content, str) else ""
 
 
-def scan(path):
-    """Return (typed user prompts, latest custom title). Tool results and slash-command noise are not prompts."""
-    prompts, custom = [], None
+def entries(path, kind):
+    """Yield transcript entries of one type, parsing only lines that can match."""
     if not path.exists():
-        return prompts, custom
+        return
+    needle = '"' + kind + '"'
     with path.open() as stream:
         for line in stream:
-            try:
-                entry = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if entry.get("type") == "custom-title":
-                custom = entry.get("customTitle")
-            elif (entry.get("type") == "user" and not entry.get("isMeta")
-                  and not entry.get("isSidechain")):
-                text = text_of(entry).strip()
-                if text and not text.startswith(("<command-", "<local-command", "<bash-")):
-                    prompts.append(text)
-    return prompts, custom
+            if needle in line:
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if entry.get("type") == kind:
+                    yield entry
 
 
-def generate(prompt, settings):
+def custom_title(path):
+    title = None
+    for entry in entries(path, "custom-title"):
+        title = entry.get("customTitle")
+    return title
+
+
+def is_first_prompt(path, prompt):
+    """True if no typed prompt other than this one exists. Tool results and slash-command noise are not prompts."""
+    if path.exists() and path.stat().st_size > FIRST_PROMPT_MAX_BYTES:
+        return False
+    seen = 0
+    for entry in entries(path, "user"):
+        if entry.get("isMeta") or entry.get("isSidechain"):
+            continue
+        text = text_of(entry).strip()
+        if not text or text.startswith(("<command-", "<local-command", "<bash-")):
+            continue
+        seen += 1
+        if seen > 1 or text != prompt.strip():
+            return False
+    return custom_title(path) is None
+
+
+def generate(prompt, settings, usage):
     rules = (HERE / settings["rules_file"]).read_text().strip()
     # The opening states the intent; the rest only costs latency.
     if len(prompt) > 600:
@@ -60,7 +82,10 @@ def generate(prompt, settings):
     binary = shutil.which(os.path.expanduser(settings["claude_binary"]))
     if binary is None:
         raise FileNotFoundError("claude binary not found")
-    env = dict(os.environ, **{CHILD_ENV: "1", "MAX_THINKING_TOKENS": "0"})
+    # --tools "" leaves the advisor tool in place; Haiku sometimes calls it,
+    # which bills a Fable request at ~30x the cost of the title itself.
+    env = dict(os.environ, **{CHILD_ENV: "1", "MAX_THINKING_TOKENS": "0",
+                              "CLAUDE_CODE_DISABLE_ADVISOR_TOOL": "1"})
     env.pop("CLAUDECODE", None)
     result = subprocess.run(
         [binary, "-p", "--safe-mode", "--no-session-persistence",
@@ -71,6 +96,9 @@ def generate(prompt, settings):
         input="Opening user request:\n" + prompt, capture_output=True, text=True,
         env=env, cwd=HERE, timeout=settings["timeout_seconds"])
     response = json.loads(result.stdout)
+    # Kept in the state file so an unexpected extra model call is visible.
+    usage.update(cost_usd=response.get("total_cost_usd"),
+                 models=sorted(response.get("modelUsage") or {}))
     if result.returncode != 0 or response.get("is_error"):
         raise RuntimeError("naming process failed")
     title = (response.get("structured_output") or {}).get("title")
@@ -84,13 +112,14 @@ def generate(prompt, settings):
 
 
 def name_session(sid, transcript, prompt, settings, record):
+    usage = {}
     try:
-        title = generate(prompt, settings)
+        title = generate(prompt, settings, usage)
     except Exception as error:
-        return record(outcome="failed_" + type(error).__name__)
+        return record(outcome="failed_" + type(error).__name__, **usage)
     # The user may have run /rename while the title was generated.
-    if scan(transcript)[1]:
-        return record(outcome="skip_renamed")
+    if custom_title(transcript) is not None:
+        return record(outcome="skip_renamed", **usage)
     line = json.dumps({"type": "custom-title", "customTitle": title, "sessionId": sid},
                       ensure_ascii=False, separators=(",", ":")) + "\n"
     # One O_APPEND write, the same way Claude Code appends its own records.
@@ -99,7 +128,7 @@ def name_session(sid, transcript, prompt, settings, record):
         os.write(fd, line.encode())
     finally:
         os.close(fd)
-    record(outcome="named", title=title)
+    record(outcome="named", title=title, **usage)
 
 
 def main():
@@ -117,27 +146,30 @@ def main():
     home = Path(os.environ.get("CLAUDE_CONFIG_DIR", str(Path.home() / ".claude")))
     state_dir = home / "session-title-state"
     state = state_dir / (sid + ".json")
-    prompts, custom = scan(transcript)
 
     def record(**fields):
-        state.write_text(json.dumps({"at": int(time.time()), **fields}))
+        temp = state.with_name(state.name + "." + uuid.uuid4().hex + ".tmp")
+        temp.write_text(json.dumps({"at": int(time.time()), **fields}))
+        temp.replace(state)
 
     if state.exists():
-        # The running session only reads custom-title on load, so hand it the
-        # title once through sessionTitle unless /rename replaced it since.
-        saved = json.loads(state.read_text() or "{}")
+        # Every state but "named" is final, so most prompts stop here without
+        # reading the transcript.
+        saved = json.loads(state.read_text())
         if saved.get("outcome") != "named":
             return {}
-        record(outcome="applied" if custom == saved["title"] else "skip_renamed")
-        if custom != saved["title"]:
+        # The running session only reads custom-title on load, so hand it the
+        # title once through sessionTitle unless /rename replaced it since.
+        renamed = custom_title(transcript) != saved["title"]
+        record(**{**saved, "outcome": "skip_renamed" if renamed else "applied"})
+        if renamed:
             return {}
         return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                        "sessionTitle": saved["title"]}}
-    if not isinstance(prompt, str) or not prompt.strip() or prompt.lstrip().startswith("/"):
+    if not isinstance(prompt, str) or not prompt.strip() or COMMAND.match(prompt.lstrip()):
         return {}
     # Only the first typed prompt names the session; it may or may not be written yet.
-    if (custom or data.get("session_title") or len(prompts) > 1
-            or prompts and prompts[0] != prompt.strip()):
+    if data.get("session_title") or not is_first_prompt(transcript, prompt):
         return {}
     settings = json.loads((HERE / "settings.json").read_text())
     state_dir.mkdir(mode=0o700, parents=True, exist_ok=True)

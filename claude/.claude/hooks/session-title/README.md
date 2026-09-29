@@ -23,14 +23,22 @@ Code ignores `sessionTitle` from async hooks. The first turn still shows Claude
 Code's own AI title.
 
 Skipped: resumed sessions, subagents, sessions already named with `--name` or
-`/rename` (checked again before writing and before applying), and prompts that
-start with `/`. Only the first 600 characters of the prompt are sent.
-Generation failures are not retried.
+`/rename` (checked again before writing and before applying), and slash
+commands. Only the first 600 characters of the prompt are sent. The worker also
+sets `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`: `--tools ""` does not remove the
+advisor, and Haiku occasionally calling it billed a Fable request at about 30
+times the cost of the title.
+
+A session stays unnamed, without retry, when the first prompt is a slash
+command, when the transcript stores the first prompt differently from what the
+hook received (pasted content or images can do this), or when naming fails or
+the worker is killed.
 
 Per-session state lives in `$CLAUDE_CONFIG_DIR/session-title-state/<session
 id>.json`: the outcome (`pending`, `named`, `applied`, `skip_renamed`,
-`failed_*`) and, until it is applied, the generated title. Prompts are not
-stored.
+`failed_*`), the generated title, and the naming call's cost and models. Once
+the outcome is final, later prompts read only this file, never the transcript.
+Prompts are not stored.
 
 Edit [settings.json](settings.json) for the model, CLI, rules file, maximum
 length, or generation timeout. To disable the feature, remove the
