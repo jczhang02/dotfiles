@@ -24,8 +24,8 @@ def text_of(entry):
 
 
 def scan(path):
-    """Return (typed user prompts, has custom title). Tool results and slash-command noise are not prompts."""
-    prompts, custom = [], False
+    """Return (typed user prompts, latest custom title). Tool results and slash-command noise are not prompts."""
+    prompts, custom = [], None
     if not path.exists():
         return prompts, custom
     with path.open() as stream:
@@ -35,7 +35,7 @@ def scan(path):
             except json.JSONDecodeError:
                 continue
             if entry.get("type") == "custom-title":
-                custom = True
+                custom = entry.get("customTitle")
             elif (entry.get("type") == "user" and not entry.get("isMeta")
                   and not entry.get("isSidechain")):
                 text = text_of(entry).strip()
@@ -99,44 +99,57 @@ def name_session(sid, transcript, prompt, settings, record):
         os.write(fd, line.encode())
     finally:
         os.close(fd)
-    record(outcome="named")
+    record(outcome="named", title=title)
 
 
 def main():
+    """Return the hook output; any naming work happens in a detached child."""
     if os.environ.get(CHILD_ENV) == "1":
-        return
+        return {}
     data = json.load(sys.stdin)
     if data.get("hook_event_name") != "UserPromptSubmit" or data.get("agent_id"):
-        return
+        return {}
     sid = str(uuid.UUID(data["session_id"]))
     prompt = data.get("prompt")
     transcript = Path(data.get("transcript_path") or "")
-    if not isinstance(prompt, str) or not prompt.strip() or prompt.lstrip().startswith("/"):
-        return
-    if not transcript.is_absolute() or data.get("session_title"):
-        return
-    prompts, custom = scan(transcript)
-    # Only the first typed prompt names the session; it may or may not be written yet.
-    if custom or len(prompts) > 1 or prompts and prompts[0] != prompt.strip():
-        return
-    settings = json.loads((HERE / "settings.json").read_text())
+    if not transcript.is_absolute():
+        return {}
     home = Path(os.environ.get("CLAUDE_CONFIG_DIR", str(Path.home() / ".claude")))
     state_dir = home / "session-title-state"
-    state_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     state = state_dir / (sid + ".json")
-    try:
-        # The marker makes naming once-only even if two prompts race.
-        os.close(os.open(state, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
-    except FileExistsError:
-        return
+    prompts, custom = scan(transcript)
 
     def record(**fields):
         state.write_text(json.dumps({"at": int(time.time()), **fields}))
 
+    if state.exists():
+        # The running session only reads custom-title on load, so hand it the
+        # title once through sessionTitle unless /rename replaced it since.
+        saved = json.loads(state.read_text() or "{}")
+        if saved.get("outcome") != "named":
+            return {}
+        record(outcome="applied" if custom == saved["title"] else "skip_renamed")
+        if custom != saved["title"]:
+            return {}
+        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                       "sessionTitle": saved["title"]}}
+    if not isinstance(prompt, str) or not prompt.strip() or prompt.lstrip().startswith("/"):
+        return {}
+    # Only the first typed prompt names the session; it may or may not be written yet.
+    if (custom or data.get("session_title") or len(prompts) > 1
+            or prompts and prompts[0] != prompt.strip()):
+        return {}
+    settings = json.loads((HERE / "settings.json").read_text())
+    state_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    try:
+        # The marker makes naming once-only even if two prompts race.
+        os.close(os.open(state, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
+    except FileExistsError:
+        return {}
     record(outcome="pending")
-    # Leave the hook's process group so Claude Code's async hook timeout cannot kill naming.
+    # Detach so the synchronous hook returns now and its timeout cannot kill naming.
     if os.fork():
-        return
+        return {}
     os.setsid()
     devnull = os.open(os.devnull, os.O_RDWR)
     for fd in (0, 1, 2):
@@ -152,6 +165,7 @@ def main():
 if __name__ == "__main__":
     os.umask(0o077)
     try:
-        main()
+        output = main()
     except Exception:
-        pass
+        output = {}
+    print(json.dumps(output))
