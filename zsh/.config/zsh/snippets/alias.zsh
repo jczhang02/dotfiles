@@ -42,9 +42,10 @@ function yy() {
 alias docker='podman'
 alias rm='trash'
 alias vim='nvim'
+alias cat='bat'
 alias conda='mamba'
 
-# Filesystem convenience without replacing cat/du/df/top semantics.
+# Filesystem convenience without replacing du/df/top semantics.
 alias md='mkdir -p'
 alias ls='eza -bh --icons'
 alias la='ls -la'
