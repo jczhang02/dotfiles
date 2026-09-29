@@ -30,9 +30,9 @@ advisor, and Haiku occasionally calling it billed a Fable request at about 30
 times the cost of the title.
 
 A session stays unnamed, without retry, when the first prompt is a slash
-command, when the transcript stores the first prompt differently from what the
-hook received (pasted content or images can do this), or when naming fails or
-the worker is killed.
+command, or when naming fails or the worker is killed. Pasted text and images
+in the first prompt are fine: the hook's `prompt` matches the transcript's text
+block (`<pasted_content>` inline, `[Image #1]` with the image in its own block).
 
 Per-session state lives in `$CLAUDE_CONFIG_DIR/session-title-state/<session
 id>.json`: the outcome (`pending`, `named`, `applied`, `skip_renamed`,
