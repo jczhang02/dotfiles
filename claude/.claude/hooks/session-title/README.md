@@ -34,6 +34,13 @@ command, or when naming fails or the worker is killed. Pasted text and images
 in the first prompt are fine: the hook's `prompt` matches the transcript's text
 block (`<pasted_content>` inline, `[Image #1]` with the image in its own block).
 
+To rename a session that has moved on to another task, start a prompt with
+`#retitle`, e.g. `#retitle add dark mode to the settings page`. The hook names
+the session from the text after the marker the same way, whatever the current
+title is, and tells Claude to ignore the marker and act on the rest. A bare
+`#retitle` does nothing. As with the first title, the new one shows in the
+header from the next prompt on.
+
 Per-session state lives in `$CLAUDE_CONFIG_DIR/session-title-state/<session
 id>.json`: the outcome (`pending`, `named`, `applied`, `skip_renamed`,
 `failed_*`), the generated title, and the naming call's cost and models. Once

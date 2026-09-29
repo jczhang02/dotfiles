@@ -14,6 +14,10 @@ HERE = Path(__file__).resolve().parent
 CHILD_ENV = "SESSION_TITLE_CHILD"
 FORMAT = r"(?:research|feat|fix|refactor|docs|chore): \S(?:.*\S)?"
 COMMAND = re.compile(r"/[\w:.-]+(?:\s|$)")
+# "#retitle <task>" names the session again from <task>, for a session that moved on.
+RETITLE = re.compile(r"#retitle(?:\s+|$)")
+RETITLE_CONTEXT = ("The leading #retitle marker in this prompt only asks a hook to rename the session; "
+                   "ignore it and act on the rest of the prompt.")
 # A transcript this large is past its first prompt; don't parse it on every prompt.
 FIRST_PROMPT_MAX_BYTES = 1024 * 1024
 
@@ -111,14 +115,14 @@ def generate(prompt, settings, usage):
     return title
 
 
-def name_session(sid, transcript, prompt, settings, record):
+def name_session(sid, transcript, prompt, settings, record, previous):
     usage = {}
     try:
         title = generate(prompt, settings, usage)
     except Exception as error:
         return record(outcome="failed_" + type(error).__name__, **usage)
     # The user may have run /rename while the title was generated.
-    if custom_title(transcript) is not None:
+    if custom_title(transcript) != previous:
         return record(outcome="skip_renamed", **usage)
     line = json.dumps({"type": "custom-title", "customTitle": title, "sessionId": sid},
                       ensure_ascii=False, separators=(",", ":")) + "\n"
@@ -129,6 +133,25 @@ def name_session(sid, transcript, prompt, settings, record):
     finally:
         os.close(fd)
     record(outcome="named", title=title, **usage)
+
+
+def start_naming(sid, transcript, prompt, record, previous=None):
+    """Fork a detached worker that names the session; the parent returns at once."""
+    settings = json.loads((HERE / "settings.json").read_text())
+    record(outcome="pending")
+    # Detach so the synchronous hook returns now and its timeout cannot kill naming.
+    if os.fork():
+        return
+    os.setsid()
+    devnull = os.open(os.devnull, os.O_RDWR)
+    for fd in (0, 1, 2):
+        os.dup2(devnull, fd)
+    try:
+        name_session(sid, transcript, prompt, settings, record, previous)
+    except Exception as error:
+        record(outcome="failed_" + type(error).__name__)
+    finally:
+        os._exit(0)
 
 
 def main():
@@ -152,6 +175,14 @@ def main():
         temp.write_text(json.dumps({"at": int(time.time()), **fields}))
         temp.replace(state)
 
+    retitle = RETITLE.match(prompt.lstrip()) if isinstance(prompt, str) else None
+    if retitle:
+        task = prompt.lstrip()[retitle.end():].strip()
+        if task:
+            state_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+            start_naming(sid, transcript, task, record, custom_title(transcript))
+        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                       "additionalContext": RETITLE_CONTEXT}}
     if state.exists():
         # Every state but "named" is final, so most prompts stop here without
         # reading the transcript.
@@ -171,27 +202,14 @@ def main():
     # Only the first typed prompt names the session; it may or may not be written yet.
     if data.get("session_title") or not is_first_prompt(transcript, prompt):
         return {}
-    settings = json.loads((HERE / "settings.json").read_text())
     state_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     try:
         # The marker makes naming once-only even if two prompts race.
         os.close(os.open(state, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
     except FileExistsError:
         return {}
-    record(outcome="pending")
-    # Detach so the synchronous hook returns now and its timeout cannot kill naming.
-    if os.fork():
-        return {}
-    os.setsid()
-    devnull = os.open(os.devnull, os.O_RDWR)
-    for fd in (0, 1, 2):
-        os.dup2(devnull, fd)
-    try:
-        name_session(sid, transcript, prompt, settings, record)
-    except Exception as error:
-        record(outcome="failed_" + type(error).__name__)
-    finally:
-        os._exit(0)
+    start_naming(sid, transcript, prompt, record)
+    return {}
 
 
 if __name__ == "__main__":
