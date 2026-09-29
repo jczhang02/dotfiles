@@ -3,6 +3,5 @@
   "model": "haiku",
   "rules_file": "rules.txt",
   "max_length": 80,
-  "timeout_seconds": 20,
-  "installed_at": 1790304217
+  "timeout_seconds": 90
 }
