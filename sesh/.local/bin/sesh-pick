@@ -124,6 +124,8 @@ pick() {
         --preview='sesh preview {1}'
         --preview-window='hidden,right,55%,<100(hidden,down,45%)'
         --bind='tab:down,btab:up'
+        # fzf 0.74 keeps the cursor index across query edits; jump to the top match.
+        --bind='change:first'
         --bind='ctrl-/:toggle-preview'
         --bind='enter:accept-or-print-query'
         --bind="$(mode_bind ctrl-a all all)"
