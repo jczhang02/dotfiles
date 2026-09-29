@@ -1,2 +1,2 @@
 - Use ASCII (half-width) punctuation for all punctuation marks, including in Chinese text. For example, use '.' instead of '。', ',' instead of '，', and '"' instead of '“'.
-- Respond in Chinese by default.
+- Respond in English by default, or follows session lang agreement.
