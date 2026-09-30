@@ -1,53 +1,60 @@
 #autoload
 
 # Usage:
-#   _gentoo_repos_conf -l             -> returns the list of all repos names
-#   _gentoo_repos_conf REPO ATTRIBUTE -> returns the VALUE associated 
-#                                        with the ATTRIBUTE of the REPO
+#   _gentoo_repos_conf -l             -> names of all configured repos
+#   _gentoo_repos_conf -m             -> location of the main repo
+#   _gentoo_repos_conf -o             -> locations of the other repos
+#   _gentoo_repos_conf -L             -> locations of all repos, main first
+#   _gentoo_repos_conf REPO ATTRIBUTE -> value of ATTRIBUTE in section REPO
+#
+# Reads repos.conf the way Portage does: the defaults file first, then
+# /etc/portage/repos.conf, which may be a file or a directory whose regular,
+# non-hidden, non-backup files are read in lexical order. Later values win.
 
 _gentoo_repos_conf() {
-  local v file insection section arr secname
+  emulate -L zsh
+  setopt extendedglob
 
-  secname=();
+  local file section key value line main name
+  local -a files names others
+  local -A conf
 
+  files=(${EPREFIX}/usr/share/portage/config/repos.conf(N.))
+  if [[ -d ${EPREFIX}/etc/portage/repos.conf ]]; then
+    files+=(${EPREFIX}/etc/portage/repos.conf/^(.*|*~)(N.on))
+  else
+    files+=(${EPREFIX}/etc/portage/repos.conf(N.))
+  fi
 
-  for file in ${EPREFIX}/usr/share/portage/config/repos.conf \
-           ${EPREFIX}/etc/portage/repos.conf \
-           ${EPREFIX}/etc/portage/repos.conf/*.conf; do
-
-    [[ -f ${file} ]] || continue
-    insection=0
-    declare -A arr
-    IFS='= '
-
-    while read -r name value; do
-      [[ -z ${name} || ${name} == '#'* ]] && continue
-
-      if [[ (${name} == '['*']') && (-z ${value}) ]]; then
-        value=${name//(\]|\[)}
-        name="section"
+  for file in $files; do
+    section=
+    while IFS= read -r line; do
+      line=${line##[[:space:]]#}
+      [[ -z $line || $line == [#\;]* ]] && continue
+      if [[ $line == '['*']'* ]]; then
+        section=${${line#\[}%%\]*}
+        [[ $section != DEFAULT ]] && names+=($section)
+      elif [[ -n $section && $line == *=* ]]; then
+        key=${${line%%=*}%%[[:space:]]#}
+        value=${${line#*=}##[[:space:]]#}
+        conf[${section}:${key}]=${value%%[[:space:]]#}
       fi
-      arr[${name}]=${value}
-
-      if [[ ${insection} == 1 && ${name} == "section" ]]; then
-        break
-      elif [[ ${name} == "section" ]]; then
-        [[ ${value} == ${1} ]] && insection=1
-        secname+=(${value})
-      elif [[ ${insection} == 1 ]]; then
-        if [[ ${name} == ${2} ]]; then
-          v=${value}
-        fi
-      fi
-      continue
-    done < ${file}
+    done < $file
   done
 
-  if [[ ${1} == "-l" ]]; then
-    echo "${(@u)secname}"
-  else
-    echo "${v}"
-  fi
+  names=(${(u)names})
+  main=${conf[DEFAULT:main-repo]:-gentoo}
+  for name in ${names:#$main}; do
+    [[ -n ${conf[${name}:location]} ]] && others+=(${conf[${name}:location]})
+  done
+
+  case $1 in
+    -l) print -r -- $names ;;
+    -m) print -r -- ${conf[${main}:location]} ;;
+    -o) print -r -- $others ;;
+    -L) print -r -- ${conf[${main}:location]} $others ;;
+    *)  print -r -- ${conf[${1}:${2}]} ;;
+  esac
 }
 
 _gentoo_repos_conf "$@"

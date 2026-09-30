@@ -1,46 +1,30 @@
 #autoload
 
 # Usage:
-#   _gentoo_repos    -> returns the list of all repos
-#   _gentoo_repos -m -> returns the main repo
-#   _gentoo_repos -o -> returns the list of non-main repos
+#   _gentoo_repos    -> locations of all repos, main repo first
+#   _gentoo_repos -m -> location of the main repo
+#   _gentoo_repos -o -> locations of the non-main repos
 
 _gentoo_repos() {
-  local main_repo main_repo_path overlay overlay_paths result
-
-  overlay_paths=();
-  result=();
+  emulate -L zsh
 
   if [[ -e ${EPREFIX}/usr/share/portage/config/repos.conf || -e ${EPREFIX}/etc/portage/repos.conf ]]; then
-    main_repo=$(_gentoo_repos_conf DEFAULT main-repo)
-    main_repo_path=$(_gentoo_repos_conf ${main_repo} location)
-
-    for overlay in $(_gentoo_repos_conf -l); do
-      overlay_paths+=($(_gentoo_repos_conf ${overlay} location))
-    done
-
-    source ${EPREFIX}/etc/make.conf 2>/dev/null
-    source ${EPREFIX}/etc/portage/make.conf 2>/dev/null
-
-    overlay_paths+=(${(@)PORTDIR_OVERLAY})
-  else
-    source ${EPREFIX}/usr/share/portage/config/make.globals 2>/dev/null
-    source ${EPREFIX}/etc/make.conf 2>/dev/null
-    source ${EPREFIX}/etc/portage/make.conf 2>/dev/null
-
-    main_repo_path="${PORTDIR}"
-    overlay_paths=(${(@)PORTDIR_OVERLAY})
+    case $1 in
+      -m|-o) _gentoo_repos_conf $1 ;;
+      *)     _gentoo_repos_conf -L ;;
+    esac
+    return
   fi
 
-  if [[ $1 == "-m" ]]; then
-    result+=(${main_repo_path})
-  elif [[ $1 == "-o" ]]; then
-    result+=(${(@)overlay_paths})
-  else
-    result+=(${main_repo_path} ${(@)overlay_paths})
-  fi
-
-  echo ${(u)result}
+  # Pre-repos.conf configuration (PORTDIR / PORTDIR_OVERLAY in make.conf).
+  local PORTDIR PORTDIR_OVERLAY
+  source ${EPREFIX}/usr/share/portage/config/make.globals 2>/dev/null
+  source ${EPREFIX}/etc/portage/make.conf 2>/dev/null
+  case $1 in
+    -m) print -r -- $PORTDIR ;;
+    -o) print -r -- ${=PORTDIR_OVERLAY} ;;
+    *)  print -r -- $PORTDIR ${=PORTDIR_OVERLAY} ;;
+  esac
 }
 
 _gentoo_repos "$@"
