@@ -213,7 +213,7 @@ _gentoo_packages_update_useflag() {
   zstat -A mtimes +mtime -- $descs 2>/dev/null
   stamp="${(j: :)repos}|${(j: :)mtimes}"
 
-  if [[ ${_gentoo_useflag_cache[stamp]} != $stamp ]]; then
+  if [[ ${_gentoo_useflag_cache[stamp]} != "$stamp" ]]; then
     local -A global local expand
     for repo in $repos; do
       if [[ -r $repo/profiles/use.desc ]]; then
@@ -238,21 +238,23 @@ _gentoo_packages_update_useflag() {
         done
       done
     done
-    _gentoo_useflag_cache=(
-      stamp $stamp
-      global "${(pj:\0:)${(@kv)global}}"
-      local "${(pj:\0:)${(@kv)local}}"
-      expand "${(pj:\0:)${(@kv)expand}}"
-    )
+    # Store ready-made "flag:description" pairs for _describe.
+    local kind
+    local -A table
+    local -a pairs
+    _gentoo_useflag_cache=(stamp $stamp)
+    for kind in global local expand; do
+      table=("${(@kv)${(P)kind}}")
+      pairs=()
+      for flag in ${(ko)table}; do pairs+=("${flag//:/\\:}:${table[$flag]}"); done
+      _gentoo_useflag_cache[$kind]=${(pj:\0:)pairs}
+    done
   fi
 
   local kind descr ret=1
-  local -A table
   local -a pairs
   for kind descr in global 'global USE flag' local 'local USE flag' expand 'USE_EXPAND flag'; do
-    table=("${(@ps:\0:)_gentoo_useflag_cache[$kind]}")
-    pairs=()
-    for flag in ${(ko)table}; do pairs+=("${flag//:/\\:}:${table[$flag]}"); done
+    pairs=("${(@ps:\0:)_gentoo_useflag_cache[$kind]}")
     _describe -t $kind-useflags $descr pairs "$@" && ret=0
   done
   return ret
@@ -270,7 +272,7 @@ _gentoo_packages_update_active_useflag() {
   zstat -A mtimes +mtime -- ${EPREFIX}/etc/portage/make.conf(N) ${EPREFIX}/etc/portage/make.conf/*(N) 2>/dev/null
   stamp="$profile|${(j: :)mtimes}|$USE"
 
-  if [[ ${_gentoo_active_use_cache[stamp]} != $stamp ]]; then
+  if [[ ${_gentoo_active_use_cache[stamp]} != "$stamp" ]]; then
     local out
     out=$(_call_program active-useflags portageq envvar USE USE_EXPAND USE_EXPAND_HIDDEN ARCH 2>/dev/null)
     local -a lines=("${(@f)out}")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """Regenerate the emerge option specs in _portage from the installed Portage.
 
 Portage's option tables in _emerge/main.py are the source of truth: `options`
