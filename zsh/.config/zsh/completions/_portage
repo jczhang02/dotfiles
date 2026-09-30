@@ -75,6 +75,11 @@ _quickpkg () {
   fi
 }
 
+_emerge_jobs () {
+  local -a jobs=({1..${$(_call_program cpus nproc 2>/dev/null):-8}})
+  _wanted jobs expl 'number of jobs' compadd -o nosort "$@" -a jobs
+}
+
 # Package arguments of emerge. KIND follows the action on the command line;
 # _arguments inserts its own options before it, so it is the last argument.
 _emerge_atoms () {
@@ -214,7 +219,7 @@ _emerge () {
     '--complete-graph-if-new-ver=[Trigger --complete-graph behavior if an installed package version will change (upgrade or downgrade)]:yes/no:(y n)'
     '--config-root=[Specify the location for portage configuration files]:directory:_files -/'
     '(-D --deep)-D[Specifies how deep to recurse into dependencies of packages given as arguments]'
-    '(-D --deep)--deep=-[Specifies how deep to recurse into dependencies of packages given as arguments]::depth:'
+    '(-D --deep)--deep=[Specifies how deep to recurse into dependencies of packages given as arguments]::depth:'
     '--depclean-lib-check=-[Check for consumers of libraries before removing them]::yes/no:(y n)'
     '(-W --deselect)-W[Remove atoms/sets from the world file]'
     '(-W --deselect)--deselect=-[Remove atoms/sets from the world file]::yes/no:(y n)'
@@ -234,11 +239,11 @@ _emerge () {
     '--ignore-world=-[Ignore the @world package set and its dependencies]::yes/no:(y n)'
     '--implicit-system-deps=[Assume that packages may have implicit dependencies onpackages which belong to the @system set]:yes/no:(y n)'
     '(-j --jobs)-j[Specifies the number of packages to build simultaneously]'
-    '(-j --jobs)--jobs=-[Specifies the number of packages to build simultaneously]::jobs:'
-    '--jobs-tmpdir-require-free-gb=-[Specifies the required remaining capacity (in GiB) of PORTAGE_TMPDIR before a new emerge job is started]::GB:'
+    '(-j --jobs)--jobs=[Specifies the number of packages to build simultaneously]::jobs:_emerge_jobs'
+    '--jobs-tmpdir-require-free-gb=[Specifies the required remaining capacity (in GiB) of PORTAGE_TMPDIR before a new emerge job is started]::GB:'
     '--keep-going=-[Continue as much as possible after an error]::yes/no:(y n)'
     '(-l --load-average)-l[Specifies that no new builds should be started if there are other builds running and the load average is at...]'
-    '(-l --load-average)--load-average=-[Specifies that no new builds should be started if there are other builds running and the load average is at...]::load:'
+    '(-l --load-average)--load-average=[Specifies that no new builds should be started if there are other builds running and the load average is at...]::load:'
     '--misspell-suggestions=[Enable package name misspell suggestions]:yes/no:(y n)'
     '--onlydeps-with-ideps=-[Modify interpretation of dependencies to include IDEPEND]::yes/no:(y n)'
     '--onlydeps-with-rdeps=-[Modify interpretation of dependencies]::yes/no:(y n)'

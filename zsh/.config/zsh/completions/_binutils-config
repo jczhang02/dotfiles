@@ -4,6 +4,10 @@ local arguments
 
 arguments=(
   '(- :)'{--get-current-profile,-c}'[print current profile]'
+  {'(--nocolor)-C','(-C)--nocolor'}'[disable color output]'
+  '(- :)'{--version,-V}'[print the version]'
+  '(- :)'{--get-bin-path,-B}'[print binary path of given/current profile]:profiles:_binutils_profiles'
+  '(- :)'{--get-lib-path,-L}'[print library path of given/current profile]:profiles:_binutils_profiles'
   '(- :)'{--list-profiles,-l}'[print a list of available profiles]'
   {'(--uninstall)-u','(-u)--uninstall'}'[remove all signs of specified target]'
   {'(--debug)-d','(-d)--debug'}'[execute with debug output]'

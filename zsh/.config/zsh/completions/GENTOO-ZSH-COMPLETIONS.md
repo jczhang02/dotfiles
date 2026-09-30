@@ -8,6 +8,32 @@ The Gentoo completions in this directory (`_portage`, `_gentoo_packages`,
 maintained here instead of through Portage. `_layman`, `_g-cpan` and `_genlop`
 were not kept.
 
+## Changes from upstream
+
+- `_gentoo_repos_conf`, `_gentoo_repos`, `_gentoo_packages`: rewritten. One
+  pass over repos.conf, correct package names and sets, binary packages from
+  the `Packages` index, USE flags with descriptions, enabled flags from
+  `portageq`, session memoization of the slow lists.
+- `_portage`: the emerge option table is generated from Portage itself (see
+  below); the action selects the argument type; emaint, portageq and ebuild
+  follow Portage 3.0.82; repoman is gone.
+- `_portage_utils`: option lists are parsed from each applet's `--help` at
+  completion time, so they follow the installed portage-utils; adds `q`,
+  `qwhich` and `qtegrity`.
+- `_gentoolkit`, `_perl-cleaner`, `_binutils-config`, `_ekeyword`, `_eselect`:
+  options follow gentoolkit 0.8.1, perl-cleaner 2.30 and eselect 1.4.32.
+
+## Maintenance
+
+After a Portage upgrade, regenerate the emerge options and commit the diff:
+
+    ./gen-emerge-options.py
+
+It reads the option tables in Portage's `_emerge/main.py` and emerge(1) and
+rewrites the block between the `BEGIN/END GENERATED` markers in `_portage`.
+Atoms that start with `=`, `>=`, `<`, `~` or `^` must be escaped (`\=`, `\>=`)
+or quoted in zsh anyway; the completions handle the escaped forms.
+
 Authors: Baptiste Daroussin, David Durrleman, oberyno, Tim Harder,
 Vadim A. Misbakh-Soloviov.
 

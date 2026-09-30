@@ -4,7 +4,8 @@ _eselect_parse_generic() {
   local -a mod_std mod_extra
   local -a eselect_args
   local mod_cur eselect_descr
-  local mod descr etype
+  local mod descr etype helpdesc
+  setopt localoptions extendedglob
 
   eselect_args=($@)
   if [[ $1 == "modules" ]] ; then
@@ -24,9 +25,10 @@ _eselect_parse_generic() {
     esac
 
     if [[ "$helpdesc" =~ '^  [A-Za-z]' ]] ; then
-      echo "$helpdesc" | read mod descr
-      descr="$(echo "$descr" | sed -r -e 's/.*\s\s\s+//')"
-      set -A $mod_cur ${(P)mod_cur} ${mod}:${(q)descr}
+      mod=${${helpdesc##[[:space:]]#}%%[[:space:]]*}
+      descr=${helpdesc#*[[:space:]][[:space:]][[:space:]]}
+      descr=${descr##[[:space:]]#}
+      set -A $mod_cur ${(P)mod_cur} ${mod}:${descr//:/\\:}
     fi
   done <<< "$eselect_descr"
 
@@ -115,7 +117,7 @@ _eselect_module() {
   _eselect_parse_generic
 }
 
-(( $+function[_eselect_complete_action_generic] )) || _eselect_complete_action_generic() {
+(( $+functions[_eselect_complete_action_generic] )) || _eselect_complete_action_generic() {
   local -a sel_items
   local -a unsel_items
 
@@ -285,7 +287,9 @@ eselect_comp() {
     eselect)
       _arguments -A '-*' -n \
         '--brief[Make output shorter]' \
-        '(--colour --color)'--colo{,u}r='[Enable or disable colour output]:colour:(yes no)' \
+        '(--colour --color)'--colo{,u}r='[Enable or disable colour output]:colour:(yes no auto)' \
+        '--eprefix=[Override the EPREFIX variable for a cross-prefix build]:prefix:_files -/' \
+        '--root=[The target root path for operations]:root:_files -/' \
         '1:eselect_module:_eselect_module' \
         '2:eselect_action:_eselect_action' \
         '*:eselect_complete_action:_eselect_complete_action'

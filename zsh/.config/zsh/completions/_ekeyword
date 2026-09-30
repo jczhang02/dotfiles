@@ -10,13 +10,16 @@ local -a arguments=(
     '(- :)'{-V,--version}'[Show version information]'
 )
 
-(( $+functions[_ekeywordargs] )) ||  _ekeywordargs() {
-    _files -g \*.ebuild
+# Keywords are ARCH, ~ARCH (testing) or ^ARCH (remove). In zsh a leading ~ or
+# ^ must be escaped (\~amd64) or quoted, so allow a backslash before it.
+(( $+functions[_ekeywordargs] )) || _ekeywordargs() {
+  local -a arches=(all $(_gentoo_arches))
+  local ret=1
 
-    local -a keywords=(all $(_gentoo_arches))
-
-    compset -P '(\^|\~)'
-    _values -V "keywords" "gentoo arches" ${keywords[@]}
+  _wanted ebuilds expl 'ebuild' _files -g '*.ebuild(-.)' && ret=0
+  compset -P '(\\|)[~^]'
+  _wanted keywords expl 'keyword' compadd -a arches && ret=0
+  return ret
 }
 
 _arguments ${arguments[@]} "*:ekeywordargs:_ekeywordargs"

@@ -248,13 +248,12 @@ _gentoo_packages_update_useflag() {
 
   local kind descr ret=1
   local -A table
-  local -a flags disp
+  local -a pairs
   for kind descr in global 'global USE flag' local 'local USE flag' expand 'USE_EXPAND flag'; do
     table=("${(@ps:\0:)_gentoo_useflag_cache[$kind]}")
-    flags=(${(ko)table})
-    disp=()
-    for flag in $flags; do disp+=("$flag -- ${table[$flag]}"); done
-    _wanted $kind-useflags expl $descr compadd "$@" -l -d disp -a flags && ret=0
+    pairs=()
+    for flag in ${(ko)table}; do pairs+=("${flag//:/\\:}:${table[$flag]}"); done
+    _describe -t $kind-useflags $descr pairs "$@" && ret=0
   done
   return ret
 }

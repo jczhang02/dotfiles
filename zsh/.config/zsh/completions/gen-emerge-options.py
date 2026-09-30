@@ -20,6 +20,10 @@ import _emerge.main
 BEGIN = "  # BEGIN GENERATED emerge options (gen-emerge-options.py)"
 END = "  # END GENERATED emerge options"
 
+# Optional numeric values: Portage also takes them as the next word, and a
+# number cannot be mistaken for a package, so complete both forms.
+NUMERIC_OPTIONAL = {"--deep", "--jobs", "--load-average", "--jobs-tmpdir-require-free-gb"}
+
 # Argument actions for options whose values Portage does not enumerate.
 ATOMS = "_gentoo_packages available"
 VALUE_ACTIONS = {
@@ -32,7 +36,7 @@ VALUE_ACTIONS = {
     "--exclude": "atom:" + ATOMS,
     "--getbinpkg-exclude": "atom:" + ATOMS,
     "--getbinpkg-include": "atom:" + ATOMS,
-    "--jobs": "jobs:",
+    "--jobs": "jobs:_emerge_jobs",
     "--jobs-tmpdir-require-free-gb": "GB:",
     "--load-average": "load:",
     "--pkg-format": "format:(gpkg xpak)",
@@ -186,7 +190,9 @@ def main():
         if not action:
             label = "yes/no" if choices == ["y", "n"] else "value"
             action = f"{label}:(" + " ".join(choices) + ")" if choices else "value:"
-        if opt in t["default_arg_opts"]:
+        if opt in NUMERIC_OPTIONAL:
+            add(opt, entry.get("help", ""), "=", "::" + action)  # --opt[=N] or --opt N
+        elif opt in t["default_arg_opts"]:
             add(opt, entry.get("help", ""), "=-", "::" + action)  # only as --opt=value
         else:
             add(opt, entry.get("help", ""), "=", ":" + action)  # --opt=value or --opt value

@@ -1,7 +1,7 @@
 #compdef equery euse eclean eclean-dist eclean-pkg epkginfo eshowkw glsa-check revdep-rebuild
 
-# XXX: shouldn't this go to _gentoo_package?
-_packages () {
+# Package argument; a leading version operator switches to versioned atoms.
+_gentoolkit_packages () {
   if compset -P '(\\|)(>=|<=|<|>|=)'; then
     _gentoo_packages ${*/(#m)(installed|available)/${MATCH}_versions}
   else
@@ -10,7 +10,7 @@ _packages () {
 }
 
 _euse () {
-  local state tmp start_args suboptions_args
+  local state tmp start_args suboptions_args ret=1
 
   start_args=(
     {'(--help)-h','(-h)--help'}'[show help]'
@@ -96,14 +96,15 @@ _equery () {
               _arguments \
                 '(-f --full-regex)'{-f,--full-regex}'[supplied query is a regex]:pattern:' \
                 '(-o --only-failures)'{-o,--only-failures}'[only display packages that do not pass]' \
-                ':portage:_packages installed' && ret=0
+                ':portage:_gentoolkit_packages installed' && ret=0
               ;;
             depends|d)
               _arguments \
-                '(-a --all-packages)'{-a,--all-packages}'[search in all available packages (slow)]:all packages:->packages' \
-                '(-D --indirect)'{-D,--indirect}'[search indirect dependencies (VERY slow)]' \
-                '--depth[limit indirect dependency tree to specified depth]:number:' \
-                '*:package:_packages installed' && ret=0
+                '(-a --all-packages)'{-a,--all-packages}'[search in all available packages (slow)]' \
+                '(-D --indirect)'{-D,--indirect}'[search indirect dependencies (very slow)]' \
+                '(-F --format)'{-F,--format=}'[a format template (see man page)]:format template:' \
+                '--depth=[limit indirect dependency tree to specified depth]:number:' \
+                '*:package:_gentoolkit_packages installed' && ret=0
               ;;
             depgraph|g)
               _arguments \
@@ -111,7 +112,8 @@ _equery () {
                 '(-M --no-mask)'{-M,--no-mask}'[do not show masking status]' \
                 '(-U --no-useflags)'{-U,--no-useflags}'[do not show USE flags]' \
                 '(-l --linear)'{-l,--linear}'[do not use fancy formatting]' \
-                ':package:_packages installed' && ret=0
+                '--depth=[limit dependency graph to specified depth]:number:' \
+                ':package:_gentoolkit_packages installed' && ret=0
               ;;
             files|f)
               _arguments \
@@ -119,8 +121,8 @@ _equery () {
                 '(-s --timestamp)'{-s,--timestamp}'[include timestamp in output]' \
                 '(-t --type)'{-t,--type}'[include file type in output]' \
                 '--tree[display results in a tree (turns off other options)]' \
-                '--filter=[filter output]:filter(s):_values -s , "" dir obj sym dev fifo path conf cmd doc man info' \
-                ':installed pkgname:_packages installed' && ret=0
+                '(-f --filter)'{-f,--filter=}'[filter output by file type]:filter(s):_values -s , "file type" dir obj sym dev fifo path conf cmd doc man info' \
+                ':installed pkgname:_gentoolkit_packages installed' && ret=0
               ;;
             has|a)
               _arguments \
@@ -151,34 +153,34 @@ _equery () {
             meta|m)
               _arguments \
                 '(-d --description)'{-d,--description}'[show an extended package description]' \
-                '(-H --herd)'{-H,--herd}'[show the herd(s) for the package]' \
                 '(-k --keywords)'{-k,--keywords}'[show keywords for all matching package versions]' \
                 '(-l --license)'{-l,--license}'[show licenses for the best maching version]' \
                 '(-m --maintainer)'{-m,--maintainer}'[show the maintainer(s) for the package]' \
+                '(-r --reverse)'{-r,--reverse}'[show the output in reverse order]' \
                 '(-S --stablreq)'{-S,--stablreq}'[show STABLEREQ arches (ccs) for all matching package versions]' \
                 '(-u --useflags)'{-u,--useflags}'[show per-package USE flag descriptions]' \
                 '(-U --upstream)'{-U,--upstream}'[show packages upstream information]' \
                 '(-x --xml)'{-x,--xml}'[show the plain metadata.xml file]' \
-                ':package:_packages available' && ret=0
+                ':package:_gentoolkit_packages available' && ret=0
               ;;
             size|s)
               _arguments \
                 '(-b --bytes)'{-b,--bytes}'[report size in bytes]' \
                 '(-f --full-regex)'{-f,--full-regex}'[supplied query is a regex]:pattern:' \
-                ':package:_packages installed' && ret=0
+                ':package:_gentoolkit_packages installed' && ret=0
               ;;
             uses|u)
               _arguments \
                 '(-a --all)'{-a,--all}'[display all package versions]' \
                 '(-f --force-masked)'{-f,--force-masked}'[show the forced and masked USE flags]' \
                 '(-i --ignore-l10n)'{-i,--ignore-l10n}"[don't show l10n USE flags]" \
-                ':portage:_packages available' && ret=0
+                ':portage:_gentoolkit_packages available' && ret=0
               ;;
             which|w)
               _arguments \
                 '(-m --include-masked)'{-m,--include-masked}'[return highest version ebuild available]' \
                 '(-e --ebuild)'{-e,--ebuild}'[print the ebuild]' \
-                ':portage:_packages available' && ret=0
+                ':portage:_gentoolkit_packages available' && ret=0
               ;;
             *)
               _message 'command not found'
@@ -209,59 +211,52 @@ _equery () {
 }
 
 _eclean_wrapper () {
-  local global_opts pkg_opts dist_opts
+  local -a global_opts pkg_opts dist_opts
+  local cmd=${words[1]:t} ret=1
 
   global_opts=(
-    '(-C --nocolor)'{-C,--nocolor}'[turns off colors]'
-    '(-d,--destructive)'{-d,--destructive}'[only keep the minimum for a reinstallation]'
-    '(-e,--exclude-file)'{-e,--exclude-file}'[path to the exclusion file]:filename:_files'
-    '(-i,--interactive)'{-i,--interactive}'[ask confirmation before deletions]'
-    '(-n,--package-names)'{-n,--package-names}'[protect all versions (when --destructive)]'
-    '(-p,--pretend)'{-p,--pretend}'[only display what would be cleaned]'
-    '(-q,--quiet)'{-q,--quiet}'[minimal output]'
-    '(-t,--time-limit)'{-t,--time-limit}'[don’t delete files modified since <time>]:time:_eclean_time'
-    '(: -)'{-h,--help}'[show help]'
-    '(: -)'{-V,--version}'[show version]'
+    '(-C --nocolor)'{-C,--nocolor}'[turn off colors on output]'
+    '(-d --deep)'{-d,--deep}'[only keep the minimum for a reinstallation]'
+    '(-e --exclude-file)'{-e,--exclude-file=}'[path to the exclusion file]:exclusion file:_files'
+    '(-i --interactive)'{-i,--interactive}'[ask confirmation before deletions]'
+    '(-n --package-names)'{-n,--package-names}'[protect all versions (with --deep)]'
+    '(-p --pretend)'{-p,--pretend}'[only display what would be cleaned]'
+    '(-q --quiet)'{-q,--quiet}'[be as quiet as possible]'
+    '(-t --time-limit)'{-t,--time-limit=}"[don't delete files modified since <time>]:time:_eclean_time"
+    '(- :)'{-h,--help}'[display the help screen]'
+    '(- :)'{-V,--version}'[display version info]'
   )
-
+  pkg_opts=(
+    '--changed-deps[delete packages for which ebuild dependencies have changed]'
+    '--changed-subslot[delete packages with := deps on subslots no longer in tree]'
+    '--changed-iuse[delete packages whose IUSE no longer matches the ebuild]'
+    '--unreachable[delete packages that can no longer be a cache hit]'
+    '--no-clean-invalid[skip cleaning invalid binpkgs]'
+    '(-i --ignore-failure)--ignore-failure[ignore failure to locate PKGDIR]'
+    '(-u --unique-use)'{-u,--unique-use}'[keep unique packages which have no duplicated USE]'
+  )
   dist_opts=(
-    '(-s,--size-limit)'{-s,--size-limit}'[do not delete disfiles bigger than <size>]:size:_eclean_size'
-    '(-f,--fetch-restricted)'{-f,--fetch-restricted}'[protect fetch-restricted files]'
+    '(-f --fetch-restricted)'{-f,--fetch-restricted}'[protect fetch-restricted files (with --deep)]'
+    '(-s --size-limit)'{-s,--size-limit=}"[don't delete distfiles bigger than <size>]:size:_eclean_size"
+    '--skip-vcs[skip cleaning of vcs_src]'
   )
 
-  # XXX: If you add options here make sure that it'll work.
-  #       since there isn't any option *right* now, $pkg_opts
-  #       is never used.
-  pkg_opts=()
-
-  # check which kind of eclean command we run.
-  case "$words[1]" in
-    eclean-pkg)
-      _arguments -s $global_opts $pkg_opts && return 0
-      ;;
-    eclean-dist)
-      _arguments -s $global_opts $dist_opts && return 0
-      ;;
-    eclean)
-      # eclean. complete only specifics options if an action has been given,
-      # global_opts and packages|distfiles otherwhise.
-      if (( $words[(I)(packages)] )); then
-        # Currently no options so return 0
-        return 0
-      elif (( $words[(I)(distfiles)] )); then
-        _values "distfiles options" $dist_opts && return 0
+  case $cmd in
+    eclean-pkg)  _arguments -s -S $global_opts $pkg_opts && ret=0 ;;
+    eclean-dist) _arguments -s -S $global_opts $dist_opts && ret=0 ;;
+    *)
+      if (( $words[(I)packages] )); then
+        _arguments -s -S $global_opts $pkg_opts '*: :' && ret=0
+      elif (( $words[(I)distfiles] )); then
+        _arguments -s -S $global_opts $dist_opts '*: :' && ret=0
       else
-        _arguments -s $global_opts
-        # complete packages|distfiles only if CURRENT-1 don't need an arg
-        if [[ ! $words[CURRENT-1] =~ -(e|-exclude-file|t|-time-limit|s|-size-limit|h|-help|v|-version) ]]; then
-          _values 'eclean command' \
-            'packages[clean outdated binary packages]' \
-            'distfiles[clean outdated packages sources files]' &&
-            return 0
-        fi
+        _arguments -s -S $global_opts \
+          ':action:((packages\:"clean outdated binary packages from PKGDIR" distfiles\:"clean outdated package sources from DISTDIR"))' \
+          && ret=0
       fi
-    ;;
+      ;;
   esac
+  return ret
 }
 
 _eclean_time () {
@@ -270,7 +265,7 @@ _eclean_time () {
   suf=( -S '' )
   _alternative -O suf \
     'number:number:(0 1 2 3 4 5 6 7 8 9)' \
-    'time_unit:time_unit:((y\:year m\:month w\:week d\:day h\:hour))' &&
+    'time-units:time unit:((y\:years m\:months w\:weeks d\:days h\:hours))' &&
     return 0
 }
 
@@ -280,7 +275,7 @@ _eclean_size () {
   suf=( -S '' )
   _alternative -O suf \
     'number:number:(0 1 2 3 4 5 6 7 8 9)' \
-    'time_unit:time_unit:((G\:gigabytes M\:megabytes K\:kilobytes B\:bytes))' &&
+    'size-units:size unit:((G\:gigabytes M\:megabytes K\:kilobytes B\:bytes))' &&
     return 0
 }
 
@@ -288,10 +283,10 @@ _epkginfo () {
   _arguments -s \
     '(: -)'{-h,--help}'[Display help and exit]' \
     {'(--description)-d','(-d)--description'}'[show an extended package description]' \
-    {'(--herd)-H','(-H)--herd'}'[show the herd(s) for the package]' \
     {'(--keywords)-k','(-k)--keywords'}'[show keywords for all matching package versions]' \
     {'(--license)-l','(-l)--license'}'[show licenses for the best maching version]' \
     {'(--maintainer)-m','(-m)--maintainer'}'[show the maintainer(s) for the package]' \
+    {'(--reverse)-r','(-r)--reverse'}'[show the output in reverse order]' \
     {'(--stablreq)-S','(-S)--stablreq'}"[show STABLEREQ arches (cc's) for all matching package versions]" \
     {'(--useflags)-u','(-u)--useflags'}'[show per-package USE flag descriptions]' \
     {'(--upstream)-U','(-U)--upstream'}"[show package's upstream information]" \
@@ -314,38 +309,31 @@ _eshowkw () {
     '*:package:_gentoo_packages available'
 }
 
-_genpkgindex () {
-  _arguments -s \
-    '(: -)'{-h,--help}'[Display help and exit]' \
-    '(-h --help -q --quiet -v --verbose)'{-q,--quiet}'[Be quiet]' \
-    '(-h --help -q --quiet -v --verbose)'{-v,--verbose}'[Be verbose]' \
-    '(-h --help -c --compress)'{-c,--compress}'[Compresses the generated metadata with bzip2]' \
-    '(-h --help -P --pkgdir)'{-P,--pkgdir}'[Set the base location of the binary packages (default $PKGDIR)]:file:_files'
-}
-
 _glsa-check () {
-  local actions
+  local -a modes=(-l --list -d --dump --print -t --test -p --pretend -f --fix -i --inject -m --mail -h --help -V --version)
 
-  actions=(-l --list -d --dump --print -t --test -p --pretend -f --fix -i --inject -h --help -V --version -m --mail)
-
-  _arguments -s \
-    "($actions)"{-l,--list}'[list all unapplied GLSA]:glsa_id:_glsa_id' \
-    "($actions)"{-d,--dump,--print}'[show all information about the given GLSA]:glsa_id:_glsa_id' \
-    "($actions)"{-t,--test}'[test if this system is affected by the given GLSA]:glsa_id:_glsa_id' \
-    "($actions)"{-p,--pretend}'[show the necessary commands to apply this GLSA]:glsa_id:_glsa_id' \
-    "($actions)"{-f,--fix}'[try to auto-apply this GLSA (experimental)]:glsa_id:_glsa_id' \
-    "($actions)"{-i,--inject}'[inject the given GLSA into the checkfile]:glsa_id:_glsa_id' \
-    '(-n --nocolor)'{-n,--nocolor}'[disable colors (option)]' \
-    '(: -)'{-h,--help}'[Show help message]' \
-    '(: -)'{-V,--version}'[some information about this tool]' \
-    '(-v --verbose)'{-v,--verbose}'[print more messages (option)]' \
-    '(-c --cve)'{-c,--cve}'[show CAN ids in listing mode (option)]' \
-    "($actions)"{-m,--mail}'[send a mail with the given GLSAs to the administrator]:glsa_id:_glsa_id'
+  _arguments -s -S \
+    "($modes)"{-l,--list}'[list a summary for the given GLSAs and whether they affect the system]' \
+    "($modes)"{-d,--dump,--print}'[show all information about the given GLSAs]' \
+    "($modes)"{-t,--test}'[test if this system is affected by the given GLSAs]' \
+    "($modes)"{-p,--pretend}'[show the necessary steps to remediate the system]' \
+    "($modes)"{-f,--fix}'[attempt to remediate the system (experimental)]' \
+    "($modes)"{-i,--inject}'[inject the given GLSAs into the glsa_injected file]' \
+    "($modes)"{-m,--mail}'[send a mail with the given GLSAs to the administrator]' \
+    '(-q --quiet)'{-q,--quiet}'[be less verbose and do not send empty mail]' \
+    '(-v --verbose)'{-v,--verbose}'[print more messages]' \
+    '(-n --nocolor)'{-n,--nocolor}'[remove color from output]' \
+    '(-e --emergelike)'{-e,--emergelike}'[upgrade to latest version (not least-change)]' \
+    '(-c --cve)'{-c,--cve}'[show CVE IDs in listing mode]' \
+    '(-r --reverse)'{-r,--reverse}'[list GLSAs in reverse order]' \
+    '(- *)'{-h,--help}'[show help message and exit]' \
+    '(- *)'{-V,--version}'[show version information]' \
+    '*:GLSA:_glsa_id'
 }
 
 # glsa-list can contain an arbitrary number of GLSA ids,
 # filenames containing GLSAs or the special identifiers
-# 'all', 'new' and 'affected'
+# 'all' and 'affected'
 _glsa_id () {
   # XXX: we'll avoid displaying GLSA ids, because the ratio use/noise
   # will be low. May be we should display only the X previous GLSA,
@@ -355,31 +343,38 @@ _glsa_id () {
   # PORTDIR + "metadata/glsa/"
   # and then get the list (it's only xml files in GLSA_DIR, easy!)
 
-  compadd 'all' 'new' 'affected'
-  _files
+  local -a ids glsa_dir=($(_gentoo_repos -m)/metadata/glsa)
+  ids=($glsa_dir/glsa-*.xml(N:t:r))
+  ids=(${${(On)ids}#glsa-})
+  _alternative \
+    'special:special identifier:((all\:"all GLSAs" affected\:"GLSAs affecting this system"))' \
+    "glsa-ids:GLSA id:compadd -o nosort -a ids" \
+    'files:GLSA file:_files -g "*.xml(-.)"'
 }
 
 _revdep-rebuild () {
-  if (( $words[(I)(--)] )); then
-  # here it's no more revdep-rebuild options, but emerge options that are called
-  # FIXME: not working yet. need to load the _portage file
-    _arguments -s '*:portage:_portage --emerge $@' && return 0
+  # Everything after -- is passed to emerge.
+  local sep=$words[(I)--]
+  if (( sep && CURRENT > sep )); then
+    words=(emerge "${(@)words[sep+1,-1]}")
+    (( CURRENT -= sep - 1 ))
+    local service=emerge
+    _portage
+    return
   fi
 
-  _arguments -s \
-    '(-C --nocolor)'{-C,--nocolor}'[Turn off colored output]' \
-    '(-d --debug)'{-d,--debug}'[Print way too much information (uses bash set -xv)]' \
-    '(-e --exact)'{-e,--exact}'[Emerge based on exact package version]' \
-    '(: -)'{-h,--help}'[Print help]' \
-    '(-i --ignore)'{-i,--ignore}'[Ignore temporary files from previous runs]' \
-    '(-k --keep-temp)'{-k,--keep-temp}'[Do not delete temporary files on exit]' \
-    '(-L --library)'{-L,--library}'[<NAME> Emerge existing packages that use the library with NAME]:file:_files' \
-    '(-l --no-ld-path)'{-l,--no-ld-path}'[Do not set LD_LIBRARY_PATH]' \
-    '(-o --no-order)'{-o,--no-order}'[Do not check the build order (Saves time, but may cause breakage)]' \
-    '(-p --pretend)'{-p,--pretend}'[Do a trial run without actually emerging anything (also passed to emerge command)]' \
-    '(-P --no-progress)'{-P,--no-progress}'[Turn off the progress meter]' \
-    '(-q --quiet)'{-q,--quiet}'[Be less verbose (also passed to emerge command)]' \
-    '(-v --verbose)'{-v,--verbose}'[Be more verbose (also passed to emerge command)]'
+  _arguments -s -S \
+    '(- *)'{-h,--help}'[print usage and exit]' \
+    '(- *)'{-V,--version}'[show version information]' \
+    '(-i --ignore)'{-i,--ignore}'[ignore temporary files from previous runs]' \
+    '(-L --library)'{-L,--library=}'[emerge packages that use the library with NAME]:library:_files' \
+    '(-l --no-ld-path)'{-l,--no-ld-path}'[do not set LD_LIBRARY_PATH]' \
+    '(-o --no-order)'{-o,--no-order}'[do not check the build order]' \
+    '(-p --pretend)'{-p,--pretend}'[do a trial run without emerging anything]' \
+    '(-C --nocolor)'{-C,--nocolor}'[turn off colored output]' \
+    '(-q --quiet)'{-q,--quiet}'[be less verbose]' \
+    '(-v --verbose)'{-v,--verbose}'[be more verbose]' \
+    '(-d --debug)'{-d,--debug}'[print debug information]'
 }
 
 case "$service" in
@@ -397,9 +392,6 @@ case "$service" in
     ;;
   eshowkw)
     _eshowkw "$@" && return 0
-    ;;
-  genpkgindex)
-    _genpkgindex "$@" && return 0
     ;;
   glsa-check)
     _glsa-check "$@" && return 0
