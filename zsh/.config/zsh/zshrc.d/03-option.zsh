@@ -148,28 +148,35 @@ zstyle ':fzf-tab:*' switch-group ',' '.'
 
 zstyle ":completion:*:git-checkout:*" sort false
 zstyle ':completion:*' file-sort modification
-zstyle ':completion:*:*:eza:*' sort false
-zstyle ':completion:files' sort false
+# fzf-tab 查询 sort 的 context 是 ":completion:complete:<cmd>:..." (completion 后只有
+# 一个冒号), 因此 ':completion:*:*:eza:*' 在 fzf-tab 下永不命中; 只能写单个 '*'.
+zstyle ':completion:*:eza:*' sort false
 zstyle ':fzf-tab:*:*argument-rest*' popup-pad 100 8
 zstyle ':fzf-tab:*:*argument-rest*' fzf-preview
+# fzf-tab 默认忽略 FZF_DEFAULT_OPTS, 显式启用以沿用 01-env.zsh 的 Catppuccin 配色.
+zstyle ':fzf-tab:*' use-fzf-default-opts yes
+# 选项列表无内容可预览; 去掉空 preview 窗, 让描述占满宽度.
+# fzf-tab-source 的 '<cmd> --help' 选项预览 pattern 更具体, 不受影响.
+zstyle ':fzf-tab:complete:*:options' fzf-preview
 
-zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview \
-    'git diff -- "$word" | delta'
-zstyle ':fzf-tab:complete:git-log:*' fzf-preview \
-    'git log --color=always "$word" --'
-zstyle ':fzf-tab:complete:git-help:*' fzf-preview \
-    'git help "$word" | bat -plman --color=always'
-zstyle ':fzf-tab:complete:git-show:*' fzf-preview \
-    'case "$group" in
-	"commit tag") git show --color=always "$word" -- ;;
-	*) git show --color=always "$word" -- | delta ;;
-esac'
-zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
-    'case "$group" in
-	"modified file") git diff -- "$word" | delta ;;
-	"recent commit object name") git show --color=always "$word" -- | delta ;;
-	*) git log --color=always "$word" -- ;;
-esac'
+# git-* 预览由 fzf-tab-source 的 sources/git-*.zsh 提供; 其 pattern 比 git-xxx:*
+# 更具体, 本地同类 zstyle 不会生效, 故不再重复定义. 依赖 04-plugin.zsh 换回原生 _git.
+
+## Claude Code
+# 保持 _claude 按最近使用排序的会话列表, 不被 fzf-tab 按字母重排.
+zstyle ':completion:*:claude:*' sort false
+# claude -r/--resume <Tab>: 预览会话 transcript (❯ 为用户输入).
+# 会话文件位于 ~/.claude/projects/<mangled-cwd>/<id>.jsonl.
+zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' fzf-preview '
+  local -a f=( ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects/*/$word.jsonl(N) )
+  [[ -r $f[1] ]] || return
+  jq -r '"'"'
+    select((.type=="user" or .type=="assistant") and (.isMeta|not) and (.isSidechain|not))
+    | (.message.content | if type=="string" then . else (map(select(.type=="text").text) | join(" ")) end) as $t
+    | select($t != "" and ($t|startswith("<")|not))
+    | (if .type=="user" then "\u001b[1;35m❯\u001b[0m " else "  " end) + ($t|gsub("\\s+";" ")|.[0:400])
+  '"'"' $f[1] 2>/dev/null | tail -n 60'
+zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' fzf-flags '--preview-window=right:55%:wrap:follow'
 
 ## history
 command mkdir -p -m 700 -- "$XDG_STATE_HOME/zsh"

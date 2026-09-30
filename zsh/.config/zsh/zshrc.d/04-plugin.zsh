@@ -23,6 +23,13 @@ fi
     autoload -Uz compinit
     compinit -d "$cache_dir/.zcompdump"
 }
+# Gentoo dev-vcs/git 把 git 自带的 bash 桥接 _git 装进 site-functions, 遮蔽 zsh 原生
+# _git; 其 context 是 git 而非 git-<sub>, 导致所有 git-* 补全样式与预览失效.
+# 替代方案: make.conf 中 INSTALL_MASK="/usr/share/zsh/site-functions/_git".
+if [[ -r /usr/share/zsh/$ZSH_VERSION/functions/Completion/Unix/_git ]]; then
+    unfunction _git 2>/dev/null
+    autoload -Uz /usr/share/zsh/$ZSH_VERSION/functions/Completion/Unix/_git
+fi
 (( $+functions[zpcdreplay] )) && zpcdreplay
 
 if (( $+commands[mamba] )); then
