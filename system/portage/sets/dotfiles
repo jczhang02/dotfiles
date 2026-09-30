@@ -6,7 +6,6 @@
 app-admin/stow
 dev-vcs/git
 app-shells/zsh
-app-shells/gentoo-zsh-completions
 # ::jaredallard
 dev-util/mise
 
