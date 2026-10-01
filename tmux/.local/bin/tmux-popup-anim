@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# tmux-popup-anim — display-popup with a grow-in / shrink-out outline.
+#
+#   tmux-popup-anim [-w SIZE] [-h SIZE] [-s STYLE] -- COMMAND [ARG...]
+#
+# SIZE is cells or a percentage of the client (default 50% x 80%). tmux can
+# neither animate nor resize an open popup, so the effect is a few short-lived
+# outline popups (~16 ms each) before and after the real, borderless one.
+# TMUX_POPUP_ANIM=0 skips the frames.
+
+set -uo pipefail
+
+width=50% height=80% style=
+while (($#)); do
+    case $1 in
+        -w) width=$2; shift 2 ;;
+        -h) height=$2; shift 2 ;;
+        -s) style=$2; shift 2 ;;
+        --) shift; break ;;
+        *) break ;;
+    esac
+done
+(($#)) || { echo "usage: tmux-popup-anim [-w SIZE] [-h SIZE] [-s STYLE] -- COMMAND [ARG...]" >&2; exit 2; }
+
+IFS=' ' read -r cw ch < <(tmux display-message -p '#{client_width} #{client_height}')
+cells() { # cells SIZE TOTAL
+    case $1 in
+        *%) echo $(($2 * ${1%\%} / 100)) ;;
+        *) echo "$1" ;;
+    esac
+}
+W=$(cells "$width" "$cw") H=$(cells "$height" "$ch")
+
+# Ease-out scale steps (percent of the final size), shown in reverse on exit.
+steps=(55 72 85 94)
+frame() { # frame PERCENT
+    local w=$((W * $1 / 100)) h=$((H * $1 / 100))
+    ((w >= 4 && h >= 3)) || return 0
+    # Two arguments make tmux exec sleep directly rather than via a shell.
+    tmux display-popup -E -b rounded -S 'fg=#bcc0cc' -s 'bg=#eff1f5' \
+        -w "$w" -h "$h" sleep 0.012 2>/dev/null
+}
+animate=${TMUX_POPUP_ANIM:-1}
+
+if [[ $animate != 0 ]]; then
+    for p in "${steps[@]}"; do frame "$p"; done
+fi
+
+popup_style=()
+[[ -n $style ]] && popup_style=(-s "$style")
+tmux display-popup -E -B "${popup_style[@]}" -w "$W" -h "$H" -- "$@"
+
+if [[ $animate != 0 ]]; then
+    for ((i = ${#steps[@]} - 1; i >= 0; i--)); do frame "${steps[i]}"; done
+fi

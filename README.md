@@ -201,7 +201,8 @@ Notable package boundaries:
   the zsh startup prompt and tmux `prefix s`.
 - `kd` tracks `kd.toml`, the dictionary daemon unit, and `kd-popup`, the fzf
   lookup popup behind the tmux-palette `kd` keyword (Alt+P, `kd <word>`).
-- `tmux` tracks the oh-my-tmux overlay and a parameterized `tmuxp` workspace;
+- `tmux` tracks the oh-my-tmux overlay, `tmux-popup-anim` (a `display-popup`
+  wrapper with a grow-in/shrink-out outline), and a parameterized `tmuxp` workspace;
   project-specific or retired workspaces stay local.
 
 ## Design principles
