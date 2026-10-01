@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """kd-popup: fzf front end for the kd dictionary (tmux-palette `kd`, Alt+P).
 
-  kd-popup [TEXT...]   open the picker, optionally looking TEXT up first
+  kd-popup [TEXT...]   open the picker, looking TEXT up first and keeping
+                       it in history when kd finds or translates it
 
 Typing looks up live. Four or more words, or a leading `-t`, translate the
 text as a sentence (`kd -t`); a leading `kd ` is ignored, so `kd hello`
@@ -274,19 +275,25 @@ def print_history() -> None:
         print(f"{text}\t{shown}{DIM}{gloss}{R}")
 
 
-def remember(query: str) -> None:
-    _, text = classify(query)
+def last_gloss(text: str) -> str:
+    try:
+        last_text, gloss = LAST.read_text().rstrip("\n").split("\t", 1)
+    except (OSError, ValueError):
+        return ""
+    return gloss if last_text == text else ""
+
+
+def remember(query: str, found_only: bool = False) -> None:
+    """Move `query` to the top of history with its gloss. With `found_only`,
+    skip words kd has no entry for and sentences it could not translate."""
+    kind, text = classify(query)
     if not text:
         return
-    gloss = ""
-    try:
-        last_text, last_gloss = LAST.read_text().rstrip("\n").split("\t", 1)
-        if last_text == text:
-            gloss = last_gloss
-    except (OSError, ValueError):
-        pass
-    if not gloss and classify(query)[0] == "w" and (entry := lookup_word(text)):
+    gloss = last_gloss(text)
+    if not gloss and kind == "w" and (entry := lookup_word(text)):
         gloss = first_gloss(entry)
+    if found_only and not gloss:
+        return
     rows = [(t, g) for t, g in load_history() if t != text]
     write_history([(text, gloss)] + rows)
 
@@ -329,8 +336,16 @@ def pick(query: str) -> None:
         f"--bind=ctrl-x:execute-silent({me} --forget {{1}})+reload({me} --history)",
         "--bind=esc:abort,ctrl-c:abort",
     ]
+    # `kd <word>` from the palette counts as a lookup: a word goes into
+    # history up front (so it shows in the list); a sentence once its
+    # translation has rendered, which is known only after fzf exits.
+    kind = classify(query)[0]
+    if query and kind == "w":
+        remember(query, found_only=True)
     feed = subprocess.run([SELF, "--history"], capture_output=True, text=True).stdout
     subprocess.run(["fzf", *opts], input=feed, text=True, stdout=subprocess.DEVNULL)
+    if query and kind == "t":
+        remember(query, found_only=True)
 
 
 def main(argv: list[str]) -> None:
