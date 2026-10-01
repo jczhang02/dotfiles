@@ -79,10 +79,11 @@ git clone https://github.com/jczhang02/dotfiles.git ~/dev/dotfiles
 cd ~/dev/dotfiles
 
 sudo install -Dm644 system/portage/sets/dotfiles /etc/portage/sets/dotfiles
-sudo emerge -av @dotfiles
+sudo emerge -av --noreplace @dotfiles
 ```
 
-`system/` is not a Stow package. Portage reads the set from `/etc`, so copy it
+`--noreplace` installs only what is missing; without it Portage rebuilds every
+package in the set, installed or not. `system/` is not a Stow package. Portage reads the set from `/etc`, so copy it
 again after editing it. User-level CLIs are declared in `mise/` instead.
 
 ### 2. Keys and credentials
