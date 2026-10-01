@@ -21,9 +21,9 @@
     </button>
 
     <main class="shell">
-      <header class="top" id="top">
-        <time class="clock" id="clock"></time>
-        <p class="date" id="date"></p>
+      <header class="top">
+        <h1 class="greeting" id="greeting"></h1>
+        <p class="meta"><time id="clock"></time><span class="sep" id="sep" aria-hidden="true">·</span><span id="date"></span></p>
       </header>
 
       <form class="search" id="search" role="search" autocomplete="off">
@@ -32,7 +32,6 @@
         <kbd class="hint" aria-hidden="true">/</kbd>
       </form>
 
-      <p class="cmd" aria-hidden="true">~ <span>$</span> tree</p>
       <nav class="trees" id="trees" aria-label="Shortcuts"></nav>
     </main>
 
@@ -57,13 +56,18 @@
         <section>
           <h3>Accent</h3>
           <div class="swatches">
-            <label title="Indigo"><input type="radio" name="accent" value="indigo"><span data-accent="indigo"></span></label>
-            <label title="Teal"><input type="radio" name="accent" value="teal"><span data-accent="teal"></span></label>
-            <label title="Green"><input type="radio" name="accent" value="green"><span data-accent="green"></span></label>
-            <label title="Amber"><input type="radio" name="accent" value="amber"><span data-accent="amber"></span></label>
-            <label title="Rose"><input type="radio" name="accent" value="rose"><span data-accent="rose"></span></label>
-            <label title="Mono"><input type="radio" name="accent" value="mono"><span data-accent="mono"></span></label>
+            <label title="Clay"><input type="radio" name="accent" value="clay"><span data-accent="clay"></span></label>
+            <label title="Kraft"><input type="radio" name="accent" value="kraft"><span data-accent="kraft"></span></label>
+            <label title="Olive"><input type="radio" name="accent" value="olive"><span data-accent="olive"></span></label>
+            <label title="Sky"><input type="radio" name="accent" value="sky"><span data-accent="sky"></span></label>
+            <label title="Fig"><input type="radio" name="accent" value="fig"><span data-accent="fig"></span></label>
+            <label title="Slate"><input type="radio" name="accent" value="slate"><span data-accent="slate"></span></label>
           </div>
+        </section>
+
+        <section>
+          <h3>Greeting</h3>
+          <input name="name" type="text" spellcheck="false" placeholder="Your name (optional)" aria-label="Your name">
         </section>
 
         <section>

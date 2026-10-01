@@ -1,35 +1,46 @@
-/* Colors are light-dark(light, dark) pairs. Which half is used follows
+/* Warm editorial look: ivory paper, slate ink, a clay accent, serif headlines.
+   Colors are light-dark(light, dark) pairs. Which half is used follows
    color-scheme: the system setting, or the theme picked in settings. */
+
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("fonts/source-serif-4.woff2") format("woff2");
+  font-weight: 200 900;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light dark;
 
-  --bg: light-dark(#f6f6f4, #0f0f12);
-  --surface: light-dark(#ffffff, #18181d);
-  --text: light-dark(#1c1c1f, #e6e6ea);
-  --muted: light-dark(#76767e, #8a8a94);
-  --line: light-dark(#d6d6da, #34343c);
-  --branch: light-dark(#bdbdc4, #4a4a54);
-  --accent: light-dark(#4b5bd6, #a3b0ff);
-  --hover: color-mix(in srgb, var(--accent) 10%, transparent);
-  --shadow: 0 1px 2px light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.3)),
-    0 4px 16px light-dark(rgb(0 0 0 / 0.04), transparent);
+  --bg: light-dark(#faf9f5, #262624);
+  --surface: light-dark(#ffffff, #30302e);
+  --sunken: light-dark(#f0eee6, #1f1e1d);
+  --text: light-dark(#141413, #f5f4ef);
+  --muted: light-dark(#73726c, #a6a39b);
+  --line: light-dark(#e3e1d7, #3e3e3a);
+  --branch: light-dark(#d3d0c4, #4c4b47);
+  --accent: light-dark(#c6613f, #e08a6c);
+  --hover: color-mix(in srgb, var(--accent) 9%, transparent);
+  --danger: light-dark(#b5402e, #f0907c);
+  --shadow: 0 1px 2px light-dark(rgb(20 20 19 / 0.03), rgb(0 0 0 / 0.25)),
+    0 6px 24px light-dark(rgb(20 20 19 / 0.045), rgb(0 0 0 / 0.2));
 
-  --mono: ui-monospace, "JetBrains Mono", "Cascadia Code", "Fira Code", "Hack", "DejaVu Sans Mono", monospace;
-  --sans: system-ui, "Inter", "Cantarell", "Segoe UI", sans-serif;
+  --serif: "Source Serif 4", "Libertinus Serif", Georgia, serif;
+  --sans: system-ui, "Adwaita Sans", "Inter", "Segoe UI", sans-serif;
+  --mono: ui-monospace, "JetBrains Mono", "Iosevka", monospace;
   --row: 2rem;      /* height of one link row; the tree branches follow it */
-  --radius: 12px;
 }
 
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"] { color-scheme: dark; }
 
 /* Accents. Also used by the swatches in settings. */
-[data-accent="indigo"] { --accent: light-dark(#4b5bd6, #a3b0ff); }
-[data-accent="teal"] { --accent: light-dark(#0f8073, #5fd4c4); }
-[data-accent="green"] { --accent: light-dark(#3a7d34, #8fd18a); }
-[data-accent="amber"] { --accent: light-dark(#b0650a, #f2b84b); }
-[data-accent="rose"] { --accent: light-dark(#c3385f, #f59ab8); }
-[data-accent="mono"] { --accent: light-dark(#1c1c1f, #e6e6ea); }
+[data-accent="clay"] { --accent: light-dark(#c6613f, #e08a6c); }
+[data-accent="kraft"] { --accent: light-dark(#9c6b2f, #d4a86c); }
+[data-accent="olive"] { --accent: light-dark(#5f7146, #a7b98a); }
+[data-accent="sky"] { --accent: light-dark(#4a78a8, #8fb6dc); }
+[data-accent="fig"] { --accent: light-dark(#9a4f6a, #d896ad); }
+[data-accent="slate"] { --accent: light-dark(#3d3d3a, #d6d4cc); }
 
 * {
   box-sizing: border-box;
@@ -44,12 +55,6 @@ html {
   scrollbar-color: var(--line) transparent;
 }
 
-.settings,
-.settings textarea {
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
-}
-
 body {
   margin: 0;
   min-height: 100vh;
@@ -61,30 +66,35 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
 svg {
   width: 1.25rem;
   height: 1.25rem;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.75;
+  stroke-width: 1.6;
   stroke-linecap: round;
 }
 
 kbd {
   display: inline-block;
-  min-width: 1.4em;
+  min-width: 1.45em;
   padding: 0 0.35em;
   border: 1px solid var(--line);
   border-radius: 5px;
+  background: var(--sunken);
   color: var(--muted);
-  font: 0.75rem/1.5 var(--mono);
+  font: 0.72rem/1.5 var(--mono);
   text-align: center;
 }
 
 .shell {
-  width: min(56rem, 100% - 3rem);
-  padding: 4rem 0;
-  animation: rise 0.3s ease-out both;
+  width: min(46rem, 100% - 3rem);
+  padding: 5rem 0;
+  animation: rise 0.35s ease-out both;
 }
 
 .icon-btn {
@@ -94,11 +104,11 @@ kbd {
   height: 2.25rem;
   padding: 0;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  transition: background-color 0.12s, color 0.12s;
+  transition: background-color 0.15s, color 0.15s;
 }
 
 .icon-btn:hover,
@@ -110,29 +120,38 @@ kbd {
 
 .corner {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  top: 1.25rem;
+  right: 1.25rem;
 }
 
-/* ---- clock ---- */
+/* ---- greeting ---- */
 
 .top {
-  margin-bottom: 2rem;
+  margin-bottom: 2.25rem;
+  text-align: center;
 }
 
-.clock {
-  display: block;
-  font-size: clamp(3rem, 8vw, 4.5rem);
-  font-weight: 300;
-  letter-spacing: -0.04em;
-  line-height: 1;
+.greeting {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2.25rem, 6vw, 3.25rem);
+  font-weight: 330;
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.meta {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
   font-variant-numeric: tabular-nums;
 }
 
-.date {
-  margin: 0.6rem 0 0;
-  color: var(--muted);
-  font-size: 1.05rem;
+.sep {
+  margin: 0 0.55em;
+  color: var(--branch);
 }
 
 /* ---- search ---- */
@@ -140,25 +159,25 @@ kbd {
 .search {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  height: 3.25rem;
-  padding: 0 1rem;
+  gap: 0.8rem;
+  height: 3.6rem;
+  padding: 0 1.1rem 0 1.25rem;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 1.1rem;
   box-shadow: var(--shadow);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--hover);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  box-shadow: var(--shadow), 0 0 0 4px var(--hover);
 }
 
 .search-icon {
   flex: none;
   color: var(--muted);
-  transition: color 0.15s;
+  transition: color 0.2s;
 }
 
 .search:focus-within .search-icon {
@@ -172,12 +191,11 @@ kbd {
   outline: 0;
   background: transparent;
   color: var(--text);
-  font: 1rem var(--mono);
+  font: 1.02rem var(--sans);
 }
 
 .search input::placeholder {
   color: var(--muted);
-  opacity: 0.8;
 }
 
 .search:focus-within .hint {
@@ -186,43 +204,41 @@ kbd {
 
 /* ---- tree ---- */
 
-.cmd {
-  margin: 2.75rem 0 1rem;
-  color: var(--muted);
-  font: 0.85rem var(--mono);
-}
-
-.cmd span {
-  color: var(--accent);
-}
-
 .trees {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-  gap: 1.75rem 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 2rem 1.5rem;
+  margin-top: 3.25rem;
 }
 
 .tree h2 {
-  margin: 0;
-  font: 600 0.95rem/var(--row) var(--mono);
-  color: var(--accent);
+  margin: 0 0 0.15rem;
+  font: 500 1.1rem/var(--row) var(--serif);
+  font-optical-sizing: auto;
+  color: var(--text);
 }
 
-.tree h2::after {
-  content: "/";
-  color: var(--muted);
-  font-weight: 400;
+/* the root of each tree: a small accent dot, where the branches start */
+.tree h2::before {
+  content: "";
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin: 0 0.6rem 0 0.15rem;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: 0.15em;
 }
 
 .tree ul {
-  margin: 0 0 0 0.35rem;
+  margin: 0 0 0 0.32rem;
   padding: 0;
   list-style: none;
 }
 
 .tree li {
   position: relative;
-  padding-left: 1.1rem;
+  padding-left: 1rem;
 }
 
 /* vertical trunk, continues past every item except the last */
@@ -232,7 +248,7 @@ kbd {
   left: 0;
   top: 0;
   bottom: 0;
-  border-left: 1.5px solid var(--branch);
+  border-left: 1px solid var(--branch);
 }
 
 .tree li:last-child::before {
@@ -245,34 +261,41 @@ kbd {
   position: absolute;
   left: 0;
   top: 0;
-  width: 0.95rem;
+  width: 0.85rem;
   height: calc(var(--row) / 2);
-  border-left: 1.5px solid var(--branch);
-  border-bottom: 1.5px solid var(--branch);
-  border-bottom-left-radius: 0.45rem;
+  border-left: 1px solid var(--branch);
+  border-bottom: 1px solid var(--branch);
+  border-bottom-left-radius: 0.5rem;
 }
 
 .tree a {
   display: inline-block;
   max-width: 100%;
   padding: 0 0.5rem;
-  border-radius: 6px;
-  color: var(--text);
-  font: 0.95rem/var(--row) var(--mono);
+  border-radius: 7px;
+  color: color-mix(in srgb, var(--text) 82%, var(--bg));
+  font: 0.93rem/var(--row) var(--sans);
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: top;
-  transition: background-color 0.12s, color 0.12s;
+  transition: background-color 0.15s, color 0.15s;
 }
 
 .tree a kbd {
-  margin-left: 0.6rem;
-  font-size: 0.7rem;
-  line-height: 1.35;
+  margin-left: 0.5rem;
+  font-size: 0.66rem;
+  line-height: 1.4;
   vertical-align: 0.1em;
-  opacity: 0.7;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+/* key hints show while hovering the tree area, so the page stays calm */
+.trees:hover a kbd,
+.tree a:focus-visible kbd {
+  opacity: 1;
 }
 
 .tree a:hover,
@@ -289,23 +312,25 @@ kbd {
   max-height: min(48rem, 100% - 2rem);
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface);
+  border-radius: 1.25rem;
+  background: var(--bg);
   color: var(--text);
-  box-shadow: 0 24px 64px rgb(0 0 0 / 0.25);
+  box-shadow: 0 24px 64px rgb(20 20 19 / 0.2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 
 .settings[open] {
-  animation: pop 0.18s ease-out;
+  animation: pop 0.2s ease-out;
 }
 
 .settings::backdrop {
-  background: rgb(0 0 0 / 0.3);
+  background: light-dark(rgb(20 20 19 / 0.22), rgb(0 0 0 / 0.45));
   backdrop-filter: blur(3px);
 }
 
 .settings form {
-  padding: 0 1.5rem 1.25rem;
+  padding: 0 1.75rem 1.5rem;
 }
 
 .settings-head {
@@ -315,32 +340,29 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 -1.5rem;
-  padding: 1rem 1rem 0.75rem 1.5rem;
-  background: var(--surface);
+  margin: 0 -1.75rem;
+  padding: 1.25rem 1.25rem 0.85rem 1.75rem;
+  background: var(--bg);
 }
 
 .settings h2 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font: 450 1.5rem var(--serif);
+  font-optical-sizing: auto;
 }
 
 .settings section {
-  padding: 1rem 0;
+  padding: 1.1rem 0;
   border-top: 1px solid var(--line);
 }
 
 .settings h3 {
   margin: 0 0 0.75rem;
-  color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
-/* visually hidden radios and checkboxes; the labels are the controls */
+/* visually hidden radios; the labels are the controls */
 .seg input,
 .swatches input {
   position: absolute;
@@ -351,29 +373,28 @@ kbd {
 .seg {
   display: inline-flex;
   padding: 3px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--bg);
+  border-radius: 11px;
+  background: var(--sunken);
 }
 
 .seg label {
-  padding: 0.35rem 0.95rem;
-  border-radius: 7px;
+  padding: 0.35rem 1rem;
+  border-radius: 8px;
   color: var(--muted);
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.12s, color 0.12s;
+  transition: background-color 0.15s, color 0.15s;
 }
 
 .seg label:has(:checked) {
   background: var(--surface);
   color: var(--text);
-  box-shadow: var(--shadow), 0 0 0 1px var(--line);
+  box-shadow: 0 1px 3px light-dark(rgb(20 20 19 / 0.1), rgb(0 0 0 / 0.35));
 }
 
 .swatches {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.8rem;
 }
 
 .swatches label {
@@ -386,11 +407,11 @@ kbd {
   height: 1.6rem;
   border-radius: 50%;
   background: var(--accent);
-  transition: box-shadow 0.12s;
+  transition: box-shadow 0.15s;
 }
 
 .swatches label:has(:checked) span {
-  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 }
 
 .seg label:has(:focus-visible),
@@ -404,32 +425,36 @@ kbd {
 .settings textarea {
   display: block;
   width: 100%;
-  padding: 0.55rem 0.75rem;
+  padding: 0.6rem 0.8rem;
   border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--bg);
+  border-radius: 10px;
+  background: var(--surface);
   color: var(--text);
   font: 0.9rem var(--sans);
 }
 
-.settings input[type="text"],
-.settings textarea {
+.settings select + input[type="text"] {
   margin-top: 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.85rem;
+  font: 0.85rem var(--mono);
 }
 
 .settings textarea {
-  line-height: 1.55;
+  font: 0.83rem/1.6 var(--mono);
   white-space: pre;
   resize: vertical;
   tab-size: 2;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.settings input::placeholder {
+  color: var(--muted);
 }
 
 .settings select:focus-visible,
 .settings input[type="text"]:focus,
 .settings textarea:focus {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
   outline: 0;
   box-shadow: 0 0 0 3px var(--hover);
 }
@@ -438,7 +463,7 @@ kbd {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-top: 0.85rem;
+  margin-top: 0.9rem;
   font-size: 0.9rem;
   cursor: pointer;
 }
@@ -451,10 +476,10 @@ kbd {
 }
 
 .help {
-  margin: 0;
+  margin: 0 0 0.6rem;
   color: var(--muted);
   font-size: 0.85rem;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .help code {
@@ -470,13 +495,13 @@ kbd {
 }
 
 .status.error {
-  color: light-dark(#c0362c, #ff8a80);
+  color: var(--danger);
 }
 
 .keys {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.55rem 1.25rem;
+  gap: 0.6rem 1.25rem;
   margin: 0;
   font-size: 0.9rem;
 }
@@ -491,24 +516,25 @@ kbd {
 }
 
 .settings-foot {
-  padding-top: 1rem;
+  padding-top: 1.1rem;
   border-top: 1px solid var(--line);
 }
 
 .text-btn {
-  padding: 0.45rem 0.8rem;
+  padding: 0.5rem 0.9rem;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 9px;
   background: transparent;
   color: var(--muted);
   font: 0.85rem var(--sans);
   cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .text-btn:hover,
 .text-btn:focus-visible {
-  border-color: light-dark(#c0362c, #ff8a80);
-  color: light-dark(#c0362c, #ff8a80);
+  border-color: var(--danger);
+  color: var(--danger);
   outline: none;
 }
 
@@ -518,15 +544,15 @@ kbd {
   position: fixed;
   left: 50%;
   bottom: 2rem;
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1.1rem;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
   box-shadow: var(--shadow);
-  font: 0.85rem var(--mono);
+  font-size: 0.85rem;
   opacity: 0;
   transform: translate(-50%, 6px);
-  transition: opacity 0.18s, transform 0.18s;
+  transition: opacity 0.2s, transform 0.2s;
   pointer-events: none;
 }
 

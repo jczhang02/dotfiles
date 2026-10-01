@@ -32,7 +32,8 @@ const ENGINES = {
 
 const DEFAULTS = {
   theme: "auto",      // auto | light | dark
-  accent: "indigo",   // indigo | teal | green | amber | rose | mono
+  accent: "clay",     // clay | kraft | olive | sky | fig | slate
+  name: "",           // shown in the greeting: "Good evening, <name>"
   clock: "24",        // 24 | 12 | off
   engine: "duckduckgo",
   customUrl: "",      // used when engine is "custom"; the query is appended
@@ -42,6 +43,7 @@ const DEFAULTS = {
 
 const STORE_KEY = "startpage";
 const THEMES = ["auto", "light", "dark"];
+const ACCENTS = ["clay", "kraft", "olive", "sky", "fig", "slate"];
 const RESERVED_KEYS = ["/", ",", "."];
 
 // ---------------------------------------------------------------------------
@@ -59,11 +61,13 @@ let clockTimer;
 let toastTimer;
 
 function load() {
+  let saved = {};
   try {
-    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(STORE_KEY)) };
-  } catch {
-    return { ...DEFAULTS };
-  }
+    saved = JSON.parse(localStorage.getItem(STORE_KEY)) || {};
+  } catch {}
+  const loaded = { ...DEFAULTS, ...saved };
+  if (!ACCENTS.includes(loaded.accent)) loaded.accent = DEFAULTS.accent;
+  return loaded;
 }
 
 function save() {
@@ -179,10 +183,18 @@ function applyTheme() {
   root.dataset.accent = state.accent;
 }
 
+function greeting(hour) {
+  if (hour >= 5 && hour < 12) return "Good morning";
+  if (hour >= 12 && hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 function tickClock() {
   clearTimeout(clockTimer);
-  $("top").hidden = state.clock === "off";
   const now = new Date();
+  const name = state.name.trim();
+  $("greeting").textContent = greeting(now.getHours()) + (name ? `, ${name}` : "");
+  $("clock").hidden = $("sep").hidden = state.clock === "off";
   $("clock").textContent = now.toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
@@ -214,7 +226,7 @@ function searchUrl() {
 
 function applySearch() {
   const engine = ENGINES[state.engine];
-  input.placeholder = engine ? `search ${engine[0].toLowerCase()} or type a url` : "search or type a url";
+  input.placeholder = engine ? `Search ${engine[0]} or type a URL` : "Search or type a URL";
 }
 
 $("search").addEventListener("submit", (event) => {
@@ -232,7 +244,7 @@ for (const [id, [name]] of Object.entries(ENGINES)) {
 fields.engine.add(new Option("Custom...", "custom"));
 
 function fillSettings() {
-  for (const name of ["theme", "accent", "clock", "engine", "customUrl", "links"]) {
+  for (const name of ["theme", "accent", "name", "clock", "engine", "customUrl", "links"]) {
     fields[name].value = state[name];
   }
   fields.autofocus.checked = state.autofocus;
@@ -251,7 +263,7 @@ form.addEventListener("input", (event) => {
   save();
 
   if (field.name === "theme" || field.name === "accent") applyTheme();
-  if (field.name === "clock") tickClock();
+  if (field.name === "clock" || field.name === "name") tickClock();
   if (field.name === "engine") {
     fields.customUrl.hidden = state.engine !== "custom";
     applySearch();
@@ -309,7 +321,7 @@ document.addEventListener("keydown", (event) => {
     state.theme = THEMES[(THEMES.indexOf(state.theme) + 1) % THEMES.length];
     save();
     applyTheme();
-    toast(`theme: ${state.theme}`);
+    toast(`Theme: ${state.theme}`);
   } else {
     const url = linkKeys.get(event.key.toLowerCase());
     if (!url) return;
