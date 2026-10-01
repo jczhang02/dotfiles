@@ -76,6 +76,8 @@ media-video/pipewire
 media-video/wireplumber
 gnome-extra/gnome-shell-extension-gsconnect
 x11-libs/libnotify
+# ::guru
+x11-themes/adw-gtk3
 
 # Fonts named in fontconfig/ and ghostty/
 media-fonts/iosevka

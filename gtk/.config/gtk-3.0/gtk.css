@@ -1,11 +1,2 @@
-* {
-  border-radius: 0;
-}
-
-window, window.background, window.csd {
-  border-radius: 0;
-}
-
-headerbar, .titlebar {
-  border-radius: 0;
-}
+/* GTK 3 apps use the adw-gtk3 theme (settings.ini) to match GTK 4/libadwaita,
+   including 15px rounded window corners. Local overrides go here. */
