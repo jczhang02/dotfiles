@@ -210,51 +210,6 @@
       "installedAt": "2026-08-24T14:44:59.030Z",
       "updatedAt": "2026-09-30T02:10:53.416Z"
     },
-    "sepia": {
-      "source": "Nanako0129/sepia",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/Nanako0129/sepia.git",
-      "skillPath": "skills/sepia/SKILL.md",
-      "skillFolderHash": "ba2c2ccc4e9c6612a07aebacbb7b9f0908d6b9e8",
-      "installedAt": "2026-09-02T11:58:34.431Z",
-      "updatedAt": "2026-09-24T00:20:46.938Z"
-    },
-    "sepia-recreate": {
-      "source": "Nanako0129/sepia",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/Nanako0129/sepia.git",
-      "skillPath": "skills/sepia-recreate/SKILL.md",
-      "skillFolderHash": "e9eb2316aad2fc96bb9b3a7381cf4fe664b1c549",
-      "installedAt": "2026-09-02T11:58:34.432Z",
-      "updatedAt": "2026-09-02T11:58:34.432Z"
-    },
-    "sepia-refactor": {
-      "source": "Nanako0129/sepia",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/Nanako0129/sepia.git",
-      "skillPath": "skills/sepia-refactor/SKILL.md",
-      "skillFolderHash": "b882904d1eaea9bb6dc59e19e4689b66aac3b9cc",
-      "installedAt": "2026-09-02T11:58:34.432Z",
-      "updatedAt": "2026-09-02T11:58:34.432Z"
-    },
-    "sepia-review": {
-      "source": "Nanako0129/sepia",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/Nanako0129/sepia.git",
-      "skillPath": "skills/sepia-review/SKILL.md",
-      "skillFolderHash": "0f11a6997fb6d663a4e0dbbe3ba40c2f51500448",
-      "installedAt": "2026-09-02T11:58:34.433Z",
-      "updatedAt": "2026-09-02T11:58:34.433Z"
-    },
-    "sepia-write": {
-      "source": "Nanako0129/sepia",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/Nanako0129/sepia.git",
-      "skillPath": "skills/sepia-write/SKILL.md",
-      "skillFolderHash": "b79ae5fdcc6b76bf48ef0236cb98067e9a04a09e",
-      "installedAt": "2026-09-02T11:58:34.433Z",
-      "updatedAt": "2026-09-02T11:58:34.433Z"
-    },
     "show-me": {
       "source": "humanlayer/skills",
       "sourceType": "github",
@@ -322,6 +277,25 @@
       "pluginName": "mattpocock-skills",
       "installedAt": "2026-09-30T02:25:04.147Z",
       "updatedAt": "2026-09-30T02:25:04.147Z"
+    },
+    "humanizer": {
+      "source": "blader/humanizer",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/blader/humanizer.git",
+      "skillPath": "SKILL.md",
+      "skillFolderHash": "225a6f39ac85f76ee48dbad772ea4abe4ed6c9d8",
+      "pluginName": "humanizer",
+      "installedAt": "2026-10-01T04:43:29.684Z",
+      "updatedAt": "2026-10-01T04:43:29.684Z"
+    },
+    "humanizer-zh": {
+      "source": "op7418/humanizer-zh",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/op7418/humanizer-zh.git",
+      "skillPath": "SKILL.md",
+      "skillFolderHash": "f4518a8eab97b8bfebc66a89d34320a89bef6930",
+      "installedAt": "2026-10-01T04:43:33.746Z",
+      "updatedAt": "2026-10-01T04:43:33.746Z"
     }
   },
   "dismissed": {
