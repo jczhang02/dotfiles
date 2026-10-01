@@ -177,9 +177,9 @@ Notable package boundaries:
   as ordinary local files.
 - `gtk` leaves `bookmarks` local since file managers rewrite it at runtime.
 - `claude` tracks only hand-written Claude Code files: `CLAUDE.md`, subagents,
-  keybindings, themes, and the `session-title` hook. `settings.json` stays
-  local because Claude Code replaces it on every settings change; the herdr hook
-  is owned by herdr.
+  keybindings, themes, and the `session-title` and `ghostty-notify.sh` hooks.
+  `settings.json` stays local because Claude Code replaces it on every settings
+  change; the herdr hook is owned by herdr.
 - `agents` tracks the global `npx skills` lock, `rules/`, and self-authored
   skills. `skills-restore` reinstalls third-party skills from the lock, and
   tool-installed skills (`plannotator*`, `beads`, `cua-driver`) are left to
