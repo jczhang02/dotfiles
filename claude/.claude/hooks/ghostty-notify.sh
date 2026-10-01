@@ -11,7 +11,7 @@ title=$(grep '"custom-title"' "$transcript" 2>/dev/null | tail -1 | jq -r '.cust
 # A ';' would end the title field of OSC 777.
 title=${title//;/,}
 # Control characters would break the escape sequence; jq slices by character, so CJK text is not split.
-body=$(jq -r '(.last_assistant_message // .message // "") | gsub("[\\u0000-\\u001f]+"; " ") | gsub("\\s+"; " ") | .[0:200]' <<<"$in")
+body=$(jq -r '(.last_assistant_message // .message // "") | gsub("[[:cntrl:]]+"; " ") | gsub("\\s+"; " ") | .[0:200]' <<<"$in")
 
 # tmux forwards the wrapped sequence to Ghostty when allow-passthrough is on.
 printf '\ePtmux;\e\e]777;notify;%s;%s\a\e\\' "$title" "$body" > "$tty"
