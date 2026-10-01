@@ -1,370 +1,400 @@
-#!/usr/bin/env python3
-"""kd-popup: fzf front end for the kd dictionary (tmux-palette `kd`, Alt+P).
-
-  kd-popup [TEXT...]   open the picker, looking TEXT up first and keeping
-                       it in history when kd finds or translates it
-
-Typing looks up live. Four or more words, or a leading `-t`, translate the
-text as a sentence (`kd -t`); a leading `kd ` is ignored, so `kd hello`
-works too. Enter keeps the entry in history with a short gloss; up/down
-recall it.
-
-Internal, used by fzf bindings:
-  kd-popup --render TEXT    print the colored entry for TEXT
-  kd-popup --history        print saved entries, newest first
-  kd-popup --remember TEXT  move TEXT to the top of history
-  kd-popup --forget TEXT    drop TEXT from history
-"""
-
-import json
-import os
-import re
-import shutil
-import subprocess
-import sys
-import time
-import unicodedata
-from pathlib import Path
-
-SELF = os.path.realpath(__file__)
-STATE = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local/state") / "kd"
-HISTORY = STATE / "history"  # "text<TAB>gloss" per line, newest first
-LAST = STATE / "last"  # gloss of the latest render, reused by --remember
-HISTORY_MAX = 200
-MAX_WIDTH = 96  # readable measure on wide terminals
-
-# 16-color ANSI so entries follow the terminal palette (Latte or Mocha).
-R, B, DIM = "\033[0m", "\033[1m", "\033[90m"
-HEAD, TAG, POS, BADGE = "\033[1;34m", "\033[35m", "\033[32m", "\033[33m"
-
-
-# --- text layout ----------------------------------------------------------
-
-def cell_width(s: str) -> int:
-    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in s)
-
-
-CJK = r"[⺀-鿿豈-﫿＀-￯　-〿]"
-CLOSING = r"[，。；：、！？）」』”’》〉…]"
-TOKEN = re.compile(rf"{CJK}{CLOSING}*|[^\s⺀-鿿豈-﫿＀-￯　-〿]+|\s+")
-
-
-def wrap(text: str, width: int) -> list[str]:
-    """Greedy wrap by display cells; CJK may break between characters."""
-    lines, line, used = [], "", 0
-    for tok in TOKEN.findall(text.strip()):
-        w = cell_width(tok)
-        if tok.isspace():
-            if line:
-                line, used = line + " ", used + 1
-            continue
-        if used + w > width and line.strip():
-            lines.append(line.rstrip())
-            line, used = "", 0
-        while w > width:  # a single token wider than the measure
-            lines.append(tok[:width])
-            tok = tok[width:]
-            w = cell_width(tok)
-        line, used = line + tok, used + w
-    if line.strip():
-        lines.append(line.rstrip())
-    return lines or [""]
-
-
-def block(text: str, indent: int, width: int, style: str = "", first: str | None = None) -> list[str]:
-    """Wrap `text` into `width` with a hanging indent; `first` replaces the
-    first line's indent (e.g. a styled label of the same cell width)."""
-    rows = wrap(text, max(10, width - indent))
-    pad = " " * indent
-    out = []
-    for i, row in enumerate(rows):
-        lead = first if (i == 0 and first is not None) else pad
-        out.append(f"{lead}{style}{row}{R if style else ''}")
-    return out
-
-
-def split_bilingual(s: str) -> tuple[str, str]:
-    """Collins glosses run "English sentence. 中文释义"."""
-    m = re.match(rf"^(.*?)\s*([(（]?\s*{CJK}.*)$", s)
-    return (m.group(1), m.group(2)) if m and m.group(1) else (s, "")
-
-
-def rule(title: str, width: int, extra: str = "") -> str:
-    label = f"{title.upper()}{'  ' + extra if extra else ''}"
-    return f"  {DIM}{label} {'─' * max(4, width - 2 - cell_width(label) - 1)}{R}"
-
-
-def measure() -> int:
-    cols = int(os.environ.get("FZF_PREVIEW_COLUMNS") or shutil.get_terminal_size().columns)
-    return min(cols - 2, MAX_WIDTH + 2)
-
-
-# --- lookups --------------------------------------------------------------
-
-def classify(text: str) -> tuple[str, str]:
-    text = " ".join(text.split())
-    if text.startswith("kd "):
-        text = text[3:]
-    if text.startswith(("-t ", "--text ")):
-        return "t", text.split(" ", 1)[1]
-    return ("t" if text.count(" ") >= 3 else "w"), text
-
-
-def kd(*args: str, timeout: float = 20) -> str:
-    try:
-        return subprocess.run(["kd", *args], capture_output=True, text=True, timeout=timeout).stdout
-    except (OSError, subprocess.TimeoutExpired):
-        return ""
-
-
-def lookup_word(word: str) -> dict | None:
-    try:
-        data = json.loads(kd("--json", word))
-    except json.JSONDecodeError:
-        return None
-    return data if data.get("k") else None
-
-
-def translate(text: str) -> str:
-    out = kd("-t", text).splitlines()
-    return "\n".join(out[1:]).strip()  # kd echoes the source first
-
-
-def first_gloss(entry: dict) -> str:
-    for para in entry.get("para") or []:
-        gloss = re.sub(r"^(?:[a-z]+\.\s*)+", "", para).strip()
-        if gloss:
-            return gloss
-    return ""
-
-
-def save_last(text: str, gloss: str) -> None:
-    try:
-        STATE.mkdir(parents=True, exist_ok=True)
-        LAST.write_text(f"{text}\t{gloss}\n")
-    except OSError:
-        pass
-
-
-# --- rendering ------------------------------------------------------------
-
-def render_word(word: str, width: int) -> list[str]:
-    entry = lookup_word(word)
-    if not entry:
-        return [
-            "",
-            f"  {HEAD}{word}{R}",
-            "",
-            f"  {DIM}No dictionary entry.{R}",
-            f"  {DIM}Prefix with {R}-t{DIM} to translate it as a sentence.{R}",
-        ]
-    save_last(word, first_gloss(entry))
-    co = entry.get("co") or {}
-    badges = " · ".join((co.get("rank") or "").split())
-    if co.get("star"):
-        badges = ("★" * co["star"]) + ("  " + badges if badges else "")
-    head = f"{HEAD}{entry['k']}{R}"
-    gap = max(3, width - 2 - cell_width(entry["k"]) - cell_width(badges))
-    out = ["", f"  {head}{' ' * gap}{BADGE}{badges}{R}" if badges else f"  {head}"]
-
-    pron = entry.get("pron") or {}
-    if pron:
-        order = sorted(pron, key=lambda k: k != "英")
-        parts = [f"{DIM}{k}{R} /{pron[k].strip('[]')}/" for k in order]
-        out.append("  " + "   ".join(parts))
-    out.append("")
-
-    paras = [re.match(r"^((?:[a-z]+\.\s*)*)(.*)$", p).groups() for p in entry.get("para") or []]
-    col = max([cell_width(pos.strip()) for pos, _ in paras] + [0])
-    col = col + 2 if col else 0
-    for pos, gloss in paras:
-        pos = pos.strip()
-        label = f"  {POS}{pos}{R}{' ' * (col - cell_width(pos))}"
-        out += block(gloss, 2 + col, width, first=label)
-
-    items = co.get("li") or []
-    if items:
-        out += ["", rule("collins", width, str(len(items)))]
-        num_w = len(str(len(items)))
-        for i, item in enumerate(items, 1):
-            en, zh = split_bilingual(item.get("maj") or "")
-            tag = (item.get("a") or "").strip()
-            indent = 2 + num_w + 2
-            out.append("")
-            lead = f"  {B}{i:>{num_w}}{R}  "
-            if tag:
-                out.append(f"{lead}{TAG}{tag}{R}")
-                lead = None
-            out += block(en, indent, width, first=lead)
-            if zh:
-                out += block(zh, indent, width, DIM)
-            for eg in item.get("eg") or []:
-                out += block(eg[0], indent + 2, width, first=" " * indent + f"{DIM}›{R} ")
-                if len(eg) > 1 and eg[1]:
-                    out += block(eg[1], indent + 2, width, DIM)
-
-    examples = ((entry.get("eg") or {}).get("bi") or [])[:5]
-    if examples:
-        out += ["", rule("examples", width), ""]
-        for eg in examples:
-            out += block(eg[0], 4, width, first=f"  {DIM}›{R} ")
-            if len(eg) > 1 and eg[1]:
-                out += block(eg[1], 4, width, DIM)
-            out.append("")
-    return out
-
-
-def render_text(text: str, width: int) -> None:
-    head = ["", rule("translate", width), ""] + block(text, 2, width, DIM) + [""]
-    print("\n".join(head), flush=True)  # source shows while kd -t is on the network
-    result = translate(text)
-    if result:
-        save_last(text, result.splitlines()[0])
-        print("\n".join(block(result, 2, width, B)))
-    else:
-        print(f"  {DIM}No translation.{R}")
-
-
-def render_help(width: int) -> list[str]:
-    keys = [("⏎", "keep in history"), ("↑ ↓", "recall history"), ("⇧↑ ⇧↓", "scroll this panel"),
-            ("^x", "forget the highlighted entry"), ("esc", "close")]
-    out = ["", f"  {HEAD}kd{R}  {DIM}dictionary{R}", ""]
-    out += block("Type a word or phrase to look it up as you type. Four or more words, "
-                 "or a leading -t, translate a sentence.", 2, width, DIM)
-    out.append("")
-    out += [f"  {B}{k:<7}{R}{DIM}{v}{R}" for k, v in keys]
-    return out
-
-
-def render(query: str) -> None:
-    kind, text = classify(query)
-    width = measure()
-    if not text:
-        print("\n".join(render_help(width)))
-    elif kind == "t":
-        time.sleep(0.6)  # sentences hit the network; fzf kills stale previews
-        render_text(text, width)
-    else:
-        time.sleep(0.12)
-        print("\n".join(render_word(text, width)))
-
-
-# --- history --------------------------------------------------------------
-
-def load_history() -> list[tuple[str, str]]:
-    try:
-        rows = HISTORY.read_text().splitlines()
-    except OSError:
-        return []
-    return [tuple((r.split("\t", 1) + [""])[:2]) for r in rows if r.strip()]
-
-
-def write_history(rows: list[tuple[str, str]]) -> None:
-    STATE.mkdir(parents=True, exist_ok=True)
-    tmp = HISTORY.with_suffix(".tmp")
-    tmp.write_text("".join(f"{t}\t{g}\n" for t, g in rows[:HISTORY_MAX]))
-    tmp.replace(HISTORY)
-
-
-def print_history() -> None:
-    rows = load_history()
-    pad = min(max([cell_width(t) for t, _ in rows] + [0]), 14)
-    for text, gloss in rows:
-        shown = text if cell_width(text) <= pad else text[: pad - 1] + "…"
-        shown += " " * (pad - cell_width(shown) + 2)
-        print(f"{text}\t{shown}{DIM}{gloss}{R}")
-
-
-def last_gloss(text: str) -> str:
-    try:
-        last_text, gloss = LAST.read_text().rstrip("\n").split("\t", 1)
-    except (OSError, ValueError):
-        return ""
-    return gloss if last_text == text else ""
-
-
-def remember(query: str, found_only: bool = False) -> None:
-    """Move `query` to the top of history with its gloss. With `found_only`,
-    skip words kd has no entry for and sentences it could not translate."""
-    kind, text = classify(query)
-    if not text:
-        return
-    gloss = last_gloss(text)
-    if not gloss and kind == "w" and (entry := lookup_word(text)):
-        gloss = first_gloss(entry)
-    if found_only and not gloss:
-        return
-    rows = [(t, g) for t, g in load_history() if t != text]
-    write_history([(text, gloss)] + rows)
-
-
-def forget(text: str) -> None:
-    write_history([(t, g) for t, g in load_history() if t != text])
-
-
-# --- picker ---------------------------------------------------------------
-
-def pick(query: str) -> None:
-    cols = shutil.get_terminal_size().columns
-    if cols >= 100:
-        list_w = max(28, min(44, cols * 3 // 10))
-        layout = f"right,{cols - list_w},wrap"
-    else:
-        layout = "down,65%,wrap"
-    # Catppuccin Latte, matching FZF_DEFAULT_OPTS from the zsh env; popups
-    # run a non-interactive shell that never loads it.
-    latte = ",".join([
-        "bg+:#e6e9ef", "bg:#eff1f5", "fg:#4c4f69", "fg+:#4c4f69:bold", "hl:#d20f39",
-        "hl+:#d20f39", "prompt:#8839ef", "pointer:#8839ef", "info:#9ca0b0",
-        "spinner:#dc8a78", "query:#4c4f69:bold", "border:#ccd0da", "label:#8839ef",
-        "footer:#8c8fa1", "ghost:#9ca0b0", "preview-border:#ccd0da",
-    ])
-    recall = "transform-query(printf %s {1})"
-    me = f"'{SELF}'"
-    opts = [
-        "--ansi", "--disabled", "--layout=reverse", "--style=full:rounded", "--no-scrollbar",
-        f"--color={latte}", "--highlight-line", "--gutter= ", "--pointer=▌", "--no-sort",
-        "--delimiter=\t", "--with-nth=2", "--prompt=❯ ", "--ghost=word, phrase or sentence",
-        "--info=hidden", "--input-label= 󰗊 kd ", "--list-label= history ",
-        "--list-label-pos=-3:bottom", "--footer-border=none",
-        "--footer=⏎ keep   ↑↓ recall   ^x forget",
-        f"--query={query}",
-        f"--preview={me} --render {{q}}",
-        f"--preview-window={layout}", "--preview-wrap-sign=  ",
-        f"--bind=up:up+{recall},down:down+{recall},ctrl-p:up+{recall},ctrl-n:down+{recall}",
-        f"--bind=enter:execute-silent({me} --remember {{q}})+reload({me} --history)+first",
-        f"--bind=ctrl-x:execute-silent({me} --forget {{1}})+reload({me} --history)",
-        "--bind=esc:abort,ctrl-c:abort",
-    ]
-    # `kd <word>` from the palette counts as a lookup: a word goes into
-    # history up front (so it shows in the list); a sentence once its
-    # translation has rendered, which is known only after fzf exits.
-    kind = classify(query)[0]
-    if query and kind == "w":
-        remember(query, found_only=True)
-    feed = subprocess.run([SELF, "--history"], capture_output=True, text=True).stdout
-    subprocess.run(["fzf", *opts], input=feed, text=True, stdout=subprocess.DEVNULL)
-    if query and kind == "t":
-        remember(query, found_only=True)
-
-
-def main(argv: list[str]) -> None:
-    cmd = argv[0] if argv else ""
-    rest = " ".join(argv[1:])
-    if cmd == "--render":
-        render(rest)
-    elif cmd == "--history":
-        print_history()
-    elif cmd == "--remember":
-        remember(rest)
-    elif cmd == "--forget":
-        forget(rest)
-    else:
-        pick(" ".join(argv))
-
-
-if __name__ == "__main__":
-    try:
-        main(sys.argv[1:])
-    except (BrokenPipeError, KeyboardInterrupt):
-        pass
+#!/usr/bin/env bun
+/**
+ * kd-popup: fzf front end for the kd dictionary (tmux-palette `kd`, Alt+P).
+ *
+ *   kd-popup [TEXT...]   open the picker, looking TEXT up first and keeping
+ *                        it in history when kd finds or translates it
+ *
+ * Typing looks up live. Four or more words, or a leading `-t`, translate the
+ * text as a sentence (`kd -t`); a leading `kd ` is ignored, so `kd hello`
+ * works too. Enter keeps the entry in history with a short gloss; up/down
+ * recall it.
+ *
+ * Internal, used by fzf bindings:
+ *   kd-popup --render TEXT    print the colored entry for TEXT
+ *   kd-popup --history        print saved entries, newest first
+ *   kd-popup --remember TEXT  move TEXT to the top of history
+ *   kd-popup --forget TEXT    drop TEXT from history
+ */
+
+import { mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
+const SELF = realpathSync(import.meta.path);
+const STATE = join(process.env.XDG_STATE_HOME || join(homedir(), ".local/state"), "kd");
+const HISTORY = join(STATE, "history"); // "text<TAB>gloss" per line, newest first
+const LAST = join(STATE, "last"); // gloss of the latest render, reused by --remember
+const HISTORY_MAX = 200;
+const MAX_WIDTH = 96; // readable measure on wide terminals
+
+// 16-color ANSI so entries follow the terminal palette (Latte or Mocha).
+const R = "\x1b[0m", B = "\x1b[1m", DIM = "\x1b[90m";
+const HEAD = "\x1b[1;34m", TAG = "\x1b[35m", POS = "\x1b[32m", BADGE = "\x1b[33m";
+
+type Entry = {
+  k: string;
+  pron?: Record<string, string> | null;
+  para?: string[] | null;
+  eg?: { bi?: string[][] | null } | null;
+  co?: {
+    star?: number;
+    rank?: string;
+    li?: { a?: string; maj?: string; eg?: string[][] | null }[] | null;
+  } | null;
+};
+
+// --- text layout ------------------------------------------------------------
+
+const width = (s: string) => Bun.stringWidth(s);
+
+const CJK = "\\u2e80-\\u9fff\\uf900-\\ufaff\\uff00-\\uffef\\u3000-\\u303f";
+const CLOSING = "，。；：、！？）」』”’》〉…";
+const TOKEN = new RegExp(`[${CJK}][${CLOSING}]*|[^\\s${CJK}]+|\\s+`, "gu");
+const BILINGUAL = new RegExp(`^(.*?)\\s*([(（]?\\s*[${CJK}].*)$`, "u");
+
+/** Greedy wrap by display cells; CJK may break between characters. */
+function wrap(text: string, measure: number): string[] {
+  const lines: string[] = [];
+  let line = "";
+  let used = 0;
+  for (let tok of text.trim().match(TOKEN) ?? []) {
+    if (!tok.trim()) {
+      if (line) {
+        line += " ";
+        used++;
+      }
+      continue;
+    }
+    let w = width(tok);
+    if (used + w > measure && line.trim()) {
+      lines.push(line.trimEnd());
+      line = "";
+      used = 0;
+    }
+    while (w > measure) {
+      // a single token wider than the measure
+      lines.push(tok.slice(0, measure));
+      tok = tok.slice(measure);
+      w = width(tok);
+    }
+    line += tok;
+    used += w;
+  }
+  if (line.trim()) lines.push(line.trimEnd());
+  return lines.length ? lines : [""];
+}
+
+/** Wrap `text` with a hanging indent; `first` replaces the first line's
+ * indent (e.g. a styled label of the same cell width). */
+function block(text: string, indent: number, measure: number, style = "", first?: string): string[] {
+  const pad = " ".repeat(indent);
+  return wrap(text, Math.max(10, measure - indent)).map(
+    (row, i) => `${i === 0 && first !== undefined ? first : pad}${style}${row}${style ? R : ""}`,
+  );
+}
+
+/** Collins glosses run "English sentence. 中文释义". */
+function splitBilingual(s: string): [string, string] {
+  const m = BILINGUAL.exec(s);
+  return m?.[1] ? [m[1], m[2] ?? ""] : [s, ""];
+}
+
+function rule(title: string, measure: number, extra = ""): string {
+  const label = title.toUpperCase() + (extra ? `  ${extra}` : "");
+  return `  ${DIM}${label} ${"─".repeat(Math.max(4, measure - 3 - width(label)))}${R}`;
+}
+
+function previewWidth(): number {
+  const cols = Number(process.env.FZF_PREVIEW_COLUMNS) || process.stdout.columns || 80;
+  return Math.min(cols - 2, MAX_WIDTH + 2);
+}
+
+// --- lookups ----------------------------------------------------------------
+
+function classify(query: string): ["w" | "t", string] {
+  let text = query.split(/\s+/).filter(Boolean).join(" ");
+  if (text.startsWith("kd ")) text = text.slice(3);
+  if (/^(-t|--text) /.test(text)) return ["t", text.slice(text.indexOf(" ") + 1)];
+  return [(text.match(/ /g)?.length ?? 0) >= 3 ? "t" : "w", text];
+}
+
+function kd(...args: string[]): string {
+  const p = Bun.spawnSync(["kd", ...args], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
+  return p.stdout.toString();
+}
+
+function lookupWord(word: string): Entry | null {
+  try {
+    const data = JSON.parse(kd("--json", word)) as Entry;
+    return data.k ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+async function translate(text: string): Promise<string> {
+  const p = Bun.spawn(["kd", "-t", text], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
+  const out = (await new Response(p.stdout).text()).split("\n");
+  return out.slice(1).join("\n").trim(); // kd echoes the source first
+}
+
+function firstGloss(entry: Entry): string {
+  for (const para of entry.para ?? []) {
+    const gloss = para.replace(/^(?:[a-z]+\.\s*)+/, "").trim();
+    if (gloss) return gloss;
+  }
+  return "";
+}
+
+function saveLast(text: string, gloss: string): void {
+  try {
+    mkdirSync(STATE, { recursive: true });
+    writeFileSync(LAST, `${text}\t${gloss}\n`);
+  } catch {}
+}
+
+// --- rendering --------------------------------------------------------------
+
+function renderWord(word: string, measure: number): string[] {
+  const entry = lookupWord(word);
+  if (!entry) {
+    return [
+      "",
+      `  ${HEAD}${word}${R}`,
+      "",
+      `  ${DIM}No dictionary entry.${R}`,
+      `  ${DIM}Prefix with ${R}-t${DIM} to translate it as a sentence.${R}`,
+    ];
+  }
+  saveLast(word, firstGloss(entry));
+  const co = entry.co ?? {};
+  let badges = (co.rank ?? "").split(/\s+/).filter(Boolean).join(" · ");
+  if (co.star) badges = "★".repeat(co.star) + (badges ? `  ${badges}` : "");
+  const head = `${HEAD}${entry.k}${R}`;
+  const gap = Math.max(3, measure - 2 - width(entry.k) - width(badges));
+  const out = ["", badges ? `  ${head}${" ".repeat(gap)}${BADGE}${badges}${R}` : `  ${head}`];
+
+  const pron = entry.pron ?? {};
+  const accents = Object.keys(pron).sort((a, b) => Number(a !== "英") - Number(b !== "英"));
+  if (accents.length) {
+    const parts = accents.map((k) => `${DIM}${k}${R} /${(pron[k] ?? "").replace(/^\[|\]$/g, "")}/`);
+    out.push(`  ${parts.join("   ")}`);
+  }
+  out.push("");
+
+  const paras = (entry.para ?? []).map((p) => {
+    const m = /^((?:[a-z]+\.\s*)*)(.*)$/.exec(p);
+    return [(m?.[1] ?? "").trim(), m?.[2] ?? p] as const;
+  });
+  let col = Math.max(0, ...paras.map(([pos]) => width(pos)));
+  if (col) col += 2;
+  for (const [pos, gloss] of paras) {
+    const label = `  ${POS}${pos}${R}${" ".repeat(col - width(pos))}`;
+    out.push(...block(gloss, 2 + col, measure, "", label));
+  }
+
+  const items = co.li ?? [];
+  if (items.length) {
+    out.push("", rule("collins", measure, String(items.length)));
+    const numW = String(items.length).length;
+    const indent = 2 + numW + 2;
+    items.forEach((item, i) => {
+      const [en, zh] = splitBilingual(item.maj ?? "");
+      const tag = (item.a ?? "").trim();
+      let lead: string | undefined = `  ${B}${String(i + 1).padStart(numW)}${R}  `;
+      out.push("");
+      if (tag) {
+        out.push(`${lead}${TAG}${tag}${R}`);
+        lead = undefined;
+      }
+      out.push(...block(en, indent, measure, "", lead));
+      if (zh) out.push(...block(zh, indent, measure, DIM));
+      for (const [eng = "", chs] of item.eg ?? []) {
+        out.push(...block(eng, indent + 2, measure, "", `${" ".repeat(indent)}${DIM}›${R} `));
+        if (chs) out.push(...block(chs, indent + 2, measure, DIM));
+      }
+    });
+  }
+
+  const examples = (entry.eg?.bi ?? []).slice(0, 5);
+  if (examples.length) {
+    out.push("", rule("examples", measure), "");
+    for (const [eng = "", chs] of examples) {
+      out.push(...block(eng, 4, measure, "", `  ${DIM}›${R} `));
+      if (chs) out.push(...block(chs, 4, measure, DIM));
+      out.push("");
+    }
+  }
+  return out;
+}
+
+async function renderText(text: string, measure: number): Promise<void> {
+  // The source shows while kd -t waits on the network.
+  const head = ["", rule("translate", measure), "", ...block(text, 2, measure, DIM), "", ""];
+  await Bun.write(Bun.stdout, head.join("\n"));
+  const result = await translate(text);
+  if (result) {
+    saveLast(text, result.split("\n")[0] ?? "");
+    console.log(block(result, 2, measure, B).join("\n"));
+  } else {
+    console.log(`  ${DIM}No translation.${R}`);
+  }
+}
+
+function renderHelp(measure: number): string[] {
+  const keys = [
+    ["⏎", "keep in history"],
+    ["↑ ↓", "recall history"],
+    ["⇧↑ ⇧↓", "scroll this panel"],
+    ["^x", "forget the highlighted entry"],
+    ["esc", "close"],
+  ];
+  const intro =
+    "Type a word or phrase to look it up as you type. " +
+    "Four or more words, or a leading -t, translate a sentence.";
+  return [
+    "",
+    `  ${HEAD}kd${R}  ${DIM}dictionary${R}`,
+    "",
+    ...block(intro, 2, measure, DIM),
+    "",
+    ...keys.map(([k = "", v = ""]) => `  ${B}${k.padEnd(7)}${R}${DIM}${v}${R}`),
+  ];
+}
+
+async function render(query: string): Promise<void> {
+  const [kind, text] = classify(query);
+  const measure = previewWidth();
+  if (!text) {
+    console.log(renderHelp(measure).join("\n"));
+  } else if (kind === "t") {
+    await Bun.sleep(600); // sentences hit the network; fzf kills stale previews
+    await renderText(text, measure);
+  } else {
+    await Bun.sleep(120);
+    console.log(renderWord(text, measure).join("\n"));
+  }
+}
+
+// --- history ----------------------------------------------------------------
+
+function loadHistory(): [string, string][] {
+  let raw: string;
+  try {
+    raw = readFileSync(HISTORY, "utf8");
+  } catch {
+    return [];
+  }
+  return raw
+    .split("\n")
+    .filter((r) => r.trim())
+    .map((r) => {
+      const tab = r.indexOf("\t");
+      return tab < 0 ? [r, ""] : [r.slice(0, tab), r.slice(tab + 1)];
+    });
+}
+
+function writeHistory(rows: [string, string][]): void {
+  mkdirSync(STATE, { recursive: true });
+  const body = rows.slice(0, HISTORY_MAX).map(([t, g]) => `${t}\t${g}\n`);
+  writeFileSync(`${HISTORY}.tmp`, body.join(""));
+  renameSync(`${HISTORY}.tmp`, HISTORY);
+}
+
+function printHistory(): void {
+  const rows = loadHistory();
+  const pad = Math.min(Math.max(0, ...rows.map(([t]) => width(t))), 14);
+  for (const [text, gloss] of rows) {
+    let shown = width(text) <= pad ? text : `${text.slice(0, pad - 1)}…`;
+    shown += " ".repeat(Math.max(0, pad - width(shown)) + 2);
+    console.log(`${text}\t${shown}${DIM}${gloss}${R}`);
+  }
+}
+
+function lastGloss(text: string): string {
+  try {
+    const line = readFileSync(LAST, "utf8").replace(/\n$/, "");
+    const tab = line.indexOf("\t");
+    return tab >= 0 && line.slice(0, tab) === text ? line.slice(tab + 1) : "";
+  } catch {
+    return "";
+  }
+}
+
+/** Move `query` to the top of history with its gloss. With `foundOnly`, skip
+ * words kd has no entry for and sentences it could not translate. */
+function remember(query: string, foundOnly = false): void {
+  const [kind, text] = classify(query);
+  if (!text) return;
+  let gloss = lastGloss(text);
+  if (!gloss && kind === "w") {
+    const entry = lookupWord(text);
+    if (entry) gloss = firstGloss(entry);
+  }
+  if (foundOnly && !gloss) return;
+  writeHistory([[text, gloss], ...loadHistory().filter(([t]) => t !== text)]);
+}
+
+function forget(text: string): void {
+  writeHistory(loadHistory().filter(([t]) => t !== text));
+}
+
+// --- picker -----------------------------------------------------------------
+
+function pick(query: string): void {
+  const cols = process.stdout.columns || 80;
+  const listWidth = Math.max(28, Math.min(44, Math.floor((cols * 3) / 10)));
+  const layout = cols >= 100 ? `right,${cols - listWidth},wrap` : "down,65%,wrap";
+  // Catppuccin Latte, matching FZF_DEFAULT_OPTS from the zsh env; popups run
+  // a non-interactive shell that never loads it.
+  const latte = [
+    "bg+:#e6e9ef", "bg:#eff1f5", "fg:#4c4f69", "fg+:#4c4f69:bold", "hl:#d20f39",
+    "hl+:#d20f39", "prompt:#8839ef", "pointer:#8839ef", "info:#9ca0b0", "spinner:#dc8a78",
+    "query:#4c4f69:bold", "border:#ccd0da", "label:#8839ef", "footer:#8c8fa1",
+    "ghost:#9ca0b0", "preview-border:#ccd0da",
+  ].join(",");
+  const recall = "transform-query(printf %s {1})";
+  const me = `'${SELF}'`;
+  const opts = [
+    "--ansi", "--disabled", "--layout=reverse", "--style=full:rounded", "--no-scrollbar",
+    `--color=${latte}`, "--highlight-line", "--gutter= ", "--pointer=▌", "--no-sort",
+    "--delimiter=\t", "--with-nth=2", "--prompt=❯ ", "--ghost=word, phrase or sentence",
+    "--info=hidden", "--input-label= 󰗊 kd ", "--list-label= history ",
+    "--list-label-pos=-3:bottom", "--footer-border=none",
+    "--footer=⏎ keep   ↑↓ recall   ^x forget",
+    `--query=${query}`,
+    `--preview=${me} --render {q}`,
+    `--preview-window=${layout}`, "--preview-wrap-sign=  ",
+    `--bind=up:up+${recall},down:down+${recall},ctrl-p:up+${recall},ctrl-n:down+${recall}`,
+    `--bind=enter:execute-silent(${me} --remember {q})+reload(${me} --history)+first`,
+    `--bind=ctrl-x:execute-silent(${me} --forget {1})+reload(${me} --history)`,
+    "--bind=esc:abort,ctrl-c:abort",
+  ];
+  // `kd <word>` from the palette counts as a lookup: a word goes into history
+  // up front (so it shows in the list); a sentence once its translation has
+  // rendered, which is known only after fzf exits.
+  const [kind] = classify(query);
+  if (query && kind === "w") remember(query, true);
+  const feed = Bun.spawnSync([SELF, "--history"], { stdout: "pipe" }).stdout;
+  Bun.spawnSync(["fzf", ...opts], { stdin: feed, stdout: "ignore", stderr: "inherit" });
+  if (query && kind === "t") remember(query, true);
+}
+
+const [cmd = "", ...rest] = process.argv.slice(2);
+switch (cmd) {
+  case "--render":
+    await render(rest.join(" "));
+    break;
+  case "--history":
+    printHistory();
+    break;
+  case "--remember":
+    remember(rest.join(" "));
+    break;
+  case "--forget":
+    forget(rest.join(" "));
+    break;
+  default:
+    pick(process.argv.slice(2).join(" "));
+}
