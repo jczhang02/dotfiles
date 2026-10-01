@@ -167,12 +167,11 @@ gnome-extensions enable gsconnect-screenshot-share@local
 Notable package boundaries:
 
 - `mpv` uses one native configuration file with the built-in UI and keymap.
-- `firefox` tracks `user.js` and `chrome/` (userChrome, the Tree Style Tab
-  style, and the start page) for one profile. The profile directory name,
+- `firefox` tracks `user.js` and `chrome/` (userChrome and the Tree Style Tab
+  style) for one profile. The profile directory name,
   `78ptyimu.default-release`, is random per install: on a new machine, rename
-  the package directory to match the new profile before stowing, and update
-  the homepage path in `user.js`. Prefs, bookmarks, and the start page's saved
-  settings stay in the profile.
+  the package directory to match the new profile before stowing. Prefs and
+  bookmarks stay in the profile.
 - `xdg` deploys the stable portal selection and hand-written `environment.d`
   files. GNOME keeps the dynamic default-application and user-directory files
   as ordinary local files.

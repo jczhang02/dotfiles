@@ -11,8 +11,7 @@ These files are symlinks from the `firefox` package in `~/dev/dotfiles`. Edit th
 | `vendor/autohide_sidebar.css` | `userChrome.css` | Upstream snippet: sidebar collapses to a strip, expands on hover |
 | `userContent.css` | Firefox, at startup | Paints TST's sidebar page background early (no flash in new windows) |
 | `tst.css` | Nothing (copy by hand) | Tab tree style. Paste into TST options > Advanced > Extra style rules |
-| `startpage/` | Firefox, as the homepage | Start page (tree of links, search, clock). Settings: gear icon or `,` |
-| `../user.js` | Firefox, every startup | Turns on `toolkit.legacyUserProfileCustomizations.stylesheets`, sets the homepage to `startpage/index.html` |
+| `../user.js` | Firefox, every startup | Turns on `toolkit.legacyUserProfileCustomizations.stylesheets` |
 
 ## One-time steps
 
@@ -28,4 +27,3 @@ These files are symlinks from the `firefox` package in `~/dev/dotfiles`. Edit th
 - Tab tree: edit `tst.css`, paste again. Inspect the TST sidebar via about:debugging > This Firefox > Tree Style Tab > Inspect.
 - Denser toolbars: set `browser.uidensity` to 1 in about:config.
 - Update the vendor snippet: https://github.com/MrOtherGuy/firefox-csshacks/blob/master/chrome/hide_tabs_toolbar_v2.css
-- Start page: theme, accent, clock, search engine and links are edited in its settings panel and saved in the browser. The defaults live at the top of `startpage/app.js`; colors at the top of `startpage/style.css`.
