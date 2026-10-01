@@ -1,0 +1,129 @@
+/* Firefox UI: Tree Style Tab in the sidebar, nothing else.
+   Firefox reads this file at startup, so restart Firefox after editing.
+   Styles for the tab tree itself live in tst.css (pasted into TST options). */
+
+/* Hide native tabs (top bar and vertical tabs) and the sidebar icon strip.
+   From MrOtherGuy/firefox-csshacks, MPL 2.0. */
+@import "vendor/hide_tabs_toolbar_v2.css";
+
+/* Auto-hide the sidebar: a thin strip that expands over the page on hover.
+   From MrOtherGuy/firefox-csshacks, MPL 2.0. */
+@import "vendor/autohide_sidebar.css";
+
+/* Sidebar widths: collapsed (favicons only) and expanded on hover.
+   tst.css switches to favicon-only mode below 80px, so keep the first value under that. */
+#browser {
+  --uc-sidebar-width: 48px;
+  --uc-sidebar-hover-width: 280px;
+}
+
+/* Open/close animation.
+   Animating the width resizes TST's page every frame, and on quick enter/leave
+   it can stop at an in-between width. So the width snaps in one step, and a
+   clip-path mask slides over it instead; the mask never resizes TST's page.
+   Open: width snaps wide, mask slides open.
+   Close: wait, mask slides shut, then width snaps narrow. */
+#sidebar-box {
+  --uc-close-delay: 150ms;     /* wait after the mouse leaves */
+  --uc-slide-duration: 140ms;  /* mask slide, both directions */
+  /* The snippet's width change: instant, after the wait + slide */
+  --uc-autohide-transition-duration: 0ms;
+  --uc-autohide-sidebar-delay: calc(var(--uc-close-delay) + var(--uc-slide-duration));
+}
+#sidebar-box > #sidebar,
+#sidebar-box > .sidebar-browser-stack > #sidebar {
+  clip-path: inset(0 calc(100% - var(--uc-sidebar-width)) 0 0);
+  transition:
+    min-width 0ms linear var(--uc-autohide-sidebar-delay),
+    clip-path var(--uc-slide-duration) ease-out var(--uc-close-delay) !important;
+}
+#sidebar-box:hover > #sidebar,
+#sidebar-box:hover > .sidebar-browser-stack > #sidebar {
+  clip-path: inset(0);
+  transition-delay: 0ms !important;
+}
+
+/* Same background as the tree (--uc-bg in tst.css) behind the sidebar page,
+   so a new window's sidebar doesn't flash while TST is still loading. */
+#sidebar-box,
+#sidebar-box .sidebar-browser-stack {
+  background-color: #f4f3f8 !important;
+}
+@media (prefers-color-scheme: dark) {
+  #sidebar-box,
+  #sidebar-box .sidebar-browser-stack {
+    background-color: #1c1b22 !important;
+  }
+}
+
+/* Collapse the sidebar when Firefox is not the active window. If the mouse leaves
+   the window straight from the sidebar, Firefox never sees it leave and the tree
+   stays open; switching to the other window now closes it. */
+:root:-moz-window-inactive #sidebar-box > #sidebar,
+:root:-moz-window-inactive #sidebar-box > .sidebar-browser-stack > #sidebar {
+  min-width: var(--uc-sidebar-width) !important;
+}
+
+/* Hide the sidebar launcher (tool icons: settings, history, bookmarks...).
+   The first snippet keeps it; we don't want it. TST's panel is separate
+   and still toggles with F1. */
+#sidebar-container,
+#sidebar-launcher-splitter {
+  visibility: collapse !important;
+}
+
+/* Sidebar as a flat panel flush against the page. Nova draws the sidebar as its
+   own card (border, rounded top corners, shadow) with a gap before the page card;
+   it also still rounds the corner meant for the hidden icon strip. The page keeps
+   its top and left border lines as the only dividers; its corner at the sidebar
+   is squared so the two meet cleanly. Delete the last rule for Nova's rounded corner. */
+#sidebar-box {
+  --sidebar-box-start-start-radius: 0px !important;
+  --sidebar-box-start-end-radius: 0px !important;
+  border: none !important;
+  margin: 0 !important;
+}
+#sidebar-box #sidebar {
+  box-shadow: none !important;
+  outline: none !important;
+}
+#tabbrowser-tabpanels > :not(.split-view-panel) .browserContainer {
+  --content-area-start-radius: 0px !important;
+}
+
+/* Hide the sidebar title bar ("Tree Style Tab  x").
+   Old-style header and the new revamped-sidebar header. */
+#sidebar-header,
+#webextpanels-window #sidebar-panel-header {
+  display: none !important;
+}
+
+/* Menus (right-click, toolbar, bookmark and TST tab menus), matching the tab tree:
+   white surface with 12px corners and a soft shadow; items are 8px pills inset
+   6px from the edges, highlighted with the tree's background color. */
+menupopup {
+  --uc-menu-bg: light-dark(#ffffff, #2a2931);
+  --uc-menu-hover: light-dark(#f4f3f8, rgb(255 255 255 / .07));
+  --uc-menu-line: light-dark(rgb(0 0 0 / .07), rgb(255 255 255 / .08));
+  --panel-background-color: var(--uc-menu-bg) !important;
+  --panel-text-color: light-dark(#1f1e24, #ecebf2) !important;
+  --panel-border-color: var(--uc-menu-line) !important;
+  --panel-border-radius: 12px !important;
+  --panel-padding: 6px 0 !important;
+  /* Room for the shadow; the popup's position is compensated, so it doesn't move */
+  --panel-box-shadow-margin: 12px !important;
+  --panel-box-shadow: 0 4px 16px rgb(0 0 0 / .12) !important;
+  --panel-separator-color: var(--uc-menu-line) !important;
+  --menuitem-border-radius: 8px !important;
+  --menuitem-margin: 0 6px !important;
+  --menuitem-padding-block: 6px !important;
+  --menuitem-padding-inline: 10px !important;
+}
+menupopup :is(menu, menuitem)[_moz-menuactive]:not([disabled]) {
+  background-color: var(--uc-menu-hover) !important;
+  color: inherit !important;
+}
+menupopup > menuseparator {
+  padding-block: 4px !important;
+  margin-inline: 12px !important;
+}

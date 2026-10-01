@@ -1,0 +1,150 @@
+/* Tree Style Tab: flat and clean, favicon-only when the sidebar is collapsed.
+   Firefox does NOT load this file. Paste it into
+   TST options > Advanced > "Extra style rules for contents provided by Tree Style Tab".
+   Keep editing it here, then paste again. Written for TST 4.4.x with the "Nova" theme.
+   Selectors: https://github.com/piroor/treestyletab/wiki/Code-snippets-for-custom-style-rules */
+
+:root.sidebar {
+  color-scheme: light dark;
+  --uc-bg: light-dark(#f4f3f8, #1c1b22);
+  --uc-hover: light-dark(rgb(0 0 0 / .05), rgb(255 255 255 / .06));
+  --uc-active: light-dark(#ffffff, #2f2e38);
+  --uc-radius: 8px;
+}
+
+/* Space above the first tab, so the first icon is 16px from the top, the same
+   as the gap between icons (a tab row already has 9px above its icon).
+   TST's top area shifts every tab container (pinned, normal, sticky)
+   together, so scrolling math stays intact. It has its own background: hide it. */
+:root.sidebar {
+  --tabbar-top-area-size: 7px !important;
+}
+:root.sidebar #tabbar-top {
+  background: transparent !important;
+}
+
+/* Sidebar background: the whole page, not just the tab list, or the top space
+   above the first tab shows TST's own darker gray */
+:root.sidebar,
+:root.sidebar body,
+:root.sidebar #background,
+:root.sidebar #tabbar {
+  background: var(--uc-bg) !important;
+  scrollbar-width: thin;
+}
+
+/* Tab size and spacing. Use these variables, not margin: raw margins break tree indentation. */
+:root.sidebar tab-item {
+  --tab-size: 32px !important;
+  --tab-margin-left: 6px;
+  --tab-margin-right: 6px;
+  --tab-margin-top: 1px;
+  --tab-margin-bottom: 1px;
+}
+:root.sidebar tab-item tab-item-substance {
+  border: none !important;
+  border-radius: var(--uc-radius);
+  min-height: var(--tab-size) !important;
+  max-height: var(--tab-size) !important;
+}
+
+/* Flat tabs. Nova paints tabs on ".background:not(.base)" and, with an add-on
+   theme active, adds an outline in the theme's line color (the black ring). */
+:root.sidebar tab-item-substance .background {
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: var(--uc-radius) !important;
+}
+:root.sidebar tab-item-substance .background:not(.base)::before {
+  display: none !important;
+}
+:root.sidebar tab-item-substance:hover .background:not(.base) {
+  background: var(--uc-hover) !important;
+}
+:root.sidebar tab-item-substance:is(.active, .bundled-active) .background:not(.base) {
+  background: var(--uc-active) !important;
+  box-shadow: 0 1px 3px rgb(0 0 0 / .08) !important;
+}
+
+/* More room between the favicon and the title (padding adds to TST's own gap) */
+:root.sidebar tab-item tab-label {
+  padding-inline-start: 4px !important;
+}
+
+/* Line up "+ New Tab" with the tabs above (its icon and text sat 4px to the left) */
+:root.sidebar .newtab-button {
+  padding-inline-start: 4px !important;
+}
+
+/* Expanded sidebar floats over the page: draw a hairline on its right edge,
+   otherwise the page content looks cut off. */
+@media (min-width: 81px) {
+  :root.sidebar body::after {
+    content: "";
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 1px;
+    background: light-dark(rgb(0 0 0 / .08), rgb(255 255 255 / .08));
+    pointer-events: none;
+    z-index: 10000;
+  }
+}
+
+/* Close button only on hover */
+#tabbar tab-item tab-item-substance:not(:hover) tab-closebox {
+  display: none;
+}
+
+/* Collapsed sidebar (see --uc-sidebar-width in userChrome.css): centered favicons,
+   no indentation, no labels or buttons, and "+" alone for a new tab. */
+@media (max-width: 80px) {
+  :root.sidebar tab-item {
+    --tab-indent: 0px !important;
+    --tab-margin-left: 8px;
+    --tab-margin-right: 8px;
+  }
+  :root.sidebar :is(tab-twisty, tab-label, tab-counter, tab-closebox, tab-sound-button) {
+    display: none !important;
+  }
+  /* Center the favicon. TST keeps room for the tree arrow even when it is hidden. */
+  :root.sidebar tab-item-substance {
+    justify-content: center !important;
+    padding-inline: 0 !important;
+  }
+  :root.sidebar tab-item-substance .ui {
+    max-width: 100% !important;
+  }
+  :root.sidebar tab-item-substance .caption {
+    justify-content: center !important;
+  }
+  :root.sidebar tab-favicon {
+    margin-inline: 0 !important;
+  }
+  /* New tab button: just the "+" icon, centered, no text or dropdown arrows */
+  :root.sidebar :is(.newtab-action-selector-anchor, .contextual-identities-selector-anchor),
+  :root.sidebar .newtab-button .label-text {
+    display: none !important;
+  }
+  :root.sidebar .newtab-button,
+  :root.sidebar .newtab-button .label {
+    justify-content: center !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+  }
+  :root.sidebar #tabbar {
+    scrollbar-width: none;
+  }
+}
+
+/* The "new tab" button at the bottom (expanded sidebar). Ctrl+T still works;
+   uncomment to remove it. */
+/*
+.newtab-button-box {
+  display: none;
+}
+#tabbar {
+  bottom: 0 !important;
+}
+*/

@@ -1,0 +1,561 @@
+/* Colors are light-dark(light, dark) pairs. Which half is used follows
+   color-scheme: the system setting, or the theme picked in settings. */
+:root {
+  color-scheme: light dark;
+
+  --bg: light-dark(#f6f6f4, #0f0f12);
+  --surface: light-dark(#ffffff, #18181d);
+  --text: light-dark(#1c1c1f, #e6e6ea);
+  --muted: light-dark(#76767e, #8a8a94);
+  --line: light-dark(#d6d6da, #34343c);
+  --branch: light-dark(#bdbdc4, #4a4a54);
+  --accent: light-dark(#4b5bd6, #a3b0ff);
+  --hover: color-mix(in srgb, var(--accent) 10%, transparent);
+  --shadow: 0 1px 2px light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.3)),
+    0 4px 16px light-dark(rgb(0 0 0 / 0.04), transparent);
+
+  --mono: ui-monospace, "JetBrains Mono", "Cascadia Code", "Fira Code", "Hack", "DejaVu Sans Mono", monospace;
+  --sans: system-ui, "Inter", "Cantarell", "Segoe UI", sans-serif;
+  --row: 2rem;      /* height of one link row; the tree branches follow it */
+  --radius: 12px;
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* Accents. Also used by the swatches in settings. */
+[data-accent="indigo"] { --accent: light-dark(#4b5bd6, #a3b0ff); }
+[data-accent="teal"] { --accent: light-dark(#0f8073, #5fd4c4); }
+[data-accent="green"] { --accent: light-dark(#3a7d34, #8fd18a); }
+[data-accent="amber"] { --accent: light-dark(#b0650a, #f2b84b); }
+[data-accent="rose"] { --accent: light-dark(#c3385f, #f59ab8); }
+[data-accent="mono"] { --accent: light-dark(#1c1c1f, #e6e6ea); }
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  font-size: 16px;
+  scrollbar-color: var(--line) transparent;
+}
+
+.settings,
+.settings textarea {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.35em;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--muted);
+  font: 0.75rem/1.5 var(--mono);
+  text-align: center;
+}
+
+.shell {
+  width: min(56rem, 100% - 3rem);
+  padding: 4rem 0;
+  animation: rise 0.3s ease-out both;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.icon-btn:hover,
+.icon-btn:focus-visible {
+  background: var(--hover);
+  color: var(--accent);
+  outline: none;
+}
+
+.corner {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+}
+
+/* ---- clock ---- */
+
+.top {
+  margin-bottom: 2rem;
+}
+
+.clock {
+  display: block;
+  font-size: clamp(3rem, 8vw, 4.5rem);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.date {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+/* ---- search ---- */
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: 3.25rem;
+  padding: 0 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--hover);
+}
+
+.search-icon {
+  flex: none;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+
+.search:focus-within .search-icon {
+  color: var(--accent);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: 1rem var(--mono);
+}
+
+.search input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.search:focus-within .hint {
+  visibility: hidden;
+}
+
+/* ---- tree ---- */
+
+.cmd {
+  margin: 2.75rem 0 1rem;
+  color: var(--muted);
+  font: 0.85rem var(--mono);
+}
+
+.cmd span {
+  color: var(--accent);
+}
+
+.trees {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 1.75rem 2rem;
+}
+
+.tree h2 {
+  margin: 0;
+  font: 600 0.95rem/var(--row) var(--mono);
+  color: var(--accent);
+}
+
+.tree h2::after {
+  content: "/";
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.tree ul {
+  margin: 0 0 0 0.35rem;
+  padding: 0;
+  list-style: none;
+}
+
+.tree li {
+  position: relative;
+  padding-left: 1.1rem;
+}
+
+/* vertical trunk, continues past every item except the last */
+.tree li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-left: 1.5px solid var(--branch);
+}
+
+.tree li:last-child::before {
+  display: none;
+}
+
+/* rounded elbow into each item */
+.tree li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0.95rem;
+  height: calc(var(--row) / 2);
+  border-left: 1.5px solid var(--branch);
+  border-bottom: 1.5px solid var(--branch);
+  border-bottom-left-radius: 0.45rem;
+}
+
+.tree a {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  color: var(--text);
+  font: 0.95rem/var(--row) var(--mono);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.tree a kbd {
+  margin-left: 0.6rem;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  vertical-align: 0.1em;
+  opacity: 0.7;
+}
+
+.tree a:hover,
+.tree a:focus-visible {
+  background: var(--hover);
+  color: var(--accent);
+  outline: none;
+}
+
+/* ---- settings ---- */
+
+.settings {
+  width: min(34rem, 100% - 2rem);
+  max-height: min(48rem, 100% - 2rem);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.25);
+}
+
+.settings[open] {
+  animation: pop 0.18s ease-out;
+}
+
+.settings::backdrop {
+  background: rgb(0 0 0 / 0.3);
+  backdrop-filter: blur(3px);
+}
+
+.settings form {
+  padding: 0 1.5rem 1.25rem;
+}
+
+.settings-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -1.5rem;
+  padding: 1rem 1rem 0.75rem 1.5rem;
+  background: var(--surface);
+}
+
+.settings h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.settings section {
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.settings h3 {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* visually hidden radios and checkboxes; the labels are the controls */
+.seg input,
+.swatches input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.seg label {
+  padding: 0.35rem 0.95rem;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.seg label:has(:checked) {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow), 0 0 0 1px var(--line);
+}
+
+.swatches {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.swatches label {
+  cursor: pointer;
+}
+
+.swatches span {
+  display: block;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: box-shadow 0.12s;
+}
+
+.swatches label:has(:checked) span {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+}
+
+.seg label:has(:focus-visible),
+.swatches label:has(:focus-visible) span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.settings select,
+.settings input[type="text"],
+.settings textarea {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--text);
+  font: 0.9rem var(--sans);
+}
+
+.settings input[type="text"],
+.settings textarea {
+  margin-top: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.settings textarea {
+  line-height: 1.55;
+  white-space: pre;
+  resize: vertical;
+  tab-size: 2;
+}
+
+.settings select:focus-visible,
+.settings input[type="text"]:focus,
+.settings textarea:focus {
+  border-color: var(--accent);
+  outline: 0;
+  box-shadow: 0 0 0 3px var(--hover);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.check input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.help code {
+  color: var(--text);
+  font: 0.8rem var(--mono);
+}
+
+.status {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font: 0.8rem/1.5 var(--mono);
+  white-space: pre-line;
+}
+
+.status.error {
+  color: light-dark(#c0362c, #ff8a80);
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem 1.25rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.keys dt {
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.keys dd {
+  margin: 0;
+}
+
+.settings-foot {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.text-btn {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: 0.85rem var(--sans);
+  cursor: pointer;
+}
+
+.text-btn:hover,
+.text-btn:focus-visible {
+  border-color: light-dark(#c0362c, #ff8a80);
+  color: light-dark(#c0362c, #ff8a80);
+  outline: none;
+}
+
+/* ---- toast ---- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 2rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font: 0.85rem var(--mono);
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  transition: opacity 0.18s, transform 0.18s;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---- motion ---- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

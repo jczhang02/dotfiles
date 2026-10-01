@@ -1,0 +1,16 @@
+/* Firefox reads this file at startup, like userChrome.css.
+   Paint TST's sidebar page in the tree's background color (--uc-bg in tst.css)
+   before TST has loaded, so a new window shows a calm strip, not a white flash.
+   From the TST wiki, "Suppress white flash on showing sidebar". */
+@-moz-document regexp("moz-extension://.+/sidebar/sidebar.html.*") {
+  :root,
+  #background {
+    background-color: #f4f3f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root,
+    #background {
+      background-color: #1c1b22;
+    }
+  }
+}
