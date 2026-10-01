@@ -2,8 +2,12 @@
 # Desktop notification through Ghostty (OSC 777) carrying the session title and Claude's last reply.
 # Wired to the Stop and Notification hooks; replaces the built-in "Claude is waiting" text.
 in=$(cat)
-[ -n "$TMUX_PANE" ] || exit 0
-tty=$(tmux display -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null) || exit 0
+# GHOSTTY_NOTIFY_TTY sends the sequence elsewhere, e.g. a file when testing.
+tty=${GHOSTTY_NOTIFY_TTY:-}
+if [ -z "$tty" ]; then
+  [ -n "$TMUX_PANE" ] || exit 0
+  tty=$(tmux display -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null) || exit 0
+fi
 
 transcript=$(jq -r .transcript_path <<<"$in")
 title=$(grep '"custom-title"' "$transcript" 2>/dev/null | tail -1 | jq -r '.customTitle // empty')
