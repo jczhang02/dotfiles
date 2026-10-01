@@ -199,6 +199,8 @@ Notable package boundaries:
   plugins and Catppuccin Latte flavor into the live configuration directory.
 - `sesh` tracks `sesh.toml` and `sesh-pick`, the fzf session picker shared by
   the zsh startup prompt and tmux `prefix s`.
+- `kd` tracks `kd.toml`, the dictionary daemon unit, and `kd-popup`, the fzf
+  lookup popup behind the tmux-palette `kd` keyword (Alt+P, `kd <word>`).
 - `tmux` tracks the oh-my-tmux overlay and a parameterized `tmuxp` workspace;
   project-specific or retired workspaces stay local.
 

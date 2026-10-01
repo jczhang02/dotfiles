@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+# kd-popup — fzf front end for the kd dictionary (tmux-palette `kd`, Alt+P).
+#
+#   kd-popup [TEXT...]   open the picker, optionally looking TEXT up first
+#
+# Typing looks up live. Four or more words, or a leading `-t`, translate the
+# text as a sentence (`kd -t`); a leading `kd ` is ignored, so `kd hello`
+# works too. Enter keeps the entry in history; up/down recall it.
+#
+# Internal, used by fzf bindings:
+#   kd-popup --render TEXT    print the colored entry for TEXT
+#   kd-popup --history        print saved entries, newest first
+#   kd-popup --remember TEXT  move TEXT to the top of history
+#   kd-popup --forget TEXT    drop TEXT from history
+
+set -uo pipefail
+
+self=${BASH_SOURCE[0]}
+history_file=${XDG_STATE_HOME:-$HOME/.local/state}/kd/history
+
+# 16-color ANSI so entries follow the terminal palette (Latte or Mocha).
+c_reset=$'\e[0m' c_bold=$'\e[1m' c_dim=$'\e[90m' c_head=$'\e[1;34m'
+c_tag=$'\e[35m' c_pos=$'\e[32m' c_badge=$'\e[33m' c_zh=$'\e[90m'
+
+# Strip whitespace and a leading `kd`; echo "t<TAB>text" for a sentence,
+# "w<TAB>text" for a word or phrase.
+classify() {
+    local text
+    text=$(printf '%s' "$*" | tr -s '[:space:]' ' ')
+    text=${text# } text=${text% }
+    [[ $text == "kd "* ]] && text=${text#kd }
+    case $text in
+        "-t "* | "--text "*) printf 't\t%s' "${text#* }" ;;
+        *" "*" "*" "*) printf 't\t%s' "$text" ;;
+        *) printf 'w\t%s' "$text" ;;
+    esac
+}
+
+help() {
+    cat <<EOF
+
+  ${c_head}kd${c_reset} ${c_dim}·${c_reset} dictionary
+
+  ${c_dim}type a word or phrase to look it up as you type
+  4+ words, or a leading -t, translate a sentence${c_reset}
+
+  ${c_bold}⏎${c_reset}       keep in history
+  ${c_bold}↑ ↓${c_reset}     recall history
+  ${c_bold}⇧↑ ⇧↓${c_reset}   scroll this panel
+  ${c_bold}^x${c_reset}      forget the highlighted entry
+  ${c_bold}esc${c_reset}     close
+EOF
+}
+
+render_word() {
+    local json
+    json=$(kd --json "$1" 2>/dev/null)
+    if ! jq -e '.k != ""' >/dev/null 2>&1 <<<"$json"; then
+        printf '\n  %s%s%s  %sno entry%s\n\n  %stry -t %s to translate it as a sentence%s\n' \
+            "$c_head" "$1" "$c_reset" "$c_dim" "$c_reset" "$c_dim" "$1" "$c_reset"
+        return
+    fi
+    jq -r \
+        --arg R "$c_reset" --arg B "$c_bold" --arg D "$c_dim" --arg H "$c_head" \
+        --arg T "$c_tag" --arg P "$c_pos" --arg G "$c_badge" --arg Z "$c_zh" '
+        # Collins glosses run "English sentence. 中文释义"; dim the Chinese half.
+        def bilingual:
+            (capture("^(?<en>.*?)\\s*(?<zh>[(（]?\\s*\\p{Han}.*)$") // {en: ., zh: ""})
+            | .en + (if .zh != "" then " " + $Z + .zh + $R else "" end);
+        def rule($t): "  " + $D + "── " + $t + " " + ("─" * (30 - ($t | length))) + $R;
+        def example: "    " + $D + "› " + $R + .[0]
+            + (if (.[1] // "") != "" then "\n      " + $Z + .[1] + $R else "" end);
+        ([""]
+        + ["  " + $H + .k + $R
+            + (if (.co.rank // "") != "" then "   " + $G + (.co.rank | gsub(" "; " · ")) + $R else "" end)
+            + (if (.co.star // 0) > 0 then "  " + $G + ("★" * .co.star) + $R else "" end)]
+        + (if (.pron // {}) != {} then
+            ["  " + ([.pron | to_entries | sort_by(.key != "英")[] | $D + .key + $R + " " + .value] | join("   "))]
+          else [] end)
+        + [""]
+        + [(.para // [])[]
+            | (capture("^(?<pos>(?:[a-z]+\\.\\s*)+)(?<def>.*)$") // {pos: "", def: .})
+            | "  " + (if .pos != "" then (.pos | rtrimstr(" ")) as $p | $P + $p + $R + (" " * ([6 - ($p | length), 2] | max)) else "" end) + .def]
+        + (if (.co.li // []) != [] then
+            ["", rule("collins")]
+            + ([.co.li | to_entries[]
+                | "", "  " + $B + ((.key + 1) | tostring) + $R
+                    + (if (.value.a // "") != "" then " " + $T + .value.a + $R else "" end)
+                    + "  " + (.value.maj | bilingual),
+                  ((.value.eg // [])[] | example)])
+          else [] end)
+        + (if (.eg.bi // []) != [] then
+            ["", rule("examples"), ""]
+            + [.eg.bi[:4][] | example]
+          else [] end)
+        )[]' <<<"$json"
+}
+
+render_text() {
+    local out
+    out=$(kd -t "$1" 2>/dev/null | tail -n +2)
+    printf '\n  %stranslate%s\n  %s%s%s\n\n' "$c_dim" "$c_reset" "$c_dim" "$1" "$c_reset"
+    if [[ -n ${out//[[:space:]]/} ]]; then
+        printf '%s\n' "$out" | sed "s/^/  $c_bold/; s/\$/$c_reset/"
+    else
+        printf '  %sno translation%s\n' "$c_dim" "$c_reset"
+    fi
+}
+
+render() {
+    local kind text
+    IFS=$'\t' read -r kind text < <(classify "$@")
+    if [[ -z $text ]]; then
+        help
+    elif [[ $kind == t ]]; then
+        # Sentences hit the network; wait out fast typing (fzf kills stale previews).
+        sleep 0.6
+        render_text "$text"
+    else
+        sleep 0.15
+        render_word "$text"
+    fi
+}
+
+history() {
+    [[ -s $history_file ]] && cat "$history_file"
+    return 0
+}
+
+forget() {
+    [[ -s $history_file ]] || return 0
+    local rest
+    rest=$(grep -vxF -- "$1" "$history_file")
+    printf '%s\n' "$rest" | sed '/^$/d' >"$history_file"
+}
+
+remember() {
+    local kind text
+    IFS=$'\t' read -r kind text < <(classify "$@")
+    [[ -n $text ]] || return 0
+    mkdir -p "${history_file%/*}"
+    forget "$text"
+    { printf '%s\n' "$text"; head -n 199 "$history_file" 2>/dev/null; } >"$history_file.tmp"
+    mv "$history_file.tmp" "$history_file"
+}
+
+pick() {
+    # Catppuccin Latte, matching FZF_DEFAULT_OPTS from the zsh env; popups
+    # run a non-interactive shell that never loads it.
+    local latte='bg+:#ccd0da,bg:#eff1f5,fg:#4c4f69,fg+:#4c4f69,hl:#d20f39,hl+:#d20f39'
+    latte+=',prompt:#8839ef,pointer:#8839ef,info:#9ca0b0,spinner:#dc8a78,query:#4c4f69:bold'
+    latte+=',border:#bcc0cc,label:#8839ef,footer:#8c8fa1,ghost:#9ca0b0,selected-bg:#bcc0cc'
+    local recall='transform-query(printf %s {})'
+
+    # shellcheck disable=SC2054 # commas belong to fzf options
+    local -a opts=(
+        --ansi --disabled --layout=reverse --style=full:rounded --no-scrollbar
+        --color="$latte"
+        --highlight-line --gutter=' ' --pointer='▌' --no-sort
+        --prompt='❯ ' --ghost='word, phrase or sentence' --info=hidden
+        --input-label=' 󰗊 kd ' --list-label=' history ' --list-label-pos=-3:bottom
+        --footer-border=none
+        --footer=$'⏎ keep   ↑↓ recall   ^x forget\n⇧↑↓ scroll   esc close'
+        --query="$*"
+        --preview="$self --render {q}"
+        --preview-window='right,70%,wrap,<90(down,70%,wrap)' --preview-wrap-sign='    '
+        --bind="up:up+$recall,down:down+$recall,ctrl-p:up+$recall,ctrl-n:down+$recall"
+        --bind="enter:execute-silent($self --remember {q})+reload($self --history)+first"
+        --bind="ctrl-x:execute-silent($self --forget {})+reload($self --history)"
+        --bind='esc:abort,ctrl-c:abort'
+    )
+    "$self" --history | fzf "${opts[@]}" >/dev/null
+    return 0
+}
+
+case ${1:-} in
+    --render) shift; render "$@" ;;
+    --history) history ;;
+    --remember) shift; remember "$@" ;;
+    --forget) shift; forget "${1:?}" ;;
+    *) pick "$@" ;;
+esac
