@@ -43,3 +43,6 @@ secrets.yaml
 .s3cfg
 kubeconfig
 
+# Claude Code lays its API types and a tsconfig.json beside a mod at every load
+claude-mods/*/.claude-plugin/types/
+claude-mods/*/tsconfig.json

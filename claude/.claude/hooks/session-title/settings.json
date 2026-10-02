@@ -1,7 +1,0 @@
-{
-  "claude_binary": "claude",
-  "model": "haiku",
-  "rules_file": "rules.txt",
-  "max_length": 80,
-  "timeout_seconds": 90
-}

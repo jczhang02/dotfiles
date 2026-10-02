@@ -153,7 +153,10 @@ gnome-extensions enable gsconnect-screenshot-share@local
 
 ## Package map
 
-`docs/` and `system/` are not Stow packages.
+`docs/`, `system/` and `claude-mods/` are not Stow packages. Claude Code loads
+the mods in `claude-mods/` straight from the repository through
+`CLAUDE_CODE_PLUGIN_DIRS` in the local `~/.claude/settings.json`, because its
+plugin loader does not follow symlinks.
 
 | Area               | Packages                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
@@ -177,7 +180,8 @@ Notable package boundaries:
   as ordinary local files.
 - `gtk` leaves `bookmarks` local since file managers rewrite it at runtime.
 - `claude` tracks only hand-written Claude Code files: `CLAUDE.md`, subagents,
-  keybindings, themes, and the `session-title` and `ghostty-notify.sh` hooks.
+  keybindings, themes, and the `ghostty-notify.sh` hook. The `session-title`
+  mod lives in `claude-mods/` instead.
   `settings.json` stays local because Claude Code replaces it on every settings
   change; the herdr hook is owned by herdr.
 - `agents` tracks the global `npx skills` lock, `rules/`, and self-authored

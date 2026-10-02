@@ -1,0 +1,26 @@
+{
+  "name": "session-title",
+  "version": "0.1.0",
+  "description": "Names each new session from its first prompt, e.g. \"fix: resolve hook timeout on first prompt\"",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "model": {
+      "type": "string",
+      "title": "Naming model",
+      "description": "Model alias or id that writes the title",
+      "default": "haiku"
+    },
+    "maxLength": {
+      "type": "number",
+      "title": "Maximum title length",
+      "description": "Longest title accepted, in characters",
+      "default": 80
+    },
+    "waitMs": {
+      "type": "number",
+      "title": "First-prompt wait (ms)",
+      "description": "How long the first prompt waits for its title; a slower title shows from the next prompt. 0 never waits",
+      "default": 1500
+    }
+  }
+}
