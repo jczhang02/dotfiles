@@ -80,6 +80,24 @@ test('skips a resumed session', async ($, on) => {
   expect(calls.length).toBe(0)
 })
 
+test('names the session again after /clear', async ($, on) => {
+  const options: World = { replies: ['research: explain inodes', 'research: explain hard links'] }
+  const { clock, calls } = world(on, options)
+  await submit($, clock, 'what is an inode')
+  options.turns = 4
+  await $.classic.SessionStart({ session_id: SID, source: 'clear', session_title: 'research: explain inodes' })
+  const after = await submit($, clock, 'what is a hard link', 'research: explain inodes')
+  expect(after.sessionTitle).toBe('research: explain hard links')
+  expect(calls.length).toBe(2)
+})
+
+test('keeps a /rename made after /clear', async ($, on) => {
+  const { clock, calls } = world(on)
+  await $.classic.SessionStart({ session_id: SID, source: 'clear', session_title: 'research: explain inodes' })
+  expect((await submit($, clock, 'what is a hard link', 'docs: my own title')).sessionTitle).toBeUndefined()
+  expect(calls.length).toBe(0)
+})
+
 test('drops a late title when /rename ran meanwhile', async ($, on) => {
   const { clock } = world(on, { delayMs: 5000 })
   await submit($, clock, 'compare two parsers', undefined, 100)

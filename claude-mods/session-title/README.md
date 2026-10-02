@@ -19,7 +19,9 @@ session's title. Claude Code then saves it to the transcript as the same
 Skipped: resumed and forked sessions, subagents, prompts not typed by the
 person (`-p`, loop and schedule wakeups, task notifications), sessions already
 named with `--name` or `/rename`, and slash commands; the first typed prompt
-after a slash command still names the session. A title that arrives after a
+after a slash command still names the session. After `/clear` the fresh
+conversation keeps the old title, and its first typed prompt names it again,
+unless `/rename` changed the title in between. A title that arrives after a
 `/rename` is dropped. A reply outside the format is dropped, with no retry.
 Only the first 600 characters of the prompt are sent.
 
@@ -28,7 +30,8 @@ not start a turn; the new title shows from the next prompt.
 
 Per-session state lives in `$.state` under `session-title` (`naming`: the
 outcome `pending`, `named`, `applied`, `skipped`, `skip_renamed` or `failed`,
-and the title; `seen`: the session title Claude Code last reported). Prompts
+and the title; `seen`: the session title Claude Code last reported;
+`cleared`: the title `/clear` carried over). Prompts
 are not stored. A failed naming shows a toast.
 
 Options (`userConfig`, in `/config` or under `pluginConfigs.session-title` in

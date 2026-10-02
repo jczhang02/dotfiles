@@ -16,6 +16,8 @@ declare module 'claude-code' {
       naming: Record<string, Naming>
       // The session title the engine last reported, per session.
       seen: Record<string, string | null>
+      // The title /clear carried into a fresh conversation, per session.
+      cleared: Record<string, string | null>
     }
   }
 }

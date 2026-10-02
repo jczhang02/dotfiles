@@ -12,6 +12,7 @@ const MAX_WAIT_MS = 8000
 
 const naming = atom({ plugin: 'session-title', key: 'naming' } as const, {})
 const seen = atom({ plugin: 'session-title', key: 'seen' } as const, {})
+const cleared = atom({ plugin: 'session-title', key: 'cleared' } as const, {})
 
 type Config = { model: string; maxLength: number; waitMs: number }
 type Generated = { title: string } | { reason: string }
@@ -130,6 +131,12 @@ export const register: Register = (on, options) => {
 
   on('classic.SessionStart', async ($, e, next) => {
     await see($, e.session_id, e.session_title)
+    // /clear starts a fresh conversation that keeps the old title; the next
+    // typed prompt names it again.
+    if (e.source === 'clear') {
+      await update($, cleared, all => ({ ...all, [e.session_id]: e.session_title ?? null }))
+      await update($, naming, ({ [e.session_id]: _, ...rest }) => rest)
+    }
     const isResumed = e.source === 'resume' || e.source === 'fork'
     if (isResumed && !(await get($, e.session_id))) {
       await put($, e.session_id, { outcome: 'skipped', token: 0 })
@@ -156,12 +163,15 @@ export const register: Register = (on, options) => {
     if (!prompt || COMMAND.test(prompt)) {
       return next(e)
     }
+    const carried = await read($, cleared)
+    const isCleared = sid in carried
     // Named with --name or /rename, or under way before this module loaded.
-    if (current !== null || (await $.session.turns()) > 0) {
+    const isNamed = current !== null && !(isCleared && current === (carried[sid] ?? null))
+    if (isNamed || (!isCleared && (await $.session.turns()) > 0)) {
       await put($, sid, { outcome: 'skipped', token: 0 })
       return next(e)
     }
-    const done = start($, config, sid, prompt, null)
+    const done = start($, config, sid, prompt, current)
     const result = await next(e)
     await wait($, done, config.waitMs)
     const title = await take($, sid, current)
