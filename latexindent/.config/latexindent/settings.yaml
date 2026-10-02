@@ -1,0 +1,84 @@
+modifyLineBreaks:
+  oneSentencePerLine:
+    manipulateSentences: 1 # 0/1
+    removeSentenceLineBreaks: 1 # 0/1
+    multipleSpacesToSingle: 1 # 0/1
+    textWrapSentences: 0 # 1 disables main textWrap
+    sentenceIndent: ""
+    sentencesFollow:
+      par: 0 # 0/1
+      blankLine: 1 # 0/1
+      fullStop: 1 # 0/1
+      exclamationMark: 1 # 0/1
+      questionMark: 1 # 0/1
+      rightBrace: 1 # 0/1
+      commentOnPreviousLine: 1 # 0/1
+      other: 0 # regex
+    sentencesBeginWith:
+      A-Z: 1 # 0/1
+      a-z: 0 # 0/1
+      other: '\\item(?:\[[^]]*?\])?\h+' # \item text starts a sentence, so it can be joined
+    sentencesEndWith:
+      basicFullStop: 0 # 0/1
+      betterFullStop: 1 # 0/1
+      exclamationMark: 1 # 0/1
+      questionMark: 1 # 0/1
+      other: '(?:\.\)(?!\h*[a-z]))|(?:(?<!(?:(?:e\.g)|(?:i\.e)|(?:etc))))\.(?!(?:[a-z]|[A-Z]|\-|\,|\.|[0-9]))'
+    sentencesDoNOTcontain:
+      other: \\begin # regex
+
+# fineTuning allows you to tweak the internal pattern matching that
+# is central to latexindent.pl
+fineTuning:
+  environments:
+    name: '[a-zA-Z@\*0-9_\\]+'
+  ifElseFi:
+    name: '(?!@?if[a-zA-Z@]*?\{)@?if[a-zA-Z@]*?'
+  commands:
+    name: '[+a-zA-Z@\*0-9_\:]+?'
+  items:
+    canBeFollowedBy: '(?:\[[^]]*?\])|(?:<[^>]*?>)'
+  keyEqualsValuesBracesBrackets:
+    name: '[a-zA-Z@\*0-9_\/.:\#-]+[a-zA-Z@\*0-9_\/.\h\{\}:\#-]*?'
+    follow: '(?:(?<!\\)\{)|,|(?:(?<!\\)\[)'
+  namedGroupingBracesBrackets:
+    name: '[0-9\.a-zA-Z@\*><]+?'
+    follow: '\h|\R|\{|\[|\$|\)|\('
+  UnNamedGroupingBracesBrackets:
+    follow: '\{|\[|,|&|\)|\(|\$'
+  arguments:
+    before: '(?:#\d\h*;?,?\/?)+|\<.*?\>'
+    between: '_|\^|\*'
+  trailingComments:
+    notPreceededBy: '(?<!\\)'
+  modifyLineBreaks:
+    doubleBackSlash: '\\\\(?:\h*\[\h*\d+\h*[a-zA-Z]+\h*\])?'
+    comma: ","
+    betterFullStop: |-
+      (?x)                                # ignore spaces in the below
+      (?:                                 #
+        \.\)                              # .) 
+        (?!\h*[a-z])                      # not *followed by* a-z
+      )                                   #
+      |                                   # OR
+      (?:                                 #
+        (?<!                              # not *preceeded by*
+          (?:                             #
+            (?:[eE]\.[gG])                # e.g OR E.g OR e.G OR E.G
+            |                             #
+            (?:[iI]\.[eE])                # i.e OR I.e OR i.E OR I.E
+            |                             #
+            (?:etc)                       # etc
+          )                               #
+        )                                 #
+      )                                   # 
+      \.                                  # .
+      (?!                                 # not *followed by*
+        (?:                               #
+          [a-zA-Z0-9-~,]                  #
+          |                               #
+          \),                             # ),
+          |                               #
+          \)\.                            # ).
+        )                                 #
+      )                                   #

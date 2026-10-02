@@ -1,0 +1,3 @@
+# latexindent reads this before ~/.indentconfig.yaml; paths must be absolute (no ~ expansion).
+paths:
+  - /home/jc/.config/latexindent/settings.yaml

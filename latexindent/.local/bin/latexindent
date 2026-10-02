@@ -1,0 +1,3 @@
+#!/bin/sh
+# Send indent.log and -w backups to the cache instead of the working directory.
+exec /usr/bin/latexindent -c="${XDG_CACHE_HOME:-$HOME/.cache}/latexindent/" "$@"
