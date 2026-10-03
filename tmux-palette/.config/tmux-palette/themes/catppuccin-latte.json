@@ -1,0 +1,9 @@
+{
+  "bg": "#e6e9ef",
+  "panel": "#eff1f5",
+  "selected": "#dce0e8",
+  "fg": "#4c4f69",
+  "muted": "#5c5f77",
+  "accent": "#8839ef",
+  "selectedFg": "#4c4f69"
+}

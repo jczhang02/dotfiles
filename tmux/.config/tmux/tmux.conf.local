@@ -567,7 +567,9 @@ set -g @plugin 'wfxr/tmux-fzf-url'
 
 # M-p (no-prefix) → tmux-palette: Raycast-like command palette (Bun-based)
 # 默认 @palette-key=C-Space 会撞 tmux prefix, 故改 M-p
-set -g @plugin 'eduwass/tmux-palette'
+# Fork of eduwass/tmux-palette: `kd <word>` keyword items + IME/CJK input fix;
+# a daily GitHub Action merges upstream main into it.
+set -g @plugin 'jczhang02/tmux-palette'
 set -g @palette-key 'M-p'
 
 

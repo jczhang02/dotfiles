@@ -205,6 +205,11 @@ Notable package boundaries:
   the zsh startup prompt and tmux `prefix s`.
 - `kd` tracks `kd.toml`, the dictionary daemon unit, and `kd-popup`, the fzf
   lookup popup behind the tmux-palette `kd` keyword (Alt+P, `kd <word>`).
+- `tmux-palette` tracks the Alt+P palette's hand-written `commands.json`,
+  `hidden.json`, custom palettes and theme; `theme.json` stays local because
+  the theme picker rewrites it. The plugin itself is the
+  [jczhang02/tmux-palette](https://github.com/jczhang02/tmux-palette) fork,
+  which a daily GitHub Action keeps merged with upstream.
 - `tmux` tracks the oh-my-tmux overlay, `tmux-popup-anim` (a `display-popup`
   wrapper with a grow-in/shrink-out outline), and a parameterized `tmuxp` workspace;
   project-specific or retired workspaces stay local.

@@ -1,0 +1,4 @@
+{
+  "title": "GitHub PRs",
+  "command": "gh pr list --json number,title,state,isDraft --jq '[.[] | {icon: \"●\", iconColor: (if .isDraft then \"#cc8822\" elif .state == \"OPEN\" then \"#22cc22\" elif .state == \"MERGED\" then \"#8855cc\" else \"#cc3322\" end), title: ((.number|tostring) + \" \" + .title), action: {shell: (\"gh pr view \" + (.number|tostring) + \" --web\")}}]'"
+}

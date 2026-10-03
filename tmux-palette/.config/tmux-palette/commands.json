@@ -1,0 +1,202 @@
+[
+  {
+    "icon": "󰁁",
+    "title": "Move Window to...",
+    "description": "Put this window at an index; the others shift",
+    "category": "Windows",
+    "aliases": [
+      "mw",
+      "movew",
+      "index"
+    ],
+    "action": {
+      "tmux": "command-prompt -p 'Move window to:' \"if-shell -F '#{&&:#{W:#{?#{==:#{window_index},%1},1,}},#{!=:#{window_index},%1}}' { if-shell -F '#{e|<:#{window_index},%1}' { move-window -a -t :%1 } { move-window -b -t :%1 } ; move-window -r } { move-window -t :%1 }\""
+    }
+  },
+  {
+    "icon": "󰓡",
+    "title": "Swap Window with...",
+    "description": "Swap with the window at an index",
+    "category": "Windows",
+    "aliases": [
+      "swapw"
+    ],
+    "action": {
+      "tmux": "command-prompt -p 'Swap window with:' 'swap-window -d -t \":%1\"'"
+    }
+  },
+  {
+    "icon": "󰁍",
+    "title": "Swap Window Left",
+    "category": "Windows",
+    "aliases": [
+      "move-left"
+    ],
+    "action": {
+      "tmux": "swap-window -d -t -1"
+    }
+  },
+  {
+    "icon": "󰁔",
+    "title": "Swap Window Right",
+    "category": "Windows",
+    "aliases": [
+      "move-right"
+    ],
+    "action": {
+      "tmux": "swap-window -d -t +1"
+    }
+  },
+  {
+    "icon": "󰲸",
+    "title": "Renumber Windows",
+    "description": "Close gaps in window numbers",
+    "category": "Windows",
+    "aliases": [
+      "renumber",
+      "reorder"
+    ],
+    "action": {
+      "tmux": "move-window -r"
+    }
+  },
+  {
+    "icon": "󱂬",
+    "title": "Move Window to Session...",
+    "description": "Pick a session to move this window into",
+    "category": "Windows",
+    "aliases": [
+      "mws"
+    ],
+    "action": {
+      "tmux": "choose-tree -Zs 'move-window -t \"%%\"'"
+    }
+  },
+  {
+    "icon": "󰖯",
+    "title": "Choose Window",
+    "description": "Tree of windows across sessions",
+    "category": "Windows",
+    "aliases": [
+      "windows"
+    ],
+    "action": {
+      "tmux": "choose-tree -Zw"
+    }
+  },
+  {
+    "icon": "",
+    "title": "Lazygit",
+    "description": "Git TUI in floating popup",
+    "category": "Tools",
+    "aliases": [
+      "lg",
+      "git"
+    ],
+    "action": {
+      "popup": "lazygit",
+      "width": "90%",
+      "height": "90%"
+    }
+  },
+  {
+    "icon": "",
+    "title": "Btop",
+    "description": "System monitor in floating popup",
+    "category": "Tools",
+    "aliases": [
+      "top",
+      "ps"
+    ],
+    "action": {
+      "popup": "btop",
+      "width": "90%",
+      "height": "90%"
+    }
+  },
+  {
+    "icon": "󰗊",
+    "title": "Dictionary (kd)",
+    "description": "Look up a word or translate text; type kd <word> to jump straight in",
+    "category": "Tools",
+    "keyword": "kd",
+    "aliases": [
+      "kd",
+      "dict",
+      "translate",
+      "fanyi"
+    ],
+    "action": {
+      "shell": "tmux-popup-anim -w 50% -h 80% -- kd-popup {query}"
+    }
+  },
+  {
+    "icon": "",
+    "title": "GitHub PRs",
+    "description": "List PRs from current repo, open in browser",
+    "category": "Git",
+    "aliases": [
+      "pr",
+      "prs"
+    ],
+    "action": {
+      "palette": "github-prs"
+    }
+  },
+  {
+    "icon": "",
+    "title": "Reload tmux Config",
+    "description": "source-file ~/.config/tmux/tmux.conf",
+    "category": "tmux",
+    "aliases": [
+      "reload",
+      "rr"
+    ],
+    "action": {
+      "tmux": "source-file ~/.config/tmux/tmux.conf \\; display 'tmux config reloaded'"
+    }
+  },
+  {
+    "icon": "",
+    "title": "Autoname Auto",
+    "description": "Resume automatic naming for this window after a manual rename",
+    "category": "Autoname",
+    "aliases": [
+      "an-auto",
+      "reset-name",
+      "window-name"
+    ],
+    "action": {
+      "tmux": "run-shell -b \"~/.config/tmux/plugins/tmux-autoname/bin/tmux-autoname auto -t '#{window_id}'\" \\; display 'autoname: auto'"
+    }
+  },
+  {
+    "icon": "",
+    "title": "Edit tmux Config",
+    "description": "Open tmux.conf.local in $EDITOR",
+    "category": "tmux",
+    "aliases": [
+      "edit-tmux",
+      "etmux"
+    ],
+    "action": {
+      "popup": "${EDITOR:-vim} ~/.config/tmux/tmux.conf.local",
+      "width": "95%",
+      "height": "95%"
+    }
+  },
+  {
+    "icon": "",
+    "title": "Update tmux Plugins",
+    "description": "Choose installed TPM plugins to update explicitly",
+    "category": "tmux",
+    "aliases": [
+      "tpm",
+      "plugins",
+      "update"
+    ],
+    "action": {
+      "tmux": "run-shell \"$HOME/.config/tmux/plugins/tpm/bindings/update_plugins\""
+    }
+  }
+]
