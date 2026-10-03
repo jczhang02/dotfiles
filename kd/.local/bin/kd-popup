@@ -5,19 +5,23 @@
  *   kd-popup [TEXT...]   open the picker, looking TEXT up first and keeping
  *                        it in history when kd finds or translates it
  *
- * Typing looks up live. Four or more words, or a leading `-t`, translate the
- * text as a sentence (`kd -t`); a leading `kd ` is ignored, so `kd hello`
- * works too. Enter keeps the entry in history with a short gloss; up/down
- * recall it.
+ * Typing looks up live, English or Chinese. A Chinese word lists its English
+ * options with pronunciation and meaning; alt-1..9 looks one up and ctrl-o
+ * comes back. Four or more words, a leading `-t`, or anything the dictionary
+ * lacks is translated as a sentence (`kd -t`). A leading `kd ` is ignored,
+ * so `kd hello` works too. Enter keeps the entry in history with a short
+ * gloss; up/down recall it.
  *
  * Internal, used by fzf bindings:
  *   kd-popup --render TEXT    print the colored entry for TEXT
  *   kd-popup --history        print saved entries, newest first
  *   kd-popup --remember TEXT  move TEXT to the top of history
  *   kd-popup --forget TEXT    drop TEXT from history
+ *   kd-popup --pick N TEXT    print TEXT's Nth English option (or TEXT)
+ *   kd-popup --back TEXT      print the entry before the last --pick (or TEXT)
  */
 
-import { mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -25,18 +29,21 @@ const SELF = realpathSync(import.meta.path);
 const STATE = join(process.env.XDG_STATE_HOME || join(homedir(), ".local/state"), "kd");
 const HISTORY = join(STATE, "history"); // "text<TAB>gloss" per line, newest first
 const LAST = join(STATE, "last"); // gloss of the latest render, reused by --remember
+const TRAIL = join(STATE, "trail"); // queries left by --pick, for --back
 const HISTORY_MAX = 200;
 const MAX_WIDTH = 96; // readable measure on wide terminals
+const MAX_PICKS = 9; // alt-1..9
 
 // 16-color ANSI so entries follow the terminal palette (Latte or Mocha).
 const R = "\x1b[0m", B = "\x1b[1m", DIM = "\x1b[90m";
 const HEAD = "\x1b[1;34m", TAG = "\x1b[35m", POS = "\x1b[32m", BADGE = "\x1b[33m";
+const HL = "\x1b[1;34m"; // the looked-up word inside examples
 
 type Entry = {
   k: string;
   pron?: Record<string, string> | null;
   para?: string[] | null;
-  eg?: { bi?: string[][] | null } | null;
+  eg?: { bi?: string[][] | null; or?: string[][] | null } | null;
   co?: {
     star?: number;
     rank?: string;
@@ -52,6 +59,8 @@ const CJK = "\\u2e80-\\u9fff\\uf900-\\ufaff\\uff00-\\uffef\\u3000-\\u303f";
 const CLOSING = "，。；：、！？）」』”’》〉…";
 const TOKEN = new RegExp(`[${CJK}][${CLOSING}]*|[^\\s${CJK}]+|\\s+`, "gu");
 const BILINGUAL = new RegExp(`^(.*?)\\s*([(（]?\\s*[${CJK}].*)$`, "u");
+const HAS_CJK = new RegExp(`[${CJK}]`, "u");
+const POS_PREFIX = /^((?:[a-z]+\.\s*)*)(.*)$/;
 
 /** Greedy wrap by display cells; CJK may break between characters. */
 function wrap(text: string, measure: number): string[] {
@@ -94,15 +103,50 @@ function block(text: string, indent: number, measure: number, style = "", first?
   );
 }
 
+function truncate(s: string, cells: number): string {
+  if (width(s) <= cells) return s;
+  let out = "";
+  for (const ch of s) {
+    if (width(out + ch) > cells - 1) break;
+    out += ch;
+  }
+  return `${out}…`;
+}
+
+const padTo = (s: string, cells: number) => s + " ".repeat(Math.max(0, cells - width(s)));
+
 /** Collins glosses run "English sentence. 中文释义". */
 function splitBilingual(s: string): [string, string] {
   const m = BILINGUAL.exec(s);
   return m?.[1] ? [m[1], m[2] ?? ""] : [s, ""];
 }
 
+/** Mark `terms` in `text`, returning to `style` afterwards. English terms
+ * also match simple inflections (gives up, abandoned). */
+function highlight(text: string, terms: string[], style = ""): string {
+  const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const alts = [...new Set(terms.filter(Boolean))]
+    .sort((a, b) => b.length - a.length)
+    .map((t) => {
+      if (HAS_CJK.test(t)) return escape(t);
+      const [first = "", ...rest] = t.split(" ").map(escape);
+      return `\\b${first}(?:s|es|ed|d|ing)?${rest.map((w) => `\\s+${w}`).join("")}\\b`;
+    });
+  if (!alts.length) return text;
+  return text.replace(new RegExp(alts.join("|"), "giu"), (m) => `${HL}${m}${R}${style}`);
+}
+
 function rule(title: string, measure: number, extra = ""): string {
   const label = title.toUpperCase() + (extra ? `  ${extra}` : "");
   return `  ${DIM}${label} ${"─".repeat(Math.max(4, measure - 3 - width(label)))}${R}`;
+}
+
+/** "  word ............ badge" across the measure. */
+function headline(word: string, badge: string, measure: number): string {
+  const head = `${HEAD}${word}${R}`;
+  if (!badge) return `  ${head}`;
+  const gap = Math.max(3, measure - 2 - width(word) - width(badge));
+  return `  ${head}${" ".repeat(gap)}${badge}`;
 }
 
 function previewWidth(): number {
@@ -119,32 +163,87 @@ function classify(query: string): ["w" | "t", string] {
   return [(text.match(/ /g)?.length ?? 0) >= 3 ? "t" : "w", text];
 }
 
-function kd(...args: string[]): string {
-  const p = Bun.spawnSync(["kd", ...args], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
-  return p.stdout.toString();
-}
-
-function lookupWord(word: string): Entry | null {
+function parseEntry(raw: string): Entry | null {
   try {
-    const data = JSON.parse(kd("--json", word)) as Entry;
-    return data.k ? data : null;
+    const data = JSON.parse(raw) as Entry;
+    if (!data.k) return null;
+    // For Chinese input kd sometimes returns an example phrase instead of a
+    // translation ("他放弃了出国的念头 he gives up..."); treat that as no entry.
+    if (HAS_CJK.test(data.k) && !options(data).length) return null;
+    return data;
   } catch {
     return null;
   }
 }
 
-async function translate(text: string): Promise<string> {
+function lookupWord(word: string): Entry | null {
+  const p = Bun.spawnSync(["kd", "--json", word], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
+  return parseEntry(p.stdout.toString());
+}
+
+async function lookupWordAsync(word: string): Promise<Entry | null> {
+  const p = Bun.spawn(["kd", "--json", word], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
+  return parseEntry(await new Response(p.stdout).text());
+}
+
+/** kd -t alternatives, minus Youdao's "在例句中比较" link text. */
+async function translate(text: string): Promise<string[]> {
   const p = Bun.spawn(["kd", "-t", text], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
-  const out = (await new Response(p.stdout).text()).split("\n");
-  return out.slice(1).join("\n").trim(); // kd echoes the source first
+  const out = (await new Response(p.stdout).text()).split("\n").slice(1).join(" "); // kd echoes the source first
+  return out
+    .replace(/\s*在例句中比较\s*$/, "")
+    .split(/\s+;\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+type Option = { pos: string; text: string };
+
+/** English options of a Chinese entry: "vt. abandon ; waive" → abandon, waive. */
+function options(entry: Entry): Option[] {
+  const seen = new Set<string>();
+  const out: Option[] = [];
+  for (const para of entry.para ?? []) {
+    const [, pos = "", rest = ""] = POS_PREFIX.exec(para) ?? [];
+    for (const part of rest.split(/\s*;\s*/)) {
+      const text = part.trim();
+      if (!text || HAS_CJK.test(text) || seen.has(text.toLowerCase())) continue;
+      seen.add(text.toLowerCase());
+      out.push({ pos: pos.trim() === "misc." ? "" : pos.trim(), text });
+    }
+  }
+  return out;
+}
+
+/** Short options get their own entry; sentences are shown as they are. */
+const isTerm = (s: string) => s.split(" ").length <= 3 && !/[.!?]$/.test(s);
+
+function pickable(entry: Entry): string[] {
+  return options(entry)
+    .map((o) => o.text)
+    .filter(isTerm)
+    .slice(0, MAX_PICKS);
 }
 
 function firstGloss(entry: Entry): string {
+  if (HAS_CJK.test(entry.k)) {
+    return options(entry)
+      .slice(0, 3)
+      .map((o) => o.text)
+      .join("; ");
+  }
   for (const para of entry.para ?? []) {
     const gloss = para.replace(/^(?:[a-z]+\.\s*)+/, "").trim();
     if (gloss) return gloss;
   }
   return "";
+}
+
+function preferredPron(entry: Entry): string {
+  const pron = entry.pron ?? {};
+  const raw = pron["英"] ?? pron["美"] ?? Object.values(pron)[0] ?? "";
+  const ipa = raw.replace(/^\[|\]$/g, "").trim();
+  return ipa ? `/${ipa}/` : "";
 }
 
 function saveLast(text: string, gloss: string): void {
@@ -156,24 +255,30 @@ function saveLast(text: string, gloss: string): void {
 
 // --- rendering --------------------------------------------------------------
 
-function renderWord(word: string, measure: number): string[] {
-  const entry = lookupWord(word);
-  if (!entry) {
-    return [
-      "",
-      `  ${HEAD}${word}${R}`,
-      "",
-      `  ${DIM}No dictionary entry.${R}`,
-      `  ${DIM}Prefix with ${R}-t${DIM} to translate it as a sentence.${R}`,
-    ];
+/** Bilingual dictionary examples, else kd's corpus sentences; some entries
+ * carry empty placeholder rows. */
+function examplesOf(entry: Entry): string[][] {
+  const usable = (rows?: string[][] | null) => (rows ?? []).filter(([eng]) => eng?.trim());
+  const bi = usable(entry.eg?.bi);
+  return bi.length ? bi : usable(entry.eg?.or);
+}
+
+function renderExamples(rows: string[][], measure: number, enTerms: string[], zhTerms: string[]): string[] {
+  if (!rows.length) return [];
+  const out = ["", rule("examples", measure), ""];
+  for (const [eng = "", chs] of rows.slice(0, 5)) {
+    out.push(...block(highlight(eng, enTerms), 4, measure, "", `  ${DIM}›${R} `));
+    if (chs) out.push(...block(highlight(chs, zhTerms, DIM), 4, measure, DIM));
+    out.push("");
   }
-  saveLast(word, firstGloss(entry));
+  return out;
+}
+
+function renderEnglish(entry: Entry, measure: number): string[] {
   const co = entry.co ?? {};
   let badges = (co.rank ?? "").split(/\s+/).filter(Boolean).join(" · ");
   if (co.star) badges = "★".repeat(co.star) + (badges ? `  ${badges}` : "");
-  const head = `${HEAD}${entry.k}${R}`;
-  const gap = Math.max(3, measure - 2 - width(entry.k) - width(badges));
-  const out = ["", badges ? `  ${head}${" ".repeat(gap)}${BADGE}${badges}${R}` : `  ${head}`];
+  const out = ["", headline(entry.k, badges ? `${BADGE}${badges}${R}` : "", measure)];
 
   const pron = entry.pron ?? {};
   const accents = Object.keys(pron).sort((a, b) => Number(a !== "英") - Number(b !== "英"));
@@ -184,7 +289,7 @@ function renderWord(word: string, measure: number): string[] {
   out.push("");
 
   const paras = (entry.para ?? []).map((p) => {
-    const m = /^((?:[a-z]+\.\s*)*)(.*)$/.exec(p);
+    const m = POS_PREFIX.exec(p);
     return [(m?.[1] ?? "").trim(), m?.[2] ?? p] as const;
   });
   let col = Math.max(0, ...paras.map(([pos]) => width(pos)));
@@ -194,6 +299,7 @@ function renderWord(word: string, measure: number): string[] {
     out.push(...block(gloss, 2 + col, measure, "", label));
   }
 
+  const terms = [entry.k];
   const items = co.li ?? [];
   if (items.length) {
     out.push("", rule("collins", measure, String(items.length)));
@@ -211,34 +317,71 @@ function renderWord(word: string, measure: number): string[] {
       out.push(...block(en, indent, measure, "", lead));
       if (zh) out.push(...block(zh, indent, measure, DIM));
       for (const [eng = "", chs] of item.eg ?? []) {
-        out.push(...block(eng, indent + 2, measure, "", `${" ".repeat(indent)}${DIM}›${R} `));
+        out.push(...block(highlight(eng, terms), indent + 2, measure, "", `${" ".repeat(indent)}${DIM}›${R} `));
         if (chs) out.push(...block(chs, indent + 2, measure, DIM));
       }
     });
   }
 
-  const examples = (entry.eg?.bi ?? []).slice(0, 5);
-  if (examples.length) {
-    out.push("", rule("examples", measure), "");
-    for (const [eng = "", chs] of examples) {
-      out.push(...block(eng, 4, measure, "", `  ${DIM}›${R} `));
-      if (chs) out.push(...block(chs, 4, measure, DIM));
+  out.push(...renderExamples(examplesOf(entry), measure, terms, []));
+  return out;
+}
+
+/** A Chinese entry: its English options, each with pronunciation and gloss
+ * from its own entry, so near-synonyms (abandon / waive / give up) can be told
+ * apart; alt-N jumps to option N. */
+async function renderChinese(entry: Entry, measure: number): Promise<string[]> {
+  const out = ["", headline(entry.k, `${DIM}中 → 英${R}`, measure), ""];
+  const opts = options(entry);
+  const terms = opts.filter((o) => isTerm(o.text));
+
+  if (!terms.length) {
+    // Sentence translations: nothing to look up, just list them.
+    for (const o of opts) out.push(...block(o.text, 4, measure, B, `  ${DIM}›${R} `));
+  } else {
+    const details = await Promise.all(terms.map((o) => lookupWordAsync(o.text)));
+    const posW = Math.max(0, ...terms.map((o) => width(o.pos)));
+    const wordW = Math.min(24, Math.max(...terms.map((o) => width(o.text))));
+    const prons = details.map((d) => (d ? preferredPron(d) : ""));
+    const pronW = Math.min(18, Math.max(0, ...prons.map(width)));
+    let lastPos: string | undefined;
+    terms.forEach((o, i) => {
+      const d = details[i];
+      const pos = o.pos === lastPos ? "" : o.pos;
+      lastPos = o.pos;
+      const key = i < MAX_PICKS ? `${DIM}${i + 1}${R}` : " ";
+      const lead = `  ${POS}${padTo(pos, posW)}${R}${posW ? "  " : ""}${key}  `;
+      const word = `${B}${padTo(truncate(o.text, wordW), wordW)}${R}`;
+      const pron = pronW ? `  ${DIM}${padTo(truncate(prons[i] ?? "", pronW), pronW)}${R}` : "";
+      const used = 2 + (posW ? posW + 2 : 0) + 3 + wordW + (pronW ? pronW + 2 : 0) + 2;
+      const gloss = d ? truncate(firstGloss(d).replace(/^(?:[a-z]+\.\s*)+/, ""), measure - used) : "";
+      out.push(`${lead}${word}${pron}  ${gloss}`);
+    });
+    const n = Math.min(terms.length, MAX_PICKS);
+    out.push("", `  ${DIM}alt-${n === 1 ? "1" : `1…${n}`} look up   ctrl-o back${R}`);
+    // Other options that are whole sentences.
+    const sentences = opts.filter((o) => !isTerm(o.text));
+    if (sentences.length) {
       out.push("");
+      for (const o of sentences) out.push(...block(o.text, 4, measure, "", `  ${DIM}›${R} `));
     }
   }
+
+  out.push(...renderExamples(examplesOf(entry), measure, opts.map((o) => o.text), [entry.k]));
   return out;
 }
 
 async function renderText(text: string, measure: number): Promise<void> {
+  const direction = HAS_CJK.test(text) ? "中 → 英" : "英 → 中";
   // The source shows while kd -t waits on the network.
-  const head = ["", rule("translate", measure), "", ...block(text, 2, measure, DIM), "", ""];
+  const head = ["", rule("translate", measure, direction), "", ...block(text, 2, measure, DIM), "", ""];
   await Bun.write(Bun.stdout, head.join("\n"));
-  const result = await translate(text);
-  if (result) {
-    saveLast(text, result.split("\n")[0] ?? "");
-    console.log(block(result, 2, measure, B).join("\n"));
+  const results = await translate(text);
+  if (results.length) {
+    saveLast(text, results[0] ?? "");
+    console.log(results.flatMap((r) => block(r, 2, measure, B)).join("\n"));
   } else {
-    console.log(`  ${DIM}No translation.${R}`);
+    console.log(`  ${DIM}No dictionary entry or translation.${R}`);
   }
 }
 
@@ -246,20 +389,22 @@ function renderHelp(measure: number): string[] {
   const keys = [
     ["⏎", "keep in history"],
     ["↑ ↓", "recall history"],
+    ["alt-1…9", "look up an English option of a Chinese word"],
+    ["ctrl-o", "back to the previous entry"],
     ["⇧↑ ⇧↓", "scroll this panel"],
     ["^x", "forget the highlighted entry"],
     ["esc", "close"],
   ];
   const intro =
-    "Type a word or phrase to look it up as you type. " +
-    "Four or more words, or a leading -t, translate a sentence.";
+    "Type a word or phrase, English or Chinese, to look it up as you type. " +
+    "Sentences and anything the dictionary lacks are translated.";
   return [
     "",
     `  ${HEAD}kd${R}  ${DIM}dictionary${R}`,
     "",
     ...block(intro, 2, measure, DIM),
     "",
-    ...keys.map(([k = "", v = ""]) => `  ${B}${k.padEnd(7)}${R}${DIM}${v}${R}`),
+    ...keys.map(([k = "", v = ""]) => `  ${B}${k.padEnd(9)}${R}${DIM}${v}${R}`),
   ];
 }
 
@@ -268,13 +413,21 @@ async function render(query: string): Promise<void> {
   const measure = previewWidth();
   if (!text) {
     console.log(renderHelp(measure).join("\n"));
-  } else if (kind === "t") {
-    await Bun.sleep(600); // sentences hit the network; fzf kills stale previews
-    await renderText(text, measure);
-  } else {
-    await Bun.sleep(120);
-    console.log(renderWord(text, measure).join("\n"));
+    return;
   }
+  if (kind === "w") {
+    await Bun.sleep(120);
+    const entry = await lookupWordAsync(text);
+    if (entry) {
+      saveLast(text, firstGloss(entry));
+      const lines = HAS_CJK.test(entry.k) ? await renderChinese(entry, measure) : renderEnglish(entry, measure);
+      console.log(lines.join("\n"));
+      return;
+    }
+  }
+  // Sentences hit the network; wait out fast typing (fzf kills stale previews).
+  await Bun.sleep(kind === "t" ? 600 : 400);
+  await renderText(text, measure);
 }
 
 // --- history ----------------------------------------------------------------
@@ -306,9 +459,7 @@ function printHistory(): void {
   const rows = loadHistory();
   const pad = Math.min(Math.max(0, ...rows.map(([t]) => width(t))), 14);
   for (const [text, gloss] of rows) {
-    let shown = width(text) <= pad ? text : `${text.slice(0, pad - 1)}…`;
-    shown += " ".repeat(Math.max(0, pad - width(shown)) + 2);
-    console.log(`${text}\t${shown}${DIM}${gloss}${R}`);
+    console.log(`${text}\t${padTo(truncate(text, pad), pad + 2)}${DIM}${gloss}${R}`);
   }
 }
 
@@ -340,6 +491,35 @@ function forget(text: string): void {
   writeHistory(loadHistory().filter(([t]) => t !== text));
 }
 
+// --- option jumps -----------------------------------------------------------
+
+function readTrail(): string[] {
+  try {
+    return readFileSync(TRAIL, "utf8").split("\n").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/** Print option `n` of `query` (a Chinese entry), remembering `query` for
+ * --back; print `query` unchanged when there is no such option. */
+function pickOption(n: number, query: string): void {
+  const [, text] = classify(query);
+  const entry = text && HAS_CJK.test(text) ? lookupWord(text) : null;
+  const target = entry ? pickable(entry)[n - 1] : undefined;
+  if (!target) return void process.stdout.write(query);
+  mkdirSync(STATE, { recursive: true });
+  writeFileSync(TRAIL, [...readTrail(), query].join("\n") + "\n");
+  process.stdout.write(target);
+}
+
+function back(query: string): void {
+  const trail = readTrail();
+  const prev = trail.pop();
+  writeFileSync(TRAIL, trail.length ? trail.join("\n") + "\n" : "");
+  process.stdout.write(prev ?? query);
+}
+
 // --- picker -----------------------------------------------------------------
 
 function pick(query: string): void {
@@ -356,10 +536,14 @@ function pick(query: string): void {
   ].join(",");
   const recall = "transform-query(printf %s {1})";
   const me = `'${SELF}'`;
+  const jumps = Array.from(
+    { length: MAX_PICKS },
+    (_, i) => `alt-${i + 1}:transform-query(${me} --pick ${i + 1} {q})`,
+  );
   const opts = [
     "--ansi", "--disabled", "--layout=reverse", "--style=full:rounded", "--no-scrollbar",
     `--color=${latte}`, "--highlight-line", "--gutter= ", "--pointer=▌", "--no-sort",
-    "--delimiter=\t", "--with-nth=2", "--prompt=❯ ", "--ghost=word, phrase or sentence",
+    "--delimiter=\t", "--with-nth=2", "--prompt=❯ ", "--ghost=English or 中文",
     "--info=hidden", "--input-label= 󰗊 kd ", "--list-label= history ",
     "--list-label-pos=-3:bottom", "--footer-border=none",
     "--footer=⏎ keep   ↑↓ recall   ^x forget",
@@ -369,16 +553,19 @@ function pick(query: string): void {
     `--bind=up:up+${recall},down:down+${recall},ctrl-p:up+${recall},ctrl-n:down+${recall}`,
     `--bind=enter:execute-silent(${me} --remember {q})+reload(${me} --history)+first`,
     `--bind=ctrl-x:execute-silent(${me} --forget {1})+reload(${me} --history)`,
+    `--bind=${jumps.join(",")}`,
+    `--bind=ctrl-o:transform-query(${me} --back {q})`,
     "--bind=esc:abort,ctrl-c:abort",
   ];
-  // `kd <word>` from the palette counts as a lookup: a word goes into history
-  // up front (so it shows in the list); a sentence once its translation has
-  // rendered, which is known only after fzf exits.
-  const [kind] = classify(query);
-  if (query && kind === "w") remember(query, true);
+  rmSync(TRAIL, { force: true });
+  // `kd <word>` from the palette counts as a lookup: a dictionary word goes
+  // into history up front (so it shows in the list); anything translated
+  // instead once its translation has rendered, known only after fzf exits.
+  const [kind, text] = classify(query);
+  if (text && kind === "w") remember(query, true);
   const feed = Bun.spawnSync([SELF, "--history"], { stdout: "pipe" }).stdout;
   Bun.spawnSync(["fzf", ...opts], { stdin: feed, stdout: "ignore", stderr: "inherit" });
-  if (query && kind === "t") remember(query, true);
+  if (text && !loadHistory().some(([t]) => t === text)) remember(query, true);
 }
 
 const [cmd = "", ...rest] = process.argv.slice(2);
@@ -394,6 +581,12 @@ switch (cmd) {
     break;
   case "--forget":
     forget(rest.join(" "));
+    break;
+  case "--pick":
+    pickOption(Number(rest[0]), rest.slice(1).join(" "));
+    break;
+  case "--back":
+    back(rest.join(" "));
     break;
   default:
     pick(process.argv.slice(2).join(" "));
