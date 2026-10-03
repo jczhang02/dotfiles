@@ -18,42 +18,48 @@
 }
 
 /* Open/close animation.
-   Animating the width resizes TST's page every frame, and on quick enter/leave
-   it can stop at an in-between width. So the width snaps in one step, and a
-   clip-path mask slides over it instead; the mask never resizes TST's page.
-   Open: width snaps wide, mask slides open.
-   Close: wait, mask slides shut, then width snaps narrow. */
+   The width snaps in one step: animating it resizes TST's page every frame and
+   can stop half-open. The slide is a cover in the sidebar color that sweeps off
+   the tree. The cover ignores the mouse, so the whole tree is hoverable and
+   clickable from the first frame. (A clip-path slide hid the unrevealed part from
+   the mouse too, so moving fast toward a tab's close button counted as leaving.)
+   Open: width snaps wide, cover slides away to the right.
+   Close: wait, cover slides back, then the width snaps narrow and the cover hides. */
 #sidebar-box {
   --uc-close-delay: 150ms;     /* wait after the mouse leaves */
-  --uc-slide-duration: 140ms;  /* mask slide, both directions */
+  --uc-slide-duration: 140ms;  /* cover slide, both directions */
   /* The snippet's width change: instant, after the wait + slide */
   --uc-autohide-transition-duration: 0ms;
   --uc-autohide-sidebar-delay: calc(var(--uc-close-delay) + var(--uc-slide-duration));
 }
-#sidebar-box > #sidebar,
-#sidebar-box > .sidebar-browser-stack > #sidebar {
-  clip-path: inset(0 calc(100% - var(--uc-sidebar-width)) 0 0);
+#sidebar-box::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--uc-sidebar-width);
+  width: calc(var(--uc-sidebar-hover-width) - var(--uc-sidebar-width));
+  background-color: light-dark(#f4f3f8, #1c1b22);
+  pointer-events: none;
+  z-index: 10;
+  transform-origin: right;
+  transform: scaleX(1);
+  visibility: hidden;
   transition:
-    min-width 0ms linear var(--uc-autohide-sidebar-delay),
-    clip-path var(--uc-slide-duration) ease-out var(--uc-close-delay) !important;
+    transform var(--uc-slide-duration) ease-out var(--uc-close-delay),
+    visibility 0s linear var(--uc-autohide-sidebar-delay);
 }
-#sidebar-box:hover > #sidebar,
-#sidebar-box:hover > .sidebar-browser-stack > #sidebar {
-  clip-path: inset(0);
-  transition-delay: 0ms !important;
+#sidebar-box:hover::after {
+  transform: scaleX(0);
+  visibility: visible;
+  transition-delay: 0ms;
 }
 
 /* Same background as the tree (--uc-bg in tst.css) behind the sidebar page,
-   so a new window's sidebar doesn't flash while TST is still loading. */
+   so a new window's sidebar doesn't flash while TST is still loading.
+   light-dark() follows the window, so private windows (always dark) match too. */
 #sidebar-box,
 #sidebar-box .sidebar-browser-stack {
-  background-color: #f4f3f8 !important;
-}
-@media (prefers-color-scheme: dark) {
-  #sidebar-box,
-  #sidebar-box .sidebar-browser-stack {
-    background-color: #1c1b22 !important;
-  }
+  background-color: light-dark(#f4f3f8, #1c1b22) !important;
 }
 
 /* Collapse the sidebar when Firefox is not the active window. If the mouse leaves
