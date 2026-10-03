@@ -9,7 +9,17 @@
   --uc-bg: light-dark(#f4f3f8, #1c1b22);
   --uc-hover: light-dark(rgb(0 0 0 / .05), rgb(255 255 255 / .06));
   --uc-active: light-dark(#ffffff, #2f2e38);
+  --uc-text: light-dark(#1f1e24, #ecebf2);
   --uc-radius: 8px;
+}
+
+/* Tab text in the same light/dark pair as the backgrounds. TST takes its text
+   color from the Firefox theme, which stays dark in private windows even though
+   the sidebar switches to dark there, leaving dark titles on a dark pill.
+   Nova defines --tab-text on tab-item-substance (and again for the active tab),
+   so the override has to sit on that element, not on tab-item. */
+:root.sidebar tab-item tab-item-substance {
+  --tab-text: var(--uc-text) !important;
 }
 
 /* Space above the first tab, so the first icon is 16px from the top, the same
