@@ -7,10 +7,12 @@
  *
  * Typing looks up live, English or Chinese. A Chinese word lists its English
  * options with pronunciation and meaning; alt-1..9 looks one up and ctrl-o
- * comes back. Four or more words, a leading `-t`, or anything the dictionary
- * lacks is translated as a sentence (`kd -t`). A leading `kd ` is ignored,
- * so `kd hello` works too. Enter keeps the entry in history with a short
- * gloss; up/down recall it.
+ * comes back; Google Translate (translate-shell) adds more options. Four or
+ * more words, a leading `-t`, or anything the dictionary lacks is translated
+ * by Google and Youdao (`kd -t`) side by side. A leading `kd ` is ignored, so
+ * `kd hello` works too. Enter keeps the entry in history with a short gloss;
+ * up/down recall it; ctrl-s speaks the word (`kd -s`); ctrl-r looks it up
+ * again bypassing kd's cache (`kd -n`).
  *
  * Internal, used by fzf bindings:
  *   kd-popup --render TEXT    print the colored entry for TEXT
@@ -19,6 +21,8 @@
  *   kd-popup --forget TEXT    drop TEXT from history
  *   kd-popup --pick N TEXT    print TEXT's Nth English option (or TEXT)
  *   kd-popup --back TEXT      print the entry before the last --pick (or TEXT)
+ *   kd-popup --speak TEXT     pronounce TEXT in the background (English only)
+ *   kd-popup --refresh TEXT   make the next --render of TEXT skip kd's cache
  */
 
 import { mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -30,6 +34,9 @@ const STATE = join(process.env.XDG_STATE_HOME || join(homedir(), ".local/state")
 const HISTORY = join(STATE, "history"); // "text<TAB>gloss" per line, newest first
 const LAST = join(STATE, "last"); // gloss of the latest render, reused by --remember
 const TRAIL = join(STATE, "trail"); // queries left by --pick, for --back
+const FRESH = join(STATE, "fresh"); // query whose next render skips kd's cache
+const MORE = join(STATE, "more"); // Google options of the last Chinese render, for --pick
+const NET_TIMEOUT = 8_000; // Google / Youdao round trips
 const HISTORY_MAX = 200;
 const MAX_WIDTH = 96; // readable measure on wide terminals
 const MAX_PICKS = 9; // alt-1..9
@@ -47,6 +54,7 @@ type Entry = {
   co?: {
     star?: number;
     rank?: string;
+    pat?: string; // word forms: "abandoning,abandoned,abandons"
     li?: { a?: string; maj?: string; eg?: string[][] | null }[] | null;
   } | null;
 };
@@ -176,25 +184,80 @@ function parseEntry(raw: string): Entry | null {
   }
 }
 
+/** stdout of `cmd`, or "" when it is missing, fails or times out. */
+async function run(cmd: string[], timeout = NET_TIMEOUT): Promise<string> {
+  try {
+    const p = Bun.spawn(cmd, { stdout: "pipe", stderr: "ignore", timeout });
+    return await new Response(p.stdout).text();
+  } catch {
+    return "";
+  }
+}
+
+const cacheFlag = (fresh: boolean) => (fresh ? ["-n"] : []);
+
 function lookupWord(word: string): Entry | null {
   const p = Bun.spawnSync(["kd", "--json", word], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
   return parseEntry(p.stdout.toString());
 }
 
-async function lookupWordAsync(word: string): Promise<Entry | null> {
-  const p = Bun.spawn(["kd", "--json", word], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
-  return parseEntry(await new Response(p.stdout).text());
+async function lookupWordAsync(word: string, fresh = false): Promise<Entry | null> {
+  return parseEntry(await run(["kd", ...cacheFlag(fresh), "--json", word], 20_000));
 }
 
-/** kd -t alternatives, minus Youdao's "在例句中比较" link text. */
-async function translate(text: string): Promise<string[]> {
-  const p = Bun.spawn(["kd", "-t", text], { stdout: "pipe", stderr: "ignore", timeout: 20_000 });
-  const out = (await new Response(p.stdout).text()).split("\n").slice(1).join(" "); // kd echoes the source first
+/** Youdao (kd -t) alternatives, minus its "在例句中比较" link text. */
+async function youdaoTranslate(text: string, fresh: boolean): Promise<string[]> {
+  const out = (await run(["kd", ...cacheFlag(fresh), "-t", text])).split("\n").slice(1).join(" "); // kd echoes the source first
   return out
     .replace(/\s*在例句中比较\s*$/, "")
     .split(/\s+;\s+/)
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+/** Google Translate via translate-shell, Chinese ↔ English. */
+async function googleTranslate(text: string): Promise<string> {
+  const target = HAS_CJK.test(text) ? ":en" : ":zh";
+  return (await run(["trans", "-b", "-no-ansi", target, text])).trim();
+}
+
+const GOOGLE_POS: Record<string, string> = {
+  verb: "v.", noun: "n.", adjective: "adj.", adverb: "adv.", preposition: "prep.",
+  conjunction: "conj.", pronoun: "pron.", interjection: "int.", abbreviation: "abbr.",
+  phrase: "phr.", prefix: "pref.", suffix: "suf.", article: "art.", numeral: "num.",
+};
+
+type GoogleOption = { pos: string; text: string; back: string[] };
+
+/** Google's dictionary block for a Chinese word: English options, each with
+ * its Chinese back-translations ("abandon: 放弃, 抛弃, 弃, ..."). */
+async function googleOptions(word: string): Promise<GoogleOption[]> {
+  const lines = (await run(["trans", "-no-ansi", "zh:en", word])).split("\n");
+  const start = lines.findIndex((l) => l.startsWith("Definitions of"));
+  if (start < 0) return [];
+  const out: GoogleOption[] = [];
+  let pos = "";
+  for (const line of lines.slice(start + 1)) {
+    if (!line.trim() || line.startsWith("[")) continue;
+    if (/^\S/.test(line)) {
+      if (/^[A-Z]/.test(line)) break; // next section ("Translations of ...")
+      pos = GOOGLE_POS[line.trim()] ?? line.trim();
+    } else if (/^ {4}\S/.test(line)) {
+      out.push({ pos, text: line.trim(), back: [] });
+    } else if (/^ {8}\S/.test(line) && out.length) {
+      out[out.length - 1]!.back = line.trim().split(/,\s*/);
+    }
+  }
+  return out;
+}
+
+function readMore(word: string): string[] {
+  try {
+    const data = JSON.parse(readFileSync(MORE, "utf8")) as { k: string; opts: string[] };
+    return data.k === word ? data.opts : [];
+  } catch {
+    return [];
+  }
 }
 
 type Option = { pos: string; text: string };
@@ -218,11 +281,13 @@ function options(entry: Entry): Option[] {
 /** Short options get their own entry; sentences are shown as they are. */
 const isTerm = (s: string) => s.split(" ").length <= 3 && !/[.!?]$/.test(s);
 
-function pickable(entry: Entry): string[] {
-  return options(entry)
+/** Jump targets in display order: kd's options, then Google's extra ones. */
+function pickable(entry: Entry, more: string[] = readMore(entry.k)): string[] {
+  const kd = options(entry)
     .map((o) => o.text)
-    .filter(isTerm)
-    .slice(0, MAX_PICKS);
+    .filter(isTerm);
+  const seen = new Set(kd.map((t) => t.toLowerCase()));
+  return [...kd, ...more.filter((t) => !seen.has(t.toLowerCase()))].slice(0, MAX_PICKS);
 }
 
 function firstGloss(entry: Entry): string {
@@ -286,6 +351,8 @@ function renderEnglish(entry: Entry, measure: number): string[] {
     const parts = accents.map((k) => `${DIM}${k}${R} /${(pron[k] ?? "").replace(/^\[|\]$/g, "")}/`);
     out.push(`  ${parts.join("   ")}`);
   }
+  const forms = (co.pat ?? "").split(",").map((f) => f.trim()).filter(Boolean);
+  if (forms.length) out.push(`  ${DIM}forms${R}  ${forms.join(` ${DIM}·${R} `)}`);
   out.push("");
 
   const paras = (entry.para ?? []).map((p) => {
@@ -299,7 +366,7 @@ function renderEnglish(entry: Entry, measure: number): string[] {
     out.push(...block(gloss, 2 + col, measure, "", label));
   }
 
-  const terms = [entry.k];
+  const terms = [entry.k, ...forms];
   const items = co.li ?? [];
   if (items.length) {
     out.push("", rule("collins", measure, String(items.length)));
@@ -330,7 +397,8 @@ function renderEnglish(entry: Entry, measure: number): string[] {
 /** A Chinese entry: its English options, each with pronunciation and gloss
  * from its own entry, so near-synonyms (abandon / waive / give up) can be told
  * apart; alt-N jumps to option N. */
-async function renderChinese(entry: Entry, measure: number): Promise<string[]> {
+async function renderChinese(entry: Entry, measure: number, emit: (lines: string[]) => Promise<void>): Promise<string[]> {
+  const google = googleOptions(entry.k); // in flight while kd's rows render
   const out = ["", headline(entry.k, `${DIM}中 → 英${R}`, measure), ""];
   const opts = options(entry);
   const terms = opts.filter((o) => isTerm(o.text));
@@ -357,8 +425,6 @@ async function renderChinese(entry: Entry, measure: number): Promise<string[]> {
       const gloss = d ? truncate(firstGloss(d).replace(/^(?:[a-z]+\.\s*)+/, ""), measure - used) : "";
       out.push(`${lead}${word}${pron}  ${gloss}`);
     });
-    const n = Math.min(terms.length, MAX_PICKS);
-    out.push("", `  ${DIM}alt-${n === 1 ? "1" : `1…${n}`} look up   ctrl-o back${R}`);
     // Other options that are whole sentences.
     const sentences = opts.filter((o) => !isTerm(o.text));
     if (sentences.length) {
@@ -366,23 +432,62 @@ async function renderChinese(entry: Entry, measure: number): Promise<string[]> {
       for (const o of sentences) out.push(...block(o.text, 4, measure, "", `  ${DIM}›${R} `));
     }
   }
+  await emit(out.splice(0));
 
-  out.push(...renderExamples(examplesOf(entry), measure, opts.map((o) => o.text), [entry.k]));
+  // Google's extra options, numbered after kd's for alt-N.
+  const seen = new Set(terms.map((o) => o.text.toLowerCase()));
+  const extra = (await google).filter((o) => !seen.has(o.text.toLowerCase()) && isTerm(o.text)).slice(0, 10);
+  writeMore(entry.k, extra.map((o) => o.text));
+  if (extra.length) {
+    out.push("", rule("more", measure, "google"));
+    const posW = Math.max(0, ...extra.map((o) => width(o.pos)));
+    const wordW = Math.min(24, Math.max(...extra.map((o) => width(o.text))));
+    let lastPos: string | undefined;
+    extra.forEach((o, i) => {
+      const n = terms.length + i + 1;
+      const pos = o.pos === lastPos ? "" : o.pos;
+      lastPos = o.pos;
+      const key = n <= MAX_PICKS ? `${DIM}${n}${R}` : " ";
+      const lead = `  ${POS}${padTo(pos, posW)}${R}${posW ? "  " : ""}${key}  `;
+      const used = 2 + (posW ? posW + 2 : 0) + 3 + wordW + 2;
+      const back = truncate(o.back.join("，"), measure - used);
+      out.push(`${lead}${B}${padTo(truncate(o.text, wordW), wordW)}${R}  ${DIM}${back}${R}`);
+    });
+  }
+  const n = Math.min(terms.length + extra.length, MAX_PICKS);
+  if (n) out.push("", `  ${DIM}alt-${n === 1 ? "1" : `1…${n}`} look up   ctrl-o back${R}`);
+
+  const enTerms = [...opts.map((o) => o.text), ...extra.map((o) => o.text)];
+  out.push(...renderExamples(examplesOf(entry), measure, enTerms, [entry.k]));
   return out;
 }
 
-async function renderText(text: string, measure: number): Promise<void> {
+function writeMore(word: string, opts: string[]): void {
+  try {
+    mkdirSync(STATE, { recursive: true });
+    writeFileSync(MORE, JSON.stringify({ k: word, opts }));
+  } catch {}
+}
+
+const emitLines = async (lines: string[]) => {
+  if (lines.length) await Bun.write(Bun.stdout, `${lines.join("\n")}\n`);
+};
+
+/** Google and Youdao side by side; each shows as soon as it arrives. */
+async function renderText(text: string, measure: number, fresh: boolean): Promise<void> {
   const direction = HAS_CJK.test(text) ? "中 → 英" : "英 → 中";
-  // The source shows while kd -t waits on the network.
-  const head = ["", rule("translate", measure, direction), "", ...block(text, 2, measure, DIM), "", ""];
-  await Bun.write(Bun.stdout, head.join("\n"));
-  const results = await translate(text);
-  if (results.length) {
-    saveLast(text, results[0] ?? "");
-    console.log(results.flatMap((r) => block(r, 2, measure, B)).join("\n"));
-  } else {
-    console.log(`  ${DIM}No dictionary entry or translation.${R}`);
-  }
+  const google = googleTranslate(text);
+  const youdao = youdaoTranslate(text, fresh);
+  await emitLines(["", rule("translate", measure, direction), "", ...block(text, 2, measure, DIM), ""]);
+  const label = (name: string) => `  ${DIM}${name.padEnd(8)}${R}`;
+  const g = await google;
+  if (g) await emitLines(block(g, 10, measure, B, label("google")));
+  const same = (t: string) => t.toLowerCase().replace(/[\s.。!！?？]+$/, "");
+  const y = (await youdao).filter((r) => same(r) !== same(g));
+  for (const [i, r] of y.entries()) await emitLines(block(r, 10, measure, B, label(i ? "" : "youdao")));
+  const first = g || y[0];
+  if (first) saveLast(text, first);
+  else await emitLines([`  ${DIM}No dictionary entry or translation.${R}`]);
 }
 
 function renderHelp(measure: number): string[] {
@@ -391,13 +496,15 @@ function renderHelp(measure: number): string[] {
     ["↑ ↓", "recall history"],
     ["alt-1…9", "look up an English option of a Chinese word"],
     ["ctrl-o", "back to the previous entry"],
+    ["ctrl-s", "speak the word (English)"],
+    ["ctrl-r", "look up again, bypassing kd's cache"],
     ["⇧↑ ⇧↓", "scroll this panel"],
     ["^x", "forget the highlighted entry"],
     ["esc", "close"],
   ];
   const intro =
     "Type a word or phrase, English or Chinese, to look it up as you type. " +
-    "Sentences and anything the dictionary lacks are translated.";
+    "Sentences and anything the dictionary lacks are translated by Google and Youdao.";
   return [
     "",
     `  ${HEAD}kd${R}  ${DIM}dictionary${R}`,
@@ -415,19 +522,46 @@ async function render(query: string): Promise<void> {
     console.log(renderHelp(measure).join("\n"));
     return;
   }
+  const fresh = takeFresh(text);
   if (kind === "w") {
     await Bun.sleep(120);
-    const entry = await lookupWordAsync(text);
+    const entry = await lookupWordAsync(text, fresh);
     if (entry) {
       saveLast(text, firstGloss(entry));
-      const lines = HAS_CJK.test(entry.k) ? await renderChinese(entry, measure) : renderEnglish(entry, measure);
-      console.log(lines.join("\n"));
+      const lines = HAS_CJK.test(entry.k) ? await renderChinese(entry, measure, emitLines) : renderEnglish(entry, measure);
+      await emitLines(lines);
       return;
     }
   }
   // Sentences hit the network; wait out fast typing (fzf kills stale previews).
   await Bun.sleep(kind === "t" ? 600 : 400);
-  await renderText(text, measure);
+  await renderText(text, measure, fresh);
+}
+
+/** True once after `--refresh TEXT`: this render bypasses kd's cache. */
+function takeFresh(text: string): boolean {
+  try {
+    if (readFileSync(FRESH, "utf8") !== text) return false;
+    rmSync(FRESH, { force: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function markFresh(query: string): void {
+  const [, text] = classify(query);
+  if (!text) return;
+  mkdirSync(STATE, { recursive: true });
+  writeFileSync(FRESH, text);
+}
+
+/** `kd -s` downloads Google TTS audio (English only) and plays it; run it
+ * detached so fzf stays responsive. */
+function speak(query: string): void {
+  const [, text] = classify(query);
+  if (!text || HAS_CJK.test(text)) return;
+  Bun.spawnSync(["sh", "-c", 'kd -s "$1" >/dev/null 2>&1 &', "sh", text], { stdout: "ignore", stderr: "ignore" });
 }
 
 // --- history ----------------------------------------------------------------
@@ -546,7 +680,7 @@ function pick(query: string): void {
     "--delimiter=\t", "--with-nth=2", "--prompt=❯ ", "--ghost=English or 中文",
     "--info=hidden", "--input-label= 󰗊 kd ", "--list-label= history ",
     "--list-label-pos=-3:bottom", "--footer-border=none",
-    "--footer=⏎ keep   ↑↓ recall   ^x forget",
+    "--footer=⏎ keep   ↑↓ recall   ^x forget\n^s speak   ^r refresh",
     `--query=${query}`,
     `--preview=${me} --render {q}`,
     `--preview-window=${layout}`, "--preview-wrap-sign=  ",
@@ -555,6 +689,8 @@ function pick(query: string): void {
     `--bind=ctrl-x:execute-silent(${me} --forget {1})+reload(${me} --history)`,
     `--bind=${jumps.join(",")}`,
     `--bind=ctrl-o:transform-query(${me} --back {q})`,
+    `--bind=ctrl-s:execute-silent(${me} --speak {q})`,
+    `--bind=ctrl-r:execute-silent(${me} --refresh {q})+refresh-preview`,
     "--bind=esc:abort,ctrl-c:abort",
   ];
   rmSync(TRAIL, { force: true });
@@ -587,6 +723,12 @@ switch (cmd) {
     break;
   case "--back":
     back(rest.join(" "));
+    break;
+  case "--speak":
+    speak(rest.join(" "));
+    break;
+  case "--refresh":
+    markFresh(rest.join(" "));
     break;
   default:
     pick(process.argv.slice(2).join(" "));

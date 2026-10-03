@@ -15,7 +15,7 @@ dev-lang/go
 dev-lang/rust-bin
 dev-python/uv
 
-# Shell tools used by zsh, fzf-preview, sesh-pick and skills-restore
+# Shell tools used by zsh, fzf-preview, sesh-pick, kd-popup and skills-restore
 app-shells/fzf
 sys-apps/fd
 app-shells/zoxide
@@ -27,6 +27,7 @@ app-misc/jq
 app-misc/trash-cli
 app-misc/tealdeer
 app-text/tree
+app-i18n/translate-shell
 app-admin/doas
 # ::guru
 app-shells/vivid

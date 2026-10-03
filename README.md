@@ -204,7 +204,9 @@ Notable package boundaries:
 - `sesh` tracks `sesh.toml` and `sesh-pick`, the fzf session picker shared by
   the zsh startup prompt and tmux `prefix s`.
 - `kd` tracks `kd.toml`, the dictionary daemon unit, and `kd-popup`, the fzf
-  lookup popup behind the tmux-palette `kd` keyword (Alt+P, `kd <word>`).
+  lookup popup behind the tmux-palette `kd` keyword (Alt+P, `kd <word>`). It
+  covers kd's lookups, `-t`, `-s` and `-n`, and adds Google Translate
+  (translate-shell) for sentences and extra English options of Chinese words.
 - `tmux-palette` tracks the Alt+P palette's hand-written `commands.json`,
   `hidden.json`, custom palettes and theme; `theme.json` stays local because
   the theme picker rewrites it. The plugin itself is the
