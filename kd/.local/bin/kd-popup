@@ -23,6 +23,7 @@
  *   kd-popup --back TEXT      print the entry before the last --pick (or TEXT)
  *   kd-popup --speak TEXT     pronounce TEXT in the background (English only)
  *   kd-popup --refresh TEXT   make the next --render of TEXT skip kd's cache
+ *   kd-popup --copy TEXT      copy TEXT's answer to the clipboard
  */
 
 import { mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -33,8 +34,9 @@ const SELF = realpathSync(import.meta.path);
 const STATE = join(process.env.XDG_STATE_HOME || join(homedir(), ".local/state"), "kd");
 const HISTORY = join(STATE, "history"); // "text<TAB>gloss" per line, newest first
 const LAST = join(STATE, "last"); // gloss of the latest render, reused by --remember
-const TRAIL = join(STATE, "trail"); // queries left by --pick, for --back
+const TRAIL = join(STATE, "trail"); // "query<TAB>target" per --pick, for --back
 const FRESH = join(STATE, "fresh"); // query whose next render skips kd's cache
+const ANSWER = join(STATE, "answer"); // what ctrl-y copies for the last render
 const MORE = join(STATE, "more"); // Google options of the last Chinese render, for --pick
 const NET_TIMEOUT = 8_000; // Google / Youdao round trips
 const HISTORY_MAX = 200;
@@ -311,10 +313,11 @@ function preferredPron(entry: Entry): string {
   return ipa ? `/${ipa}/` : "";
 }
 
-function saveLast(text: string, gloss: string): void {
+function saveLast(text: string, gloss: string, answer = gloss): void {
   try {
     mkdirSync(STATE, { recursive: true });
     writeFileSync(LAST, `${text}\t${gloss}\n`);
+    writeFileSync(ANSWER, JSON.stringify({ k: text, v: answer }));
   } catch {}
 }
 
@@ -498,6 +501,10 @@ function renderHelp(measure: number): string[] {
     ["ctrl-o", "back to the previous entry"],
     ["ctrl-s", "speak the word (English)"],
     ["ctrl-r", "look up again, bypassing kd's cache"],
+    ["ctrl-y", "copy the answer (meaning, English option or translation)"],
+    ["click", "recall a history entry"],
+    ["ctrl-f", "full-width entry (toggle)"],
+    ["⇧ drag", "select text with the mouse; ctrl-f first to leave out the history"],
     ["⇧↑ ⇧↓", "scroll this panel"],
     ["^x", "forget the highlighted entry"],
     ["esc", "close"],
@@ -527,7 +534,10 @@ async function render(query: string): Promise<void> {
     await Bun.sleep(120);
     const entry = await lookupWordAsync(text, fresh);
     if (entry) {
-      saveLast(text, firstGloss(entry));
+      const answer = HAS_CJK.test(entry.k)
+        ? (options(entry)[0]?.text ?? "")
+        : (entry.para?.[0] ?? "").replace(/^(?:[a-z]+\.\s*)+/, "").trim();
+      saveLast(text, firstGloss(entry), answer);
       const lines = HAS_CJK.test(entry.k) ? await renderChinese(entry, measure, emitLines) : renderEnglish(entry, measure);
       await emitLines(lines);
       return;
@@ -554,6 +564,32 @@ function markFresh(query: string): void {
   if (!text) return;
   mkdirSync(STATE, { recursive: true });
   writeFileSync(FRESH, text);
+}
+
+/** Copy the answer in the other language: an English word's meaning, a Chinese
+ * word's first option, a translation; after an alt-N jump from a Chinese
+ * word, the English word itself. Through tmux (OSC 52) so it also works over
+ * SSH; wl-copy outside tmux. */
+function copy(query: string): void {
+  const [, text] = classify(query);
+  if (!text) return;
+  let value = "";
+  const jumped = readTrail().at(-1)?.[1] === text;
+  if (jumped) value = text;
+  else {
+    try {
+      const data = JSON.parse(readFileSync(ANSWER, "utf8")) as { k: string; v: string };
+      value = data.k === text ? data.v : "";
+    } catch {}
+  }
+  if (!value) return;
+  const opts = { stdin: Buffer.from(value), stdout: "ignore", stderr: "ignore" } as const;
+  const done = process.env.TMUX
+    ? Bun.spawnSync(["tmux", "load-buffer", "-w", "-"], opts).exitCode === 0
+    : Bun.spawnSync(["wl-copy"], opts).exitCode === 0;
+  if (done && process.env.TMUX) {
+    Bun.spawnSync(["tmux", "display-message", `kd: copied ${truncate(value, 60)}`], { stdout: "ignore", stderr: "ignore" });
+  }
 }
 
 /** `kd -s` downloads Google TTS audio (English only) and plays it; run it
@@ -627,12 +663,24 @@ function forget(text: string): void {
 
 // --- option jumps -----------------------------------------------------------
 
-function readTrail(): string[] {
+/** [query, target] per alt-N jump, oldest first. */
+function readTrail(): [string, string][] {
   try {
-    return readFileSync(TRAIL, "utf8").split("\n").filter(Boolean);
+    return readFileSync(TRAIL, "utf8")
+      .split("\n")
+      .filter(Boolean)
+      .map((l) => {
+        const [q = "", t = ""] = l.split("\t");
+        return [q, t];
+      });
   } catch {
     return [];
   }
+}
+
+function writeTrail(trail: [string, string][]): void {
+  mkdirSync(STATE, { recursive: true });
+  writeFileSync(TRAIL, trail.map(([q, t]) => `${q}\t${t}\n`).join(""));
 }
 
 /** Print option `n` of `query` (a Chinese entry), remembering `query` for
@@ -642,16 +690,15 @@ function pickOption(n: number, query: string): void {
   const entry = text && HAS_CJK.test(text) ? lookupWord(text) : null;
   const target = entry ? pickable(entry)[n - 1] : undefined;
   if (!target) return void process.stdout.write(query);
-  mkdirSync(STATE, { recursive: true });
-  writeFileSync(TRAIL, [...readTrail(), query].join("\n") + "\n");
+  writeTrail([...readTrail(), [query, target]]);
   process.stdout.write(target);
 }
 
 function back(query: string): void {
   const trail = readTrail();
   const prev = trail.pop();
-  writeFileSync(TRAIL, trail.length ? trail.join("\n") + "\n" : "");
-  process.stdout.write(prev ?? query);
+  writeTrail(trail);
+  process.stdout.write(prev?.[0] ?? query);
 }
 
 // --- picker -----------------------------------------------------------------
@@ -660,6 +707,9 @@ function pick(query: string): void {
   const cols = process.stdout.columns || 80;
   const listWidth = Math.max(28, Math.min(44, Math.floor((cols * 3) / 10)));
   const layout = cols >= 100 ? `right,${cols - listWidth},wrap` : "down,65%,wrap";
+  // Full-width preview: room for long entries, and a Shift+drag selection
+  // then takes only the entry, not the history column beside it.
+  const full = "down,99%,wrap"; // below the input, which keeps its width; fzf caps at 99%
   // Catppuccin Latte, matching FZF_DEFAULT_OPTS from the zsh env; popups run
   // a non-interactive shell that never loads it.
   const latte = [
@@ -680,16 +730,21 @@ function pick(query: string): void {
     "--delimiter=\t", "--with-nth=2", "--prompt=❯ ", "--ghost=English or 中文",
     "--info=hidden", "--input-label= 󰗊 kd ", "--list-label= history ",
     "--list-label-pos=-3:bottom", "--footer-border=none",
-    "--footer=⏎ keep   ↑↓ recall   ^x forget\n^s speak   ^r refresh",
+    "--footer=⏎ keep   ↑↓ recall   ^x forget\n^y copy   ^s speak   ^f full",
     `--query=${query}`,
     `--preview=${me} --render {q}`,
     `--preview-window=${layout}`, "--preview-wrap-sign=  ",
     `--bind=up:up+${recall},down:down+${recall},ctrl-p:up+${recall},ctrl-n:down+${recall}`,
+    // A click moves fzf's cursor, but the preview follows the query; recall
+    // the clicked entry. Double-click would otherwise accept and close.
+    `--bind=left-click:${recall},double-click:${recall}`,
     `--bind=enter:execute-silent(${me} --remember {q})+reload(${me} --history)+first`,
     `--bind=ctrl-x:execute-silent(${me} --forget {1})+reload(${me} --history)`,
     `--bind=${jumps.join(",")}`,
     `--bind=ctrl-o:transform-query(${me} --back {q})`,
     `--bind=ctrl-s:execute-silent(${me} --speak {q})`,
+    `--bind=ctrl-y:execute-silent(${me} --copy {q})`,
+    `--bind=ctrl-f:change-preview-window(${full}|${layout})`,
     `--bind=ctrl-r:execute-silent(${me} --refresh {q})+refresh-preview`,
     "--bind=esc:abort,ctrl-c:abort",
   ];
@@ -726,6 +781,9 @@ switch (cmd) {
     break;
   case "--speak":
     speak(rest.join(" "));
+    break;
+  case "--copy":
+    copy(rest.join(" "));
     break;
   case "--refresh":
     markFresh(rest.join(" "));
