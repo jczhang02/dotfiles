@@ -10,6 +10,13 @@ export type Naming = {
   reason?: string
 }
 
+// What the band above the prompt shows.
+export type Notice =
+  | { kind: 'naming' }
+  // `late`: the title came after its prompt and shows from the next one.
+  | { kind: 'named'; title: string; late: boolean }
+  | { kind: 'failed'; reason: string }
+
 declare module 'claude-code' {
   interface PluginState {
     'session-title': {
@@ -18,6 +25,7 @@ declare module 'claude-code' {
       seen: Record<string, string | null>
       // The title /clear carried into a fresh conversation, per session.
       cleared: Record<string, string | null>
+      notice: Notice | null
     }
   }
 }

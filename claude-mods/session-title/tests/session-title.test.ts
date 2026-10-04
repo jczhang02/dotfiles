@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'claude-code/testing'
 import type { Engine, MockClock } from 'claude-code/testing'
-import type { On } from 'claude-code'
+import type { On, RenderElement } from 'claude-code'
 
 const SID = '11111111-1111-4111-8111-111111111111'
 const USAGE = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
@@ -16,6 +16,8 @@ function world(on: On, options: World = {}) {
   on('session.turns', () => ({ value: options.turns ?? 0 }))
   on('session.id', () => ({ value: SID }))
   on('ui.toast', () => ({ value: undefined }))
+  // The engine draws nothing of its own in the band.
+  on('ui.render', ($, e) => h($.ui.resolve(e).Box, null) as RenderElement)
   on('model.complete', async ($, e) => {
     calls.push(e.prompt)
     if (options.delayMs) {
@@ -27,6 +29,13 @@ function world(on: On, options: World = {}) {
   on('classic.SessionStart', () => ({}))
   return { clock, calls }
 }
+
+const BAND = {
+  plugin: 'session-title',
+  component: 'AbovePrompt',
+  props: { hasSurvey: false, isWorking: false, maxRows: 10, bodyColumns: 100, scroll: { offset: 0, bodyRows: 9 }, view: {} },
+  viewport: { columns: 100, rows: 40 },
+} as const
 
 // Submits a prompt and lets the timers it starts run until the hook answers.
 async function submit($: Engine, clock: MockClock, prompt: string, sessionTitle?: string, stepMs = 0) {
@@ -134,4 +143,47 @@ test('/retitle without a task shows its usage', async ($, on) => {
   world(on)
   const ran = await $.command.run({ command: 'retitle', args: '  ', origin: { kind: 'user' } } as never)
   expect(ran.text).toContain('Usage')
+})
+
+test('the band shows the title until the next prompt', async ($, on) => {
+  const { clock } = world(on)
+  await submit($, clock, 'the hook times out on the first prompt, fix it')
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /^fix: resolve hook timeout on first prompt$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /next prompt/ })).toBeUndefined()
+    await ui.unmount()
+  }
+  await submit($, clock, 'and add a test', 'fix: resolve hook timeout on first prompt')
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /resolve hook timeout/ })).toBeUndefined()
+})
+
+test('the band shows naming, then a late title for one more prompt', async ($, on) => {
+  const { clock } = world(on, { delayMs: 5000 })
+  await submit($, clock, 'compare two parsers', undefined, 100)
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /Naming this session/ })).toBeDefined()
+  await clock.advance(5000)
+  await ui.redraw()
+  expect(await ui.find({ type: 'Text', text: /shows from your next prompt/ })).toBeDefined()
+
+  await submit($, clock, 'go on')
+  await ui.redraw()
+  expect(await ui.find({ type: 'Text', text: /resolve hook timeout/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /next prompt/ })).toBeUndefined()
+
+  await submit($, clock, 'and more', 'fix: resolve hook timeout on first prompt')
+  await ui.redraw()
+  expect(await ui.find({ type: 'Text', text: /resolve hook timeout/ })).toBeUndefined()
+})
+
+test('the band shows a failure until dismissed', async ($, on) => {
+  const { clock } = world(on, { replies: ['Here is a title: Parser work'] })
+  await submit($, clock, 'compare two parsers')
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /Couldn.t name this session \(invalid-title\)/ })).toBeDefined()
+  await ui.press({ key: 'dismiss' })
+  await ui.redraw()
+  expect(await ui.find({ type: 'Text', text: /name this session/ })).toBeUndefined()
 })

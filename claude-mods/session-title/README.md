@@ -28,11 +28,19 @@ Only the first 600 characters of the prompt are sent.
 `/retitle <task>` names a session that has moved on to another task. It does
 not start a turn; the new title shows from the next prompt.
 
+The band above the prompt shows what naming is doing, drawn like the built-in
+"You should know" lines: `✦ Naming this session…` while the model call runs,
+then `✦ Session title · <title>` with a green star (and "shows from your next
+prompt" when the title came late), or the failure with a red star and a hint
+to use `/retitle`. It stays up until the next prompt, or until `0` (Dismiss or
+OK) takes it down. The band holds one plugin's drawing at a time, so this and
+a "You should know" line never show together; one waits for the other.
+
 Per-session state lives in `$.state` under `session-title` (`naming`: the
 outcome `pending`, `named`, `applied`, `skipped`, `skip_renamed` or `failed`,
 and the title; `seen`: the session title Claude Code last reported;
-`cleared`: the title `/clear` carried over). Prompts
-are not stored. A failed naming shows a toast.
+`cleared`: the title `/clear` carried over; `notice`: what the band
+shows). Prompts are not stored.
 
 Options (`userConfig`, in `/config` or under `pluginConfigs.session-title` in
 `~/.claude/settings.json`): `model` (default `haiku`), `maxLength` (80) and

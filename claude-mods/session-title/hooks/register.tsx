@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Naming } from '../types'
+import type { Naming, Notice } from '../types'
 
 const FORMAT = /^(?:research|feat|fix|refactor|docs|chore): \S(?:.*\S)?$/
 const COMMAND = /^\/[\w:.-]+(?:\s|$)/
@@ -13,6 +13,7 @@ const MAX_WAIT_MS = 8000
 const naming = atom({ plugin: 'session-title', key: 'naming' } as const, {})
 const seen = atom({ plugin: 'session-title', key: 'seen' } as const, {})
 const cleared = atom({ plugin: 'session-title', key: 'cleared' } as const, {})
+const notice = atom({ plugin: 'session-title', key: 'notice' } as const, null)
 
 type Config = { model: string; maxLength: number; waitMs: number }
 type Generated = { title: string } | { reason: string }
@@ -23,6 +24,10 @@ async function get($: EngineInterface, sid: string) {
 
 async function put($: EngineInterface, sid: string, state: Naming) {
   await update($, naming, all => ({ ...all, [sid]: state }))
+}
+
+async function show($: EngineInterface, next: Notice | null) {
+  await update($, notice, () => next)
 }
 
 async function see($: EngineInterface, sid: string, title: string | undefined) {
@@ -71,9 +76,11 @@ async function finish($: EngineInterface, config: Config, sid: string, task: str
   }
   if ('title' in generated) {
     await put($, sid, { ...state, outcome: 'named', title: generated.title })
+    // take() marks it on time when the prompt that started it still waits.
+    await show($, { kind: 'named', title: generated.title, late: true })
   } else {
     await put($, sid, { ...state, outcome: 'failed', reason: generated.reason })
-    $.ui.toast(`session-title: naming failed (${generated.reason})`)
+    await show($, { kind: 'failed', reason: generated.reason })
   }
 }
 
@@ -82,6 +89,7 @@ async function finish($: EngineInterface, config: Config, sid: string, task: str
 async function start($: EngineInterface, config: Config, sid: string, task: string, previous: string | null) {
   const token = await $.clock.now()
   await put($, sid, { outcome: 'pending', token, previous: previous ?? undefined })
+  await show($, { kind: 'naming' })
   await new Promise<void>(resolve => {
     $.clock.after(0, () => {
       void finish($, config, sid, task, token).finally(resolve)
@@ -110,6 +118,9 @@ async function take($: EngineInterface, sid: string, current: string | null) {
   }
   await put($, sid, { ...state, outcome: 'applied' })
   await see($, sid, state.title)
+  if (state.title) {
+    await show($, { kind: 'named', title: state.title, late: false })
+  }
   return state.title
 }
 
@@ -136,6 +147,7 @@ export const register: Register = (on, options) => {
     if (e.source === 'clear') {
       await update($, cleared, all => ({ ...all, [e.session_id]: e.session_title ?? null }))
       await update($, naming, ({ [e.session_id]: _, ...rest }) => rest)
+      await show($, null)
     }
     const isResumed = e.source === 'resume' || e.source === 'fork'
     if (isResumed && !(await get($, e.session_id))) {
@@ -151,6 +163,9 @@ export const register: Register = (on, options) => {
     const sid = e.session_id
     const current = e.session_title ?? null
     await see($, sid, e.session_title)
+    // A notice stays up until the next prompt; a naming under way stays up
+    // until it settles.
+    await update($, notice, n => (n?.kind === 'naming' ? n : null))
 
     if (await get($, sid)) {
       // sessionTitle is the only way to set the running session's title, so a
@@ -194,5 +209,65 @@ export const register: Register = (on, options) => {
       return { text: `Naming failed (${state.reason})` }
     }
     return { text: 'Still naming; the title shows from your next prompt.' }
+  })
+
+  // Drawn like the built-in "You should know" lines: a star, a dim tag, the
+  // line, and its buttons under it.
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    const n = await read($, notice)
+    if (e.props.hasSurvey || n === null) {
+      return next(e)
+    }
+    const { Box, Button, Text } = $.ui.resolve(e)
+    const color = n.kind === 'failed' ? 'error' : n.kind === 'named' ? 'success' : 'suggestion'
+    const star = <Text color={color}>{'\u2726'}</Text>
+    if (n.kind === 'naming') {
+      return (
+        <Box marginTop={1}>
+          {star}
+          <Text wrap="truncate-end" dimColor>
+            {' Naming this session\u2026'}
+          </Text>
+        </Box>
+      )
+    }
+    const line =
+      n.kind === 'failed' ? (
+        <Text>
+          <Text color="error">{`Couldn\u2019t name this session (${n.reason})`}</Text>
+          <Text dimColor>{' \u00B7 /retitle <task> to try again'}</Text>
+        </Text>
+      ) : (
+        <Text>
+          <Text color="success">{n.title}</Text>
+          {n.late ? <Text dimColor>{' (shows from your next prompt)'}</Text> : ''}
+        </Text>
+      )
+    return (
+      <Box flexDirection="column" marginTop={1}>
+        <Box flexDirection="row" alignItems="flex-start">
+          <Box flexShrink={0} width={2}>
+            {star}
+          </Box>
+          <Text wrap="wrap">
+            <Text dimColor>{'Session title \u00B7 '}</Text>
+            {line}
+          </Text>
+        </Box>
+        <Box marginLeft={2} flexWrap="wrap">
+          <Box marginRight={3}>
+            <Button
+              key="dismiss"
+              hotkey="0"
+              plain
+              dimColor
+              role="dismiss"
+              label={n.kind === 'failed' ? 'OK' : 'Dismiss'}
+              onPress={() => show($, null)}
+            />
+          </Box>
+        </Box>
+      </Box>
+    )
   })
 }
