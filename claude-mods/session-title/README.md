@@ -34,13 +34,15 @@ pending past 90 s, counts as failed and retries the same way. Only the first
 - `/retitle` alone: from the latest prompts typed in this session.
 - `/retitle fix: write the parser`: a title already in the format, as it is,
   with no model call.
-- `/retitle <task>`: from the task described.
+- `/retitle <task>`: from the task described, then sends the task on to
+  Claude as your prompt, so you do not type it twice. That prompt carries the
+  new title; a title that takes longer than 8 s comes by `/rename` instead.
 
 A title asked for this way replaces whatever title the session has, a
-`/rename` included, and applies at once: the mod runs `/rename <title>` for
-you (it waits for Claude to finish a running turn, and prints its usual line
-in the transcript). If Claude Code refuses that, the title goes out with the
-next prompt instead.
+`/rename` included. The first two forms apply it at once: the mod runs
+`/rename <title>` for you (it waits for Claude to finish a running turn, and
+prints its usual line in the transcript). If Claude Code refuses that, the
+title goes out with the next prompt instead.
 
 The band above the prompt shows what naming is doing, drawn like the built-in
 "You should know" lines: `✦ Naming this session…` while the model call runs,

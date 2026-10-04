@@ -10,6 +10,8 @@ export type Naming = {
   previous?: string
   // From /retitle: applied whatever the title is by then.
   isForced?: boolean
+  // The task /retitle sent on as a prompt; that prompt carries the title.
+  handoff?: string
   // Automatic namings tried so far in this conversation.
   attempts?: number
   reason?: string

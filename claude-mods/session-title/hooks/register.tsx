@@ -37,6 +37,11 @@ async function put($: EngineInterface, sid: string, state: Naming) {
   await update($, naming, all => ({ ...all, [sid]: state }))
 }
 
+// Changes a naming in place, from its latest value, if there is one.
+async function patch($: EngineInterface, sid: string, change: (state: Naming) => Naming) {
+  await update($, naming, all => (all[sid] ? { ...all, [sid]: change(all[sid]) } : all))
+}
+
 async function show($: EngineInterface, next: Notice | null) {
   await update($, notice, () => next)
 }
@@ -99,7 +104,7 @@ async function start(
   config: Config,
   sid: string,
   source: Source,
-  fields: Pick<Naming, 'previous' | 'isForced' | 'attempts'>,
+  fields: Pick<Naming, 'previous' | 'isForced' | 'attempts' | 'handoff'>,
   avoid?: Avoid,
 ) {
   const token = await $.clock.now()
@@ -113,12 +118,13 @@ async function start(
 }
 
 // A title is ready. An automatic one waits for a prompt to carry it (take()
-// marks it on time when its own prompt still waits); one the person asked for
-// is applied at once with /rename, and failing that by the next prompt.
+// marks it on time when its own prompt still waits), and so does one whose
+// task /retitle hands on as a prompt; any other one the person asked for is
+// applied at once with /rename, and failing that by the next prompt.
 async function name($: EngineInterface, sid: string, state: Naming & { title: string }) {
   await put($, sid, { ...state, outcome: 'named' })
   await show($, { kind: 'named', title: state.title, late: true, isApplying: state.isForced })
-  if (!state.isForced) {
+  if (!state.isForced || state.handoff) {
     return
   }
   // From a dispatch of its own: /rename waits for the session to be idle, so
@@ -257,6 +263,14 @@ export const register: Register = (on, options) => {
   })
 
   on('classic.UserPromptSubmit', async ($, e, next) => {
+    // The task /retitle handed on carries its title, whoever submitted it.
+    const handed = await get($, e.session_id)
+    if (!e.agent_id && handed?.handoff !== undefined && handed.handoff === e.prompt.trim()) {
+      await patch($, e.session_id, state => ({ ...state, handoff: undefined }))
+      const taken = await take($, e.session_id, e.session_title ?? null)
+      const result = await next(e)
+      return taken ? { ...result, sessionTitle: taken } : result
+    }
     if (e.agent_id || (e.source !== undefined && e.source !== 'user')) {
       return next(e)
     }
@@ -307,7 +321,8 @@ export const register: Register = (on, options) => {
 
   // /retitle               a title from the conversation so far
   // /retitle fix: <title>  that title as it is
-  // /retitle <task>        a title from the task described
+  // /retitle <task>        a title from the task, then the task sent on to
+  //                        Claude as the person's prompt
   on('command.run', { command: 'retitle' }, async ($, e) => {
     const args = e.args.trim()
     const sid = await $.session.id()
@@ -317,7 +332,23 @@ export const register: Register = (on, options) => {
     }
     let done: Promise<void>
     if (args) {
-      done = start($, config, sid, { label: 'Task description', text: args }, { isForced: true })
+      const task = { label: 'Task description', text: args }
+      done = start($, config, sid, task, { isForced: true, handoff: args })
+      await wait($, done, MAX_WAIT_MS)
+      // Too slow for the prompt to carry it: /rename applies it when ready.
+      await patch($, sid, state => (state.outcome === 'pending' ? { ...state, handoff: undefined } : state))
+      const state = await get($, sid)
+      // From a dispatch of its own: the prompt waits for this command to end.
+      $.clock.after(0, () => {
+        void $.prompt.submit({ text: args, asUser: true }).catch(() => {})
+      })
+      if (state?.outcome === 'named') {
+        return { text: `Session title: ${state.title}` }
+      }
+      if (state?.outcome === 'failed') {
+        return { text: `Naming failed (${state.reason})` }
+      }
+      return { text: 'Still naming; the band shows the title when it is ready.' }
     } else {
       const run = await again($, config, undefined)
       if (!run) {
