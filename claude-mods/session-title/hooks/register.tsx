@@ -9,9 +9,14 @@ const COMMAND = /^\/[\w:.-]+(?:\s|$)/
 const PROMPT_CHARS = 600
 // A hook's own waits count against its 10 s budget.
 const MAX_WAIT_MS = 8000
+// The model call gives up after 60 s; a naming still pending well past that
+// lost its timer.
+const MODEL_TIMEOUT_MS = 60_000
+const STALE_MS = 90_000
+// Automatic namings per conversation; a failed one retries on the next prompt.
+const MAX_ATTEMPTS = 2
 
 const naming = atom({ plugin: 'session-title', key: 'naming' } as const, {})
-const seen = atom({ plugin: 'session-title', key: 'seen' } as const, {})
 const cleared = atom({ plugin: 'session-title', key: 'cleared' } as const, {})
 const notice = atom({ plugin: 'session-title', key: 'notice' } as const, null)
 
@@ -30,10 +35,6 @@ async function show($: EngineInterface, next: Notice | null) {
   await update($, notice, () => next)
 }
 
-async function see($: EngineInterface, sid: string, title: string | undefined) {
-  await update($, seen, all => ({ ...all, [sid]: title ?? null }))
-}
-
 async function generate($: EngineInterface, config: Config, task: string): Promise<Generated> {
   const rules = await $.fs.read(`${$.plugin.root}/rules.txt`)
   const opening = task.length > PROMPT_CHARS ? task.slice(0, PROMPT_CHARS) + '\n[... omitted ...]' : task
@@ -50,16 +51,17 @@ async function generate($: EngineInterface, config: Config, task: string): Promi
     prompt: 'Opening user request:\n' + opening,
     effort: 'low',
     maxTokens: 100,
-    timeoutMs: 60_000,
+    timeoutMs: MODEL_TIMEOUT_MS,
   })
   if (!reply.isAnswered) {
     return { reason: reply.reason }
   }
-  const title = reply.text.trim().replace(/^["'`]+|["'`]+$/g, '').trim().toLowerCase()
-  if ([...title].length > config.maxLength || !FORMAT.test(title) || /\p{C}/u.test(title)) {
-    return { reason: 'invalid-title' }
-  }
-  return { title }
+  // A reply may lead in ("Here is a title:") before the title line.
+  const title = reply.text
+    .split('\n')
+    .map(line => line.trim().replace(/^["'`]+|["'`]+$/g, '').trim().toLowerCase())
+    .find(line => [...line].length <= config.maxLength && FORMAT.test(line) && !/\p{C}/u.test(line))
+  return title ? { title } : { reason: 'invalid-title' }
 }
 
 async function finish($: EngineInterface, config: Config, sid: string, task: string, token: number) {
@@ -86,9 +88,15 @@ async function finish($: EngineInterface, config: Config, sid: string, task: str
 
 // Resolves once the naming settles. It runs from a timer, in a dispatch of its
 // own, so neither a hook's return nor Esc on the turn cuts the model call.
-async function start($: EngineInterface, config: Config, sid: string, task: string, previous: string | null) {
+async function start(
+  $: EngineInterface,
+  config: Config,
+  sid: string,
+  task: string,
+  fields: Pick<Naming, 'previous' | 'isForced' | 'attempts'>,
+) {
   const token = await $.clock.now()
-  await put($, sid, { outcome: 'pending', token, previous: previous ?? undefined })
+  await put($, sid, { ...fields, outcome: 'pending', token })
   await show($, { kind: 'naming' })
   await new Promise<void>(resolve => {
     $.clock.after(0, () => {
@@ -106,18 +114,34 @@ async function wait($: EngineInterface, done: Promise<void>, ms: number) {
   stop.abort()
 }
 
-// The generated title, once, unless the person ran /rename since naming started.
-async function take($: EngineInterface, sid: string, current: string | null) {
+// A naming whose timer is gone (a reload, a hang) fails, so it can retry.
+async function interrupt($: EngineInterface, sid: string, state: Naming) {
+  await put($, sid, { ...state, outcome: 'failed', reason: 'interrupted' })
+  await update($, notice, n => (n?.kind === 'naming' ? null : n))
+}
+
+// The state, with a naming pending past any model call failed.
+async function current($: EngineInterface, sid: string) {
+  const state = await get($, sid)
+  if (state?.outcome === 'pending' && (await $.clock.now()) - state.token > STALE_MS) {
+    await interrupt($, sid, state)
+    return get($, sid)
+  }
+  return state
+}
+
+// The generated title, once; an automatic one only if the person did not run
+// /rename since naming started.
+async function take($: EngineInterface, sid: string, title: string | null) {
   const state = await get($, sid)
   if (state?.outcome !== 'named') {
     return undefined
   }
-  if ((state.previous ?? null) !== current) {
+  if (!state.isForced && (state.previous ?? null) !== title) {
     await put($, sid, { ...state, outcome: 'skip_renamed' })
     return undefined
   }
   await put($, sid, { ...state, outcome: 'applied' })
-  await see($, sid, state.title)
   if (state.title) {
     await show($, { kind: 'named', title: state.title, late: false })
   }
@@ -131,7 +155,13 @@ export const register: Register = (on, options) => {
     waitMs: Math.min(Math.max(Number(options.waitMs ?? 1500), 0), MAX_WAIT_MS),
   }
 
+  // Also raised on every reload, which drops the timers of namings under way.
   on('session.start', async ($, e, next) => {
+    for (const [sid, state] of Object.entries(await read($, naming))) {
+      if (state.outcome === 'pending') {
+        await interrupt($, sid, state)
+      }
+    }
     await $.command.register({
       name: 'retitle',
       description: 'Name this session again from a task description',
@@ -141,7 +171,6 @@ export const register: Register = (on, options) => {
   })
 
   on('classic.SessionStart', async ($, e, next) => {
-    await see($, e.session_id, e.session_title)
     // /clear starts a fresh conversation that keeps the old title; the next
     // typed prompt names it again.
     if (e.source === 'clear') {
@@ -161,36 +190,47 @@ export const register: Register = (on, options) => {
       return next(e)
     }
     const sid = e.session_id
-    const current = e.session_title ?? null
-    await see($, sid, e.session_title)
+    const title = e.session_title ?? null
     // A notice stays up until the next prompt; a naming under way stays up
     // until it settles.
     await update($, notice, n => (n?.kind === 'naming' ? n : null))
 
-    if (await get($, sid)) {
+    const state = await current($, sid)
+    const attempts = state?.attempts ?? 0
+    // An automatic naming that failed tries again on this prompt, unless the
+    // person named the session meanwhile.
+    const isRetry =
+      state?.outcome === 'failed' &&
+      !state.isForced &&
+      attempts > 0 &&
+      attempts < MAX_ATTEMPTS &&
+      (state.previous ?? null) === title
+    if (state && !isRetry) {
       // sessionTitle is the only way to set the running session's title, so a
       // title that came too late for its prompt goes out with the next one.
-      const title = await take($, sid, current)
+      const taken = await take($, sid, title)
       const result = await next(e)
-      return title ? { ...result, sessionTitle: title } : result
+      return taken ? { ...result, sessionTitle: taken } : result
     }
     const prompt = e.prompt.trim()
     if (!prompt || COMMAND.test(prompt)) {
       return next(e)
     }
-    const carried = await read($, cleared)
-    const isCleared = sid in carried
-    // Named with --name or /rename, or under way before this module loaded.
-    const isNamed = current !== null && !(isCleared && current === (carried[sid] ?? null))
-    if (isNamed || (!isCleared && (await $.session.turns()) > 0)) {
-      await put($, sid, { outcome: 'skipped', token: 0 })
-      return next(e)
+    if (!isRetry) {
+      const carried = await read($, cleared)
+      const isCleared = sid in carried
+      // Named with --name or /rename, or under way before this module loaded.
+      const isNamed = title !== null && !(isCleared && title === (carried[sid] ?? null))
+      if (isNamed || (!isCleared && (await $.session.turns()) > 0)) {
+        await put($, sid, { outcome: 'skipped', token: 0 })
+        return next(e)
+      }
     }
-    const done = start($, config, sid, prompt, current)
+    const done = start($, config, sid, prompt, { previous: title ?? undefined, attempts: attempts + 1 })
     const result = await next(e)
     await wait($, done, config.waitMs)
-    const title = await take($, sid, current)
-    return title ? { ...result, sessionTitle: title } : result
+    const taken = await take($, sid, title)
+    return taken ? { ...result, sessionTitle: taken } : result
   })
 
   on('command.run', { command: 'retitle' }, async ($, e) => {
@@ -199,8 +239,8 @@ export const register: Register = (on, options) => {
       return { text: 'Usage: /retitle <task>' }
     }
     const sid = await $.session.id()
-    const current = (await read($, seen))[sid] ?? null
-    await wait($, start($, config, sid, task, current), MAX_WAIT_MS)
+    // Asked for by name, so it replaces whatever title the session has then.
+    await wait($, start($, config, sid, task, { isForced: true }), MAX_WAIT_MS)
     const state = await get($, sid)
     if (state?.outcome === 'named') {
       return { text: `Session title: ${state.title} (shows from your next prompt)` }

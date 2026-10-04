@@ -2,11 +2,16 @@ export type NamingOutcome = 'pending' | 'named' | 'applied' | 'skipped' | 'skip_
 
 export type Naming = {
   outcome: NamingOutcome
-  // Tells a newer naming (from /retitle) apart from an older one still running.
+  // Tells a newer naming apart from an older one still running; it is also
+  // when the naming started, on the clock.
   token: number
   title?: string
   // The session title when naming started; a different one later means /rename ran.
   previous?: string
+  // From /retitle: applied whatever the title is by then.
+  isForced?: boolean
+  // Automatic namings tried so far in this conversation.
+  attempts?: number
   reason?: string
 }
 
@@ -21,8 +26,6 @@ declare module 'claude-code' {
   interface PluginState {
     'session-title': {
       naming: Record<string, Naming>
-      // The session title the engine last reported, per session.
-      seen: Record<string, string | null>
       // The title /clear carried into a fresh conversation, per session.
       cleared: Record<string, string | null>
       notice: Notice | null

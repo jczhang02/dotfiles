@@ -22,11 +22,16 @@ named with `--name` or `/rename`, and slash commands; the first typed prompt
 after a slash command still names the session. After `/clear` the fresh
 conversation keeps the old title, and its first typed prompt names it again,
 unless `/rename` changed the title in between. A title that arrives after a
-`/rename` is dropped. A reply outside the format is dropped, with no retry.
-Only the first 600 characters of the prompt are sent.
+`/rename` is dropped. A reply that leads in before its title line ("Here is a
+title:") keeps the title line; a reply with no line in the format fails. A
+failed naming tries once more on the next typed prompt, from that prompt.
+A naming whose model call outlives its timer, cut by a reload of the mod or
+pending past 90 s, counts as failed and retries the same way. Only the first
+600 characters of the prompt are sent.
 
 `/retitle <task>` names a session that has moved on to another task. It does
-not start a turn; the new title shows from the next prompt.
+not start a turn; the new title shows from the next prompt, replacing whatever
+title the session has by then, a `/rename` included.
 
 The band above the prompt shows what naming is doing, drawn like the built-in
 "You should know" lines: `✦ Naming this session…` while the model call runs,
@@ -38,7 +43,7 @@ a "You should know" line never show together; one waits for the other.
 
 Per-session state lives in `$.state` under `session-title` (`naming`: the
 outcome `pending`, `named`, `applied`, `skipped`, `skip_renamed` or `failed`,
-and the title; `seen`: the session title Claude Code last reported;
+the title, whether `/retitle` asked for it, and the attempts so far;
 `cleared`: the title `/clear` carried over; `notice`: what the band
 shows). Prompts are not stored.
 
