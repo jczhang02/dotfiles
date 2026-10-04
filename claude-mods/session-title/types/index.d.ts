@@ -24,6 +24,8 @@ export type Notice =
   // `isApplying`: asked for with /retitle or a button, /rename on its way.
   | { kind: 'named'; title: string; late: boolean; isApplying?: boolean; hint?: string }
   | { kind: 'failed'; reason: string; hint?: string }
+  // The person's own title stayed; `suggested` is the one generated meanwhile.
+  | { kind: 'kept'; title: string; suggested: string; hint?: string }
 
 declare module 'claude-code' {
   interface PluginState {

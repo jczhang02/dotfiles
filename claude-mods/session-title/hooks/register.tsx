@@ -191,6 +191,9 @@ async function take($: EngineInterface, sid: string, title: string | null) {
   }
   if (!state.isForced && (state.previous ?? null) !== title) {
     await put($, sid, { ...state, outcome: 'skip_renamed' })
+    if (title !== null && state.title) {
+      await show($, { kind: 'kept', title, suggested: state.title })
+    }
     return undefined
   }
   await put($, sid, { ...state, outcome: 'applied' })
@@ -210,12 +213,18 @@ async function again($: EngineInterface, config: Config, avoid: Avoid) {
   return { done: start($, config, await $.session.id(), source, { isForced: true }, avoid) }
 }
 
+// Applies a title the person picked in the band, as /retitle would.
+async function use($: EngineInterface, title: string) {
+  const sid = await $.session.id()
+  await name($, sid, { outcome: 'named', token: await $.clock.now(), isForced: true, title })
+}
+
 // Puts `/rename <title>` in an empty prompt box to edit and send.
 async function edit($: EngineInterface, title: string) {
   const draft = await $.prompt.read()
   if (draft.text.trim() !== '') {
     await update($, notice, n =>
-      n && n.kind !== 'naming' ? { ...n, hint: 'Your prompt box has text in it. Send or clear it, then press 2 again.' } : n,
+      n && n.kind !== 'naming' ? { ...n, hint: 'Your prompt box has text in it. Send or clear it, then press Edit again.' } : n,
     )
     return
   }
@@ -388,22 +397,40 @@ export const register: Register = (on, options) => {
       )
     }
     const late = n.kind === 'named' && n.late ? (n.isApplying ? ' (applying\u2026)' : ' (shows from your next prompt)') : ''
-    const line =
-      n.kind === 'failed' ? (
-        <Text color="error">{`Couldn\u2019t name this session (${n.reason})`}</Text>
-      ) : (
+    let line
+    let choices
+    // No hotkeys: a bare digit typed into an empty prompt box would press them.
+    if (n.kind === 'failed') {
+      line = <Text color="error">{`Couldn\u2019t name this session (${n.reason})`}</Text>
+      choices = [
+        { key: 'retry', label: 'Retry', onPress: () => again($, config, undefined) },
+        { key: 'edit', label: 'Edit', onPress: () => edit($, '') },
+        { key: 'dismiss', label: 'OK', onPress: () => show($, null) },
+      ]
+    } else if (n.kind === 'kept') {
+      line = (
+        <Text>
+          {n.title}
+          <Text dimColor>{` \u00B7 kept your /rename over \u201C${n.suggested}\u201D`}</Text>
+        </Text>
+      )
+      choices = [
+        { key: 'use', label: 'Use suggested', onPress: () => use($, n.suggested) },
+        { key: 'dismiss', label: 'Dismiss', onPress: () => show($, null) },
+      ]
+    } else {
+      line = (
         <Text>
           <Text color="success">{n.title}</Text>
           <Text dimColor>{late}</Text>
         </Text>
       )
-    const choices = [
-      n.kind === 'failed'
-        ? { key: 'retry', hotkey: '1', label: 'Retry', onPress: () => again($, config, undefined) }
-        : { key: 'regenerate', hotkey: '1', label: 'Regenerate', onPress: () => again($, config, n.title) },
-      { key: 'edit', hotkey: '2', label: 'Edit', onPress: () => edit($, n.kind === 'named' ? n.title : '') },
-      { key: 'dismiss', hotkey: '0', label: n.kind === 'failed' ? 'OK' : 'Dismiss', onPress: () => show($, null) },
-    ]
+      choices = [
+        { key: 'regenerate', label: 'Regenerate', onPress: () => again($, config, n.title) },
+        { key: 'edit', label: 'Edit', onPress: () => edit($, n.title) },
+        { key: 'dismiss', label: 'Dismiss', onPress: () => show($, null) },
+      ]
+    }
     return (
       <Box flexDirection="column" marginTop={1}>
         <Box flexDirection="row" alignItems="flex-start">
@@ -429,7 +456,6 @@ export const register: Register = (on, options) => {
             <Box key={c.key} marginRight={3}>
               <Button
                 key={c.key}
-                hotkey={c.hotkey}
                 plain
                 dimColor
                 role={c.key === 'dismiss' ? 'dismiss' : undefined}

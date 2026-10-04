@@ -386,3 +386,26 @@ test('a naming that hangs past the model timeout names from the next prompt', as
   await clock.advance(600_000)
   expect((await submit($, clock, 'more', 'fix: resolve hook timeout on first prompt')).sessionTitle).toBeUndefined()
 })
+
+test('the band says so when a /rename kept the session from a late title', async ($, on) => {
+  const { clock, renamed } = world(on, { delayMs: 5000 })
+  await submit($, clock, 'compare two parsers', undefined, 100)
+  await clock.advance(5000)
+  expect((await submit($, clock, 'go on', 'research: my rename')).sessionTitle).toBeUndefined()
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /kept your \/rename over .fix: resolve hook timeout on first prompt./ })).toBeDefined()
+  await ui.press({ key: 'use' })
+  for (let i = 0; i < 5; i++) {
+    await clock.advance(0)
+  }
+  expect(renamed).toEqual(['fix: resolve hook timeout on first prompt'])
+})
+
+test('the band choices have no hotkeys, so a typed digit presses nothing', async ($, on) => {
+  const { clock } = world(on)
+  await submit($, clock, 'the hook times out on the first prompt, fix it')
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  const buttons = await ui.findAll({ type: 'Button' })
+  expect(buttons.map(b => b.key)).toEqual(['regenerate', 'edit', 'dismiss'])
+  expect(buttons.every(b => b.props.hotkey === undefined)).toBe(true)
+})

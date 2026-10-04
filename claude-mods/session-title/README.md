@@ -48,9 +48,13 @@ The band above the prompt shows what naming is doing, drawn like the built-in
 "You should know" lines: `✦ Naming this session…` while the model call runs,
 then `✦ Session title · <title>` with a green star (and "shows from your next
 prompt" when the title came late), or the failure with a red star. Under it:
-`1: Regenerate` (another title from the latest prompts; `1: Retry` after a
-failure), `2: Edit` (puts `/rename <title>` in an empty prompt box, to change
-and send), and `0: Dismiss` (`0: OK`). It stays up until the next prompt. The band holds one plugin's drawing at a time, so this and
+Regenerate (another title from the latest prompts; Retry after a failure),
+Edit (puts `/rename <title>` in an empty prompt box, to change and send), and
+Dismiss (OK). When a `/rename` of yours kept the session from a late title,
+the band says so and offers Use suggested, which applies that title anyway.
+The choices are clicked, or reached with ctrl+x tab; they take no digit
+hotkeys, since a digit typed into an empty prompt box would press one. The
+band stays up until the next prompt. The band holds one plugin's drawing at a time, so this and
 a "You should know" line never show together; one waits for the other.
 
 Per-session state lives in `$.state` under `session-title` (`naming`: the
