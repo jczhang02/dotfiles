@@ -179,6 +179,8 @@ Notable package boundaries:
   files. GNOME keeps the dynamic default-application and user-directory files
   as ordinary local files.
 - `gtk` leaves `bookmarks` local since file managers rewrite it at runtime.
+- `fcitx` leaves `profile` and `conf/notifications.conf` local since fcitx5
+  rewrites them on its own.
 - `claude` tracks only hand-written Claude Code files: `CLAUDE.md`, subagents,
   keybindings, themes, and the `ghostty-notify.sh` hook. The `session-title`
   mod lives in `claude-mods/` instead.
