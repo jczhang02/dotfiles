@@ -33,7 +33,7 @@ window-decoration = auto
 window-show-tab-bar = never
 confirm-close-surface = false
 
-background-opacity = 0.85
+background-opacity = 1
 quit-after-last-window-closed = false
 
 app-notifications=no-clipboard-copy
