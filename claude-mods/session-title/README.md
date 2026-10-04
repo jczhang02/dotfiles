@@ -29,16 +29,26 @@ A naming whose model call outlives its timer, cut by a reload of the mod or
 pending past 90 s, counts as failed and retries the same way. Only the first
 600 characters of the prompt are sent.
 
-`/retitle <task>` names a session that has moved on to another task. It does
-not start a turn; the new title shows from the next prompt, replacing whatever
-title the session has by then, a `/rename` included.
+`/retitle` names a session again, without starting a turn:
+
+- `/retitle` alone: from the latest prompts typed in this session.
+- `/retitle fix: write the parser`: a title already in the format, as it is,
+  with no model call.
+- `/retitle <task>`: from the task described.
+
+A title asked for this way replaces whatever title the session has, a
+`/rename` included, and applies at once: the mod runs `/rename <title>` for
+you (it waits for Claude to finish a running turn, and prints its usual line
+in the transcript). If Claude Code refuses that, the title goes out with the
+next prompt instead.
 
 The band above the prompt shows what naming is doing, drawn like the built-in
 "You should know" lines: `✦ Naming this session…` while the model call runs,
 then `✦ Session title · <title>` with a green star (and "shows from your next
-prompt" when the title came late), or the failure with a red star and a hint
-to use `/retitle`. It stays up until the next prompt, or until `0` (Dismiss or
-OK) takes it down. The band holds one plugin's drawing at a time, so this and
+prompt" when the title came late), or the failure with a red star. Under it:
+`1: Regenerate` (another title from the latest prompts; `1: Retry` after a
+failure), `2: Edit` (puts `/rename <title>` in an empty prompt box, to change
+and send), and `0: Dismiss` (`0: OK`). It stays up until the next prompt. The band holds one plugin's drawing at a time, so this and
 a "You should know" line never show together; one waits for the other.
 
 Per-session state lives in `$.state` under `session-title` (`naming`: the

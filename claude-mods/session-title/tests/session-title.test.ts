@@ -6,7 +6,17 @@ const SID = '11111111-1111-4111-8111-111111111111'
 const USAGE = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
 
 // `delays`: per call, in order; calls past the list wait `delayMs`.
-type World = { turns?: number; replies?: string[]; delayMs?: number; delays?: number[] }
+// `messages`: the session's typed prompts; `isRenameRefused`: /rename run by
+// the mod fails; `draft`: what the prompt box holds.
+type World = {
+  turns?: number
+  replies?: string[]
+  delayMs?: number
+  delays?: number[]
+  messages?: string[]
+  isRenameRefused?: boolean
+  draft?: string
+}
 
 // Stands in for the engine beneath the plugin; counts the naming calls.
 function world(on: On, options: World = {}) {
@@ -31,8 +41,25 @@ function world(on: On, options: World = {}) {
   })
   on('classic.UserPromptSubmit', () => ({}))
   on('classic.SessionStart', () => ({}))
+  const renamed: string[] = []
+  const fills: string[] = []
+  on('session.messages', () => ({
+    value: (options.messages ?? []).map(text => ({ role: 'user' as const, text, toolUses: [] })),
+  }))
+  on('command.run', { command: 'rename' }, ($, e) => {
+    if (options.isRenameRefused) {
+      throw new Error('refused')
+    }
+    renamed.push(e.args)
+    return { text: '' }
+  })
+  on('prompt.read', () => ({ value: { text: options.draft ?? '', cursor: 0 } }))
+  on('prompt.fill', ($, e) => {
+    fills.push(e.text)
+    return { isFilled: true }
+  })
   on('session.start', ($, e) => ({ cwd: e.cwd }))
-  return { clock, calls }
+  return { clock, calls, renamed, fills }
 }
 
 const BAND = {
@@ -139,26 +166,89 @@ test('takes the title line out of a reply with a lead-in', async ($, on) => {
   expect((await submit($, clock, 'fix the timeout')).sessionTitle).toBe('fix: resolve hook timeout')
 })
 
-test('/retitle names the session again from the next prompt', async ($, on) => {
-  const { clock, calls } = world(on, { replies: ['fix: resolve hook timeout', 'feat: add dark mode to settings page'] })
+test('/retitle applies the new title at once with /rename', async ($, on) => {
+  const { clock, calls, renamed } = world(on, { replies: ['fix: resolve hook timeout', 'feat: add dark mode to settings page'] })
   await submit($, clock, 'fix the timeout')
-  const ran = $.command.run({
-    command: 'retitle',
-    args: 'add dark mode to the settings page',
-    origin: { kind: 'user' },
-    presentation: { isFullscreen: false, columns: 120 },
-  } as never)
+  const ran = await retitle($, clock, 'add dark mode to the settings page')
+  expect(ran.text).toContain('feat: add dark mode to settings page')
+  expect(calls[1]).toContain('add dark mode to the settings page')
+  expect(renamed).toEqual(['feat: add dark mode to settings page'])
+  // Applied already: the next prompt carries nothing.
+  expect((await submit($, clock, 'go', 'feat: add dark mode to settings page')).sessionTitle).toBeUndefined()
+})
+
+test('/retitle falls back to the next prompt when /rename is refused', async ($, on) => {
+  const { clock } = world(on, { replies: ['fix: resolve hook timeout', 'feat: add dark mode'], isRenameRefused: true })
+  await submit($, clock, 'fix the timeout')
+  await retitle($, clock, 'add dark mode')
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /shows from your next prompt/ })).toBeDefined()
+  expect((await submit($, clock, 'go', 'fix: resolve hook timeout')).sessionTitle).toBe('feat: add dark mode')
+})
+
+test('/retitle with no task names the session from its latest prompts', async ($, on) => {
+  const { clock, calls, renamed } = world(on, {
+    replies: ['chore: tidy dotfiles'],
+    messages: ['fix the timeout', '<command-name>/model</command-name>', 'now tidy my dotfiles'],
+  })
+  expect((await retitle($, clock, '')).text).toContain('chore: tidy dotfiles')
+  expect(calls[0]).toContain('now tidy my dotfiles')
+  expect(calls[0]).not.toContain('command-name')
+  expect(renamed).toEqual(['chore: tidy dotfiles'])
+})
+
+test('/retitle with a title in the format uses it as it is', async ($, on) => {
+  const { clock, calls, renamed } = world(on)
+  expect((await retitle($, clock, 'docs: write the readme')).text).toContain('docs: write the readme')
+  expect(calls.length).toBe(0)
+  expect(renamed).toEqual(['docs: write the readme'])
+})
+
+test('/retitle does not wait on a /rename that is still queued', async ($, on) => {
+  const { clock } = world(on, { replies: ['feat: add dark mode'] })
+  on('command.run', { command: 'rename' }, () => new Promise(() => {}))
+  const ran = await retitle($, clock, 'add dark mode')
+  expect(ran.text).toContain('feat: add dark mode')
+})
+
+test('Regenerate asks for a different title and applies it', async ($, on) => {
+  const { clock, calls, renamed } = world(on, {
+    replies: ['fix: resolve hook timeout on first prompt', 'fix: stop the first prompt hook timing out'],
+    messages: ['the hook times out on the first prompt, fix it'],
+  })
+  await submit($, clock, 'the hook times out on the first prompt, fix it')
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  await ui.press({ key: 'regenerate' })
   for (let i = 0; i < 20; i++) {
     await clock.advance(0)
   }
-  expect((await ran).text).toContain('feat: add dark mode to settings page')
-  expect(calls[1]).toContain('add dark mode to the settings page')
-
-  const next = await submit($, clock, 'start with the toggle', 'fix: resolve hook timeout')
-  expect(next.sessionTitle).toBe('feat: add dark mode to settings page')
+  expect(calls.length).toBe(2)
+  expect(renamed).toEqual(['fix: stop the first prompt hook timing out'])
+  await ui.redraw()
+  expect(await ui.find({ type: 'Text', text: /^fix: stop the first prompt hook timing out$/ })).toBeDefined()
 })
 
-test('/retitle without a task shows its usage', async ($, on) => {
+test('Edit puts /rename and the title in the prompt box', async ($, on) => {
+  const { clock, fills } = world(on)
+  await submit($, clock, 'the hook times out on the first prompt, fix it')
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  await ui.press({ key: 'edit' })
+  expect(fills).toEqual(['/rename fix: resolve hook timeout on first prompt'])
+  await ui.redraw()
+  expect(await ui.find({ type: 'Text', text: /resolve hook timeout/ })).toBeUndefined()
+})
+
+test('Edit keeps a draft in the prompt box and says so', async ($, on) => {
+  const { clock, fills } = world(on, { draft: 'half a thought' })
+  await submit($, clock, 'the hook times out on the first prompt, fix it')
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  await ui.press({ key: 'edit' })
+  expect(fills).toEqual([])
+  await ui.redraw()
+  expect(await ui.find({ type: 'Text', text: /prompt box has text in it/ })).toBeDefined()
+})
+
+test('/retitle with no task and nothing typed yet shows its usage', async ($, on) => {
   world(on)
   const ran = await $.command.run({ command: 'retitle', args: '  ', origin: { kind: 'user' } } as never)
   expect(ran.text).toContain('Usage')
@@ -224,14 +314,15 @@ function retitle($: Engine, clock: MockClock, args: string) {
 
 test('/retitle applies before the mod has seen a prompt', async ($, on) => {
   // As after a reload mid-session: the session already has a title the mod never saw.
-  const { clock } = world(on, { replies: ['chore: clean up dotfiles'] })
+  // /rename refused, so the next prompt has to carry it past the rename check.
+  const { clock } = world(on, { replies: ['chore: clean up dotfiles'], isRenameRefused: true })
   expect((await retitle($, clock, 'make dotfiles clean')).text).toContain('chore: clean up dotfiles')
   const next = await submit($, clock, 'go', 'feat: an older title')
   expect(next.sessionTitle).toBe('chore: clean up dotfiles')
 })
 
 test('/retitle wins over a /rename made before it', async ($, on) => {
-  const { clock } = world(on, { replies: ['fix: resolve hook timeout', 'chore: clean up dotfiles'] })
+  const { clock } = world(on, { replies: ['fix: resolve hook timeout', 'chore: clean up dotfiles'], isRenameRefused: true })
   await submit($, clock, 'fix the timeout')
   await retitle($, clock, 'make dotfiles clean')
   const next = await submit($, clock, 'go', 'docs: my own rename')

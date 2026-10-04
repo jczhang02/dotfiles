@@ -19,8 +19,9 @@ export type Naming = {
 export type Notice =
   | { kind: 'naming' }
   // `late`: the title came after its prompt and shows from the next one.
-  | { kind: 'named'; title: string; late: boolean }
-  | { kind: 'failed'; reason: string }
+  // `isApplying`: asked for with /retitle or a button, /rename on its way.
+  | { kind: 'named'; title: string; late: boolean; isApplying?: boolean; hint?: string }
+  | { kind: 'failed'; reason: string; hint?: string }
 
 declare module 'claude-code' {
   interface PluginState {
