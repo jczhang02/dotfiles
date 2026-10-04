@@ -106,91 +106,110 @@
   display: none;
 }
 
-/* Collapsed strip and the open/close morph.
+/* Collapsed strip and the open/close animation.
    TST's page is always the full sidebar width; userChrome.css only clips how much
    of it shows. To tell TST the drawer is open, userChrome.css makes the page 280px
    wide when open and 279px when collapsed (keep 280 equal to --uc-sidebar-hover-width).
    Not :hover: TST's hover can stay stuck after the mouse leaves.
-   --uc-open goes 0 -> 1 while the sidebar opens and
-   1 -> 0 while it closes, and every collapsed/expanded difference below is a mix
-   of the two by that number, so favicons glide into place and titles fade in.
+   The tabs keep the expanded layout in both states. Collapsed is the same layout
+   moved and faded: favicons shifted left into the 48px strip, titles and buttons
+   transparent. Only translate, opacity and color change, so the animation never
+   lays out the tab tree again. (Animating the indent, margins and twisty width
+   instead re-laid out every tab on every frame, which was very slow.)
    Keep the timings equal to the ones in userChrome.css (#sidebar-box). */
-@property --uc-open {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 0;
-}
 :root.sidebar {
-  --uc-open: 0;
   /* Close: 180ms like the drawer in userChrome.css, but waiting 100ms, not 150ms:
      TST learns about the close a little late, and titles still fading would
      show as stubs in the closed strip */
-  transition: --uc-open 180ms cubic-bezier(.3, 0, 1, 1) 100ms;
+  --uc-anim: 180ms cubic-bezier(.3, 0, 1, 1) 100ms;
+  /* The pill shrinks in one step once the drawer has closed (150ms + 180ms) */
+  --uc-pill-delay: 330ms;
 }
 @media (min-width: 280px) {
   :root.sidebar {
-    --uc-open: 1;
     /* Open: 220ms, decelerating (same as the drawer in userChrome.css) */
-    transition: --uc-open 220ms cubic-bezier(.05, .7, .1, 1);
+    --uc-anim: 220ms cubic-bezier(.05, .7, .1, 1);
+    --uc-pill-delay: 0s;
   }
 }
 
-/* Collapsed: no tree indentation and no twisty, so every favicon lines up in the
-   middle of the 48px strip, and the tab's pill (hover, active) shrinks to the 28px
-   around it. The tab itself keeps its full width: a narrower tab would make TST
-   fade its title out as overflowing, and TST updates that a few frames late. */
-:root.sidebar {
-  --uc-closed: calc(1 - var(--uc-open));
-  --twisty-size: calc(var(--favicon-size) * var(--uc-open)) !important;
-}
+/* Tree indentation of the tab, which the collapsed strip takes back out */
 :root.sidebar tab-item {
-  --tab-margin-left: calc(6px * var(--uc-open) + 8px * var(--uc-closed));
-}
-:root.sidebar tab-item-substance .background {
-  inset-inline-end: calc(var(--tab-visual-padding) * var(--uc-open) + (100% - 30px) * var(--uc-closed)) !important;
-}
-:root.regular.sidebar tab-item:not(.pinned) {
-  --tab-visual-indent: calc(var(--tab-margin-inline-start) + (var(--tab-group-member-indent) + var(--tab-indent)) * var(--uc-open)) !important;
+  --uc-indent: calc(var(--tab-group-member-indent) + var(--tab-indent));
 }
 /* Same, where TST also shifts tabs clear of an auto-hiding scrollbar */
 :root.regular.sidebar:is(.shift-tabs-for-scrollbar-only-on-hover.on-scrollbar-area:hover, :not(.shift-tabs-for-scrollbar-only-on-hover))
   #tabbar.scrollbar-autohide #normal-tabs-container.overflow tab-item:not(.pinned) {
-  --tab-visual-indent: calc(var(--tab-margin-inline-start) + (var(--tab-group-member-indent) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance)) * var(--uc-open)) !important;
+  --uc-indent: calc(var(--tab-group-member-indent) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
+}
+:root.sidebar tab-item.pinned {
+  --uc-indent: 0px;
+}
+
+/* Collapsed: the favicon sits in the middle of the 48px strip. Expanded it is
+   6px (tab margin) + indent + twisty from the left; collapsed it belongs 12px
+   from the left. */
+:root.sidebar tab-item-substance .caption {
+  translate: calc(6px - var(--twisty-size) - var(--uc-indent)) 0;
+  transition: translate var(--uc-anim);
+}
+/* The tab's pill (hover, active) shrinks to the 28px around the favicon. Its
+   width changes in one step, never mid-animation: opening, the drawer reveals the
+   full pill as it slides out; closing, the drawer has covered it by then. */
+:root.sidebar tab-item-substance .background {
+  translate: calc(2px - var(--uc-indent)) 0;
+  inset-inline-end: calc(100% - 30px) !important;
+  transition: translate var(--uc-anim),
+              inset-inline-end 0s linear var(--uc-pill-delay),
+              background-color var(--color-animation) !important;
 }
 :root.sidebar tab-item tab-twisty {
-  opacity: var(--uc-open);
-}
-/* Center the favicon and the "+" icon in the strip: without the twisty they
-   end up 4px and 7.5px left of the middle */
-:root.sidebar tab-item-substance .caption {
-  translate: calc(4px * var(--uc-closed)) 0;
-}
-:root.sidebar .newtab-button .label {
-  translate: calc(7.5px * var(--uc-closed)) 0;
-}
-/* TST animates tab margins and widths on its own (for indent changes). Here they
-   follow --uc-open, and TST's extra easing on top made the tabs lag behind the
-   drawer, squeezing titles to nothing until the end. Same list as TST's
-   --tab-animation minus margin-inline and max-width. */
-:root.sidebar tab-item.animation-ready tab-item-substance {
-  transition: background var(--color-animation),
-              color var(--color-animation),
-              margin-block-start var(--collapse-animation),
-              margin-block-end var(--collapse-animation),
-              max-height var(--collapse-animation),
-              min-height var(--collapse-animation),
-              opacity var(--collapse-animation) !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--uc-anim);
 }
 /* Everything after the favicon fades out (it is outside the 48px strip or
    hidden behind it anyway). Titles fade by color: in testing, any opacity below 1
    on a TST title hid it completely. */
 :root.sidebar tab-item tab-label,
 :root.sidebar .newtab-button .label-text {
-  color: color-mix(in srgb, currentColor calc(var(--uc-open) * 100%), transparent) !important;
+  color: transparent !important;
+  transition: color var(--uc-anim);
 }
 :root.sidebar tab-item :is(tab-counter, tab-sound-button, tab-closebox),
 :root.sidebar :is(.newtab-action-selector-anchor, .contextual-identities-selector-anchor) {
-  opacity: var(--uc-open);
+  opacity: 0;
+  transition: opacity var(--uc-anim);
+}
+/* The "+" icon of the new tab button, centered in the strip like the favicons
+   (the button keeps room for the twisty too) */
+:root.sidebar .newtab-button .label {
+  translate: calc(7.5px - var(--twisty-size)) 0;
+  transition: translate var(--uc-anim);
+}
+
+/* Expanded: everything back in place */
+@media (min-width: 280px) {
+  :root.sidebar tab-item-substance .caption,
+  :root.sidebar tab-item-substance .background,
+  :root.sidebar .newtab-button .label {
+    translate: none;
+  }
+  :root.sidebar tab-item-substance .background {
+    inset-inline-end: var(--tab-visual-padding) !important;
+  }
+  :root.sidebar tab-item tab-twisty {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  :root.sidebar tab-item tab-label,
+  :root.sidebar .newtab-button .label-text {
+    color: inherit !important;
+  }
+  :root.sidebar tab-item :is(tab-counter, tab-sound-button, tab-closebox),
+  :root.sidebar :is(.newtab-action-selector-anchor, .contextual-identities-selector-anchor) {
+    opacity: 1;
+  }
 }
 
 /* The "new tab" button at the bottom (expanded sidebar). Ctrl+T still works;
