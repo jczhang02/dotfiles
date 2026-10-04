@@ -171,7 +171,8 @@ Notable package boundaries:
 
 - `mpv` uses one native configuration file with the built-in UI and keymap.
 - `firefox` tracks `user.js` and `chrome/` (userChrome and the Tree Style Tab
-  style) for one profile. The profile directory name,
+  style) for one profile, plus `tst-css-install`, which writes `tst.css` into
+  Tree Style Tab's storage while Firefox is closed. The profile directory name,
   `78ptyimu.default-release`, is random per install: on a new machine, rename
   the package directory to match the new profile before stowing. Prefs and
   bookmarks stay in the profile.

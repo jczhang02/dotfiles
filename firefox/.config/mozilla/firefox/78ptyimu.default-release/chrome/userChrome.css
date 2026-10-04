@@ -11,47 +11,69 @@
 @import "vendor/autohide_sidebar.css";
 
 /* Sidebar widths: collapsed (favicons only) and expanded on hover.
-   tst.css switches to favicon-only mode below 80px, so keep the first value under that. */
+   tst.css centers the collapsed favicons for a 48px strip; if you change the first
+   value, change its "Collapsed" numbers too. */
 #browser {
   --uc-sidebar-width: 48px;
   --uc-sidebar-hover-width: 280px;
 }
 
-/* Open/close animation.
-   The width snaps in one step: animating it resizes TST's page every frame and
-   can stop half-open. The slide is a cover in the sidebar color that sweeps off
-   the tree. The cover ignores the mouse, so the whole tree is hoverable and
-   clickable from the first frame. (A clip-path slide hid the unrevealed part from
-   the mouse too, so moving fast toward a tab's close button counted as leaving.)
-   Open: width snaps wide, cover slides away to the right.
-   Close: wait, cover slides back, then the width snaps narrow and the cover hides. */
+/* Open/close animation: a drawer that slides out over the page.
+   TST's page always keeps the full width (--uc-sidebar-hover-width), so it never
+   re-lays out mid-animation (resizing it made the old animations stall, go blank
+   or stop half-open). The drawer only changes how much of it shows: 48px
+   collapsed, all of it open. tst.css morphs the tabs between the favicon strip and
+   the full tree with the same timings; keep the two files in sync.
+   The drawer animates its width and hides the rest (overflow), not a clip-path:
+   Firefox runs clip-path animations on the compositor, where only the tab tree
+   moved while the panel background jumped, and TST drew only the part that was
+   visible when the animation started (titles cut off at a fixed line).
+   Open: 220ms, decelerating. Close: wait 150ms, then 180ms, accelerating. */
 #sidebar-box {
-  --uc-close-delay: 150ms;     /* wait after the mouse leaves */
-  --uc-slide-duration: 140ms;  /* cover slide, both directions */
-  /* The snippet's width change: instant, after the wait + slide */
-  --uc-autohide-transition-duration: 0ms;
-  --uc-autohide-sidebar-delay: calc(var(--uc-close-delay) + var(--uc-slide-duration));
+  --uc-open-duration: 220ms;
+  --uc-open-easing: cubic-bezier(.05, .7, .1, 1);
+  --uc-close-delay: 150ms;
+  --uc-close-duration: 180ms;
+  --uc-close-easing: cubic-bezier(.3, 0, 1, 1);
 }
-#sidebar-box::after {
+/* The snippet's width animation is off: the page is full width all the time,
+   minus 1px while collapsed. That 1px is how tst.css knows the drawer is open
+   (a media query on its width); TST's own :hover can stay stuck after the mouse
+   leaves in a way it doesn't notice (fast exit, a popup), leaving the expanded
+   tree squeezed into the strip. */
+#sidebar-box #sidebar {
+  min-width: calc(var(--uc-sidebar-hover-width) - 1px) !important;
+  transition: none !important;
+}
+#sidebar-box:hover > .sidebar-browser-stack > #sidebar {
+  min-width: var(--uc-sidebar-hover-width) !important;
+  transition: none !important;
+}
+#sidebar-box > .sidebar-browser-stack {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  width: var(--uc-sidebar-width);
+  overflow: hidden;
+  box-shadow: 4px 0 16px -6px rgb(0 0 0 / 0);
+  transition: width var(--uc-close-duration) var(--uc-close-easing) var(--uc-close-delay),
+              box-shadow var(--uc-close-duration) var(--uc-close-easing) var(--uc-close-delay);
+}
+#sidebar-box:hover > .sidebar-browser-stack {
+  width: var(--uc-sidebar-hover-width);
+  box-shadow: 4px 0 16px -6px rgb(0 0 0 / .18);
+  transition: width var(--uc-open-duration) var(--uc-open-easing),
+              box-shadow var(--uc-open-duration) var(--uc-open-easing);
+}
+/* While open or opening, the whole drawer area counts as the sidebar, revealed or
+   not. Otherwise a fast move toward a tab's close button lands on the page before
+   the drawer reaches it, which counts as leaving and closes it. */
+#sidebar-box:hover::before {
   content: "";
   position: absolute;
   inset-block: 0;
-  inset-inline-start: var(--uc-sidebar-width);
-  width: calc(var(--uc-sidebar-hover-width) - var(--uc-sidebar-width));
-  background-color: light-dark(#f4f3f8, #1c1b22);
-  pointer-events: none;
-  z-index: 10;
-  transform-origin: right;
-  transform: scaleX(1);
-  visibility: hidden;
-  transition:
-    transform var(--uc-slide-duration) ease-out var(--uc-close-delay),
-    visibility 0s linear var(--uc-autohide-sidebar-delay);
-}
-#sidebar-box:hover::after {
-  transform: scaleX(0);
-  visibility: visible;
-  transition-delay: 0ms;
+  inset-inline-start: 0;
+  width: var(--uc-sidebar-hover-width);
 }
 
 /* Same background as the tree (--uc-bg in tst.css) behind the sidebar page,
@@ -65,9 +87,11 @@
 /* Collapse the sidebar when Firefox is not the active window. If the mouse leaves
    the window straight from the sidebar, Firefox never sees it leave and the tree
    stays open; switching to the other window now closes it. */
-:root:-moz-window-inactive #sidebar-box > #sidebar,
+:root:-moz-window-inactive #sidebar-box > .sidebar-browser-stack {
+  width: var(--uc-sidebar-width) !important;
+}
 :root:-moz-window-inactive #sidebar-box > .sidebar-browser-stack > #sidebar {
-  min-width: var(--uc-sidebar-width) !important;
+  min-width: calc(var(--uc-sidebar-hover-width) - 1px) !important;
 }
 
 /* Hide the sidebar launcher (tool icons: settings, history, bookmarks...).

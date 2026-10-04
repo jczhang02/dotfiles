@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+"""tst-css-install - put tst.css into Tree Style Tab, no copy and paste.
+
+    tst-css-install [--profile DIR] [--css FILE]
+
+Writes the CSS where TST keeps its "Extra style rules": Firefox's extension
+sync storage (storage-sync-v2.sqlite in the profile). TST reads that storage
+at every start and it wins over TST's local copy, so the new rules apply the
+next time Firefox starts. Firefox must be closed: it keeps the database open.
+
+Defaults: the profile below and its chrome/tst.css.
+"""
+
+import argparse
+import base64
+import json
+import os
+import sqlite3
+import sys
+
+DEFAULT_PROFILE = os.path.expanduser("~/.config/mozilla/firefox/78ptyimu.default-release")
+TST_ID = "treestyletab@piro.sakura.ne.jp"
+# Same as TST's setChunkedConfig(): base64 of the UTF-8 text, cut into 6144-char
+# slots chunkedUserStyleRules0..7. Empty slots equal the default and are not stored.
+KEY = "chunkedUserStyleRules"
+CHUNK = 6144
+SLOTS = 8
+
+
+def firefox_running(profile):
+    # While Firefox runs, "lock" is a symlink to "<ip>:+<pid>"; a crash can leave it behind.
+    lock = os.path.join(profile, "lock")
+    if not os.path.islink(lock):
+        return False
+    pid = os.readlink(lock).rpartition("+")[2]
+    return pid.isdigit() and os.path.exists(f"/proc/{pid}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Put tst.css into Tree Style Tab.")
+    parser.add_argument("--profile", default=DEFAULT_PROFILE, help="Firefox profile directory")
+    parser.add_argument("--css", help="CSS file (default: <profile>/chrome/tst.css)")
+    args = parser.parse_args()
+
+    profile = os.path.expanduser(args.profile)
+    css_path = os.path.expanduser(args.css or os.path.join(profile, "chrome", "tst.css"))
+    db_path = os.path.join(profile, "storage-sync-v2.sqlite")
+
+    if firefox_running(profile):
+        sys.exit("Firefox is running with this profile. Quit it (Ctrl+Q) and run this again.")
+    if not os.path.exists(db_path):
+        sys.exit(f"No extension storage at {db_path}. Wrong profile?")
+
+    with open(css_path, encoding="utf-8") as f:
+        css = f.read()
+    encoded = base64.b64encode(css.encode("utf-8")).decode("ascii")
+    chunks = [encoded[i:i + CHUNK] for i in range(0, len(encoded), CHUNK)]
+    if len(chunks) > SLOTS:
+        sys.exit(f"{css_path} is too large for TST ({len(chunks)} chunks, at most {SLOTS}).")
+
+    db = sqlite3.connect(db_path)
+    with db:
+        row = db.execute(
+            "SELECT data, sync_change_counter FROM storage_sync_data WHERE ext_id = ?", (TST_ID,)
+        ).fetchone()
+        data = json.loads(row[0]) if row and row[0] else {}
+        old = "".join(data.get(f"{KEY}{i}") or "" for i in range(SLOTS))
+        if old == encoded:
+            print(f"TST already has this CSS ({len(css)} bytes). Nothing to do.")
+            return
+        for i in range(SLOTS):
+            if i < len(chunks):
+                data[f"{KEY}{i}"] = chunks[i]
+            else:
+                data.pop(f"{KEY}{i}", None)
+        # Bump the change counter so Firefox Sync uploads this instead of
+        # bringing the old rules back from another device.
+        db.execute(
+            "INSERT INTO storage_sync_data (ext_id, data, sync_change_counter) VALUES (?, ?, 1)"
+            " ON CONFLICT(ext_id) DO UPDATE SET data = excluded.data,"
+            " sync_change_counter = sync_change_counter + 1",
+            (TST_ID, json.dumps(data, separators=(",", ":"))),
+        )
+    db.close()
+    print(f"Wrote {css_path} ({len(css)} bytes) into TST. Start Firefox to use it.")
+
+
+if __name__ == "__main__":
+    main()
