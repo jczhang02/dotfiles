@@ -29,6 +29,9 @@ window-width = 150
 window-padding-x = 2
 window-padding-y = 2
 window-padding-balance = true
+# Fill the padding with the nearest cell's colour, so tmux's tinted status bar
+# reaches the window edges instead of floating inside a background-coloured frame.
+window-padding-color = extend
 window-decoration = auto
 window-show-tab-bar = never
 confirm-close-surface = false
