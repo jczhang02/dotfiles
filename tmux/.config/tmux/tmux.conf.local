@@ -393,6 +393,14 @@ tmux_conf_urlscan_options="--compact --dedupe"
 # status line on top
 set -g status-position top
 
+# Tint the bar with Catppuccin Crust so it reads apart from the panes below; the
+# colour follows Ghostty's light/dark switch via #{client_theme}. Embedded
+# bg=default in the oh-my-tmux formats inherits it. #!important re-applies this
+# after oh-my-tmux's theme step, which would otherwise reset status-style.
+set -g status-style "fg=default,bg=#{?#{==:#{client_theme},dark},#11111b,#dce0e8}" #!important
+set-hook -g client-light-theme[100] "refresh-client -S"
+set-hook -g client-dark-theme[100]  "refresh-client -S"
+
 # Ghostty capabilities not advertised by terminfo; fixed index keeps reload idempotent.
 set -g  default-terminal "tmux-256color"
 set -s  terminal-features[100] "xterm-ghostty:RGB:clipboard:hyperlinks:extkeys:strikethrough:sync"
