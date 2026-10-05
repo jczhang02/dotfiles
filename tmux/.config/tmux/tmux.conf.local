@@ -271,7 +271,9 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_status_left=" ❐ #S | up#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
+# uptime: dim stopwatch icon (nf-md-timer_outline, U+F051B), then a dim "│"
+# so it reads as separate from the window list that follows.
+tmux_conf_theme_status_left=" ❐ #S | #[dim]󰔛#[nodim]#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,}  #[dim]│#[nodim] "
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
 # PREFIX is styled inside the conditional: oh-my-tmux's #{prefix} paints its
 # blank placeholder with prefix_bg, which leaves a permanent red block.
