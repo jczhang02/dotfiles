@@ -91,7 +91,8 @@ tmux_conf_theme=enabled
 tmux_conf_theme_colour_1="default"    # terminal   — status bar bg
 tmux_conf_theme_colour_2="#ccd0da"    # Surface0   — pane border
 tmux_conf_theme_colour_3="default"    # terminal   — inactive window fg (dimmed)
-tmux_conf_theme_colour_4="#1e66f5"    # Blue       — active pane/window accent
+tmux_conf_theme_colour_4="#dd4fa5"    # Pink       — accent: current window, active pane
+                                      #   (readable on both Latte and Mocha backgrounds)
 tmux_conf_theme_colour_5="#df8e1d"    # Yellow     — messages / copy mode
 tmux_conf_theme_colour_6="#11111b"    # Ink        — text on yellow
 tmux_conf_theme_colour_7="#ffffff"    # White      — unused
@@ -198,7 +199,8 @@ tmux_conf_theme_terminal_title="#h ❐ #S ● #I #W"
 tmux_conf_theme_window_status_fg="$tmux_conf_theme_colour_3"
 tmux_conf_theme_window_status_bg="$tmux_conf_theme_colour_1"
 tmux_conf_theme_window_status_attr="dim"
-tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+# padded like the current window, so every gap between tabs is 3 spaces
+tmux_conf_theme_window_status_format=" #{?window_last_flag,#[dim]#I#[nodim],#I} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}#{?window_activity_flag, #[fg=$tmux_conf_theme_colour_4]•,} "
 #tmux_conf_theme_window_status_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -212,17 +214,18 @@ tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_
 #     - #{hostname_full_ssh}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_window_status_current_fg="#ffffff"
-tmux_conf_theme_window_status_current_bg="$tmux_conf_theme_colour_4"
+# current window: no block, pink bold text with a pink underline under the name
+tmux_conf_theme_window_status_current_fg="$tmux_conf_theme_colour_4"
+tmux_conf_theme_window_status_current_bg="$tmux_conf_theme_colour_1"
 tmux_conf_theme_window_status_current_attr="bold"
-tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+tmux_conf_theme_window_status_current_format="#I #[us=$tmux_conf_theme_colour_4]#[underscore]#W#[nounderscore]#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_current_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
 # window activity status style
 tmux_conf_theme_window_status_activity_fg="default"
 tmux_conf_theme_window_status_activity_bg="default"
-tmux_conf_theme_window_status_activity_attr="underscore"
+tmux_conf_theme_window_status_activity_attr="none"   # underline marks the current window; activity gets a pink • instead
 
 # window bell status style
 tmux_conf_theme_window_status_bell_fg="#ffffff"
@@ -273,15 +276,15 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{username_ssh}
 # uptime: dim stopwatch icon (nf-md-timer_outline, U+F051B), then a dim "│"
 # so it reads as separate from the window list that follows.
-tmux_conf_theme_status_left=" ❐ #S | #[dim]󰔛#[nodim]#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,}  #[dim]│#[nodim] "
+tmux_conf_theme_status_left=" #[fg=$tmux_conf_theme_colour_4]❐#[fg=default] #S | #[dim]󰔛#[nodim]#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,}  #[dim]│#[nodim]"
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
 # PREFIX is styled inside the conditional: oh-my-tmux's #{prefix} paints its
 # blank placeholder with prefix_bg, which leaves a permanent red block.
 tmux_conf_theme_status_right=" #{?client_prefix,#[fg=#ffffff]#[bg=#d20f39]#[bold] PREFIX #[default],}#{pairing}#{synchronized} | #{username_ssh}#{root} | #{hostname_ssh} "
 
 # status left style
-tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_8"
-tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_9,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_11"
+tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_14,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_8"
+tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_1,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_11"
 tmux_conf_theme_status_left_attr="bold,none,none"
 
 # status right style
