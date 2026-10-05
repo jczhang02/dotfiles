@@ -144,7 +144,8 @@ tmux_conf_theme_focused_pane_bg="$tmux_conf_theme_colour_2"
 tmux_conf_theme_pane_border_style=thin
 
 # pane borders colours:
-tmux_conf_theme_pane_border="$tmux_conf_theme_colour_2"
+# follows Ghostty's light/dark switch: Latte Surface0 / Mocha Surface1
+tmux_conf_theme_pane_border="#{?#{==:#{client_theme},dark},#45475a,$tmux_conf_theme_colour_2}"
 tmux_conf_theme_pane_active_border="$tmux_conf_theme_colour_4"
 %if #{>=:#{version},3.2}
 tmux_conf_theme_pane_active_border="#{?pane_in_mode,$tmux_conf_theme_colour_9,#{?synchronize-panes,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_4}}"
@@ -398,8 +399,8 @@ set -g status-position top
 # bg=default in the oh-my-tmux formats inherits it. #!important re-applies this
 # after oh-my-tmux's theme step, which would otherwise reset status-style.
 set -g status-style "fg=default,bg=#{?#{==:#{client_theme},dark},#11111b,#dce0e8}" #!important
-set-hook -g client-light-theme[100] "refresh-client -S"
-set-hook -g client-dark-theme[100]  "refresh-client -S"
+set-hook -g client-light-theme[100] "refresh-client"   # full redraw: status bar and pane borders
+set-hook -g client-dark-theme[100]  "refresh-client"
 
 # Ghostty capabilities not advertised by terminfo; fixed index keeps reload idempotent.
 set -g  default-terminal "tmux-256color"
