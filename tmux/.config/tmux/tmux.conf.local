@@ -86,23 +86,25 @@ tmux_conf_24b_colour=false  # RGB is declared idempotently in terminal-features[
 tmux_conf_theme=enabled
 
 # Oh my tmux!'s original colour roles, mapped to Catppuccin Latte.
-tmux_conf_theme_colour_1="#e6e9ef"    # Mantle     — status bar bg
-tmux_conf_theme_colour_2="#ccd0da"    # Surface0   — last window / pane border
-tmux_conf_theme_colour_3="#5c5f77"    # Subtext1   — inactive window fg
+# Text that sits directly on the bar uses "default", so it follows Ghostty's
+# light/dark switch; coloured blocks keep explicit fg+bg pairs.
+tmux_conf_theme_colour_1="default"    # terminal   — status bar bg
+tmux_conf_theme_colour_2="#ccd0da"    # Surface0   — pane border
+tmux_conf_theme_colour_3="default"    # terminal   — inactive window fg (dimmed)
 tmux_conf_theme_colour_4="#1e66f5"    # Blue       — active pane/window accent
 tmux_conf_theme_colour_5="#df8e1d"    # Yellow     — messages / copy mode
 tmux_conf_theme_colour_6="#11111b"    # Ink        — text on yellow
-tmux_conf_theme_colour_7="#ffffff"    # White      — text on mauve
+tmux_conf_theme_colour_7="#ffffff"    # White      — unused
 tmux_conf_theme_colour_8="#11111b"    # Ink        — text on green
 tmux_conf_theme_colour_9="#df8e1d"    # Yellow     — session section
-tmux_conf_theme_colour_10="#8839ef"   # Mauve      — uptime section
+tmux_conf_theme_colour_10="default"   # terminal   — uptime section
 tmux_conf_theme_colour_11="#40a02b"   # Green      — path section
-tmux_conf_theme_colour_12="#4c4f69"   # Text       — clock section fg
-tmux_conf_theme_colour_13="#ffffff"   # White      — username section fg
-tmux_conf_theme_colour_14="#4c4f69"   # Text       — hostname section fg
-tmux_conf_theme_colour_15="#e6e9ef"   # Mantle     — clock section bg
-tmux_conf_theme_colour_16="#d20f39"   # Red        — username / alert bg
-tmux_conf_theme_colour_17="#dce0e8"   # Crust      — hostname section bg
+tmux_conf_theme_colour_12="default"   # terminal   — indicators fg
+tmux_conf_theme_colour_13="default"   # terminal   — username section fg
+tmux_conf_theme_colour_14="default"   # terminal   — hostname / last window fg
+tmux_conf_theme_colour_15="default"   # terminal   — indicators bg
+tmux_conf_theme_colour_16="#d20f39"   # Red        — alerts only (bell, prefix)
+tmux_conf_theme_colour_17="default"   # terminal   — hostname section bg
 
 # default theme (ansi)
 #tmux_conf_theme_colour_1="colour0"
@@ -195,7 +197,7 @@ tmux_conf_theme_terminal_title="#h ❐ #S ● #I #W"
 #     - #{username_ssh}
 tmux_conf_theme_window_status_fg="$tmux_conf_theme_colour_3"
 tmux_conf_theme_window_status_bg="$tmux_conf_theme_colour_1"
-tmux_conf_theme_window_status_attr="none"
+tmux_conf_theme_window_status_attr="dim"
 tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
@@ -229,7 +231,7 @@ tmux_conf_theme_window_status_bell_attr="blink,bold"
 
 # window last status style
 tmux_conf_theme_window_status_last_fg="$tmux_conf_theme_colour_14"
-tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_2"
+tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_1"   # not dimmed, no block
 tmux_conf_theme_window_status_last_attr="none"
 
 # status left/right sections separators
@@ -269,18 +271,20 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
+tmux_conf_theme_status_left=" ❐ #S | up#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
-tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized} | #{username}#{root} | #{hostname} "
+# PREFIX is styled inside the conditional: oh-my-tmux's #{prefix} paints its
+# blank placeholder with prefix_bg, which leaves a permanent red block.
+tmux_conf_theme_status_right=" #{?client_prefix,#[fg=#ffffff]#[bg=#d20f39]#[bold] PREFIX #[default],}#{pairing}#{synchronized} | #{username_ssh}#{root} | #{hostname_ssh} "
 
 # status left style
-tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
+tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_8"
 tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_9,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_11"
 tmux_conf_theme_status_left_attr="bold,none,none"
 
 # status right style
 tmux_conf_theme_status_right_fg="$tmux_conf_theme_colour_12,$tmux_conf_theme_colour_13,$tmux_conf_theme_colour_14"
-tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_17"
+tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_17"
 tmux_conf_theme_status_right_attr="none,none,bold"
 
 # pairing indicator
