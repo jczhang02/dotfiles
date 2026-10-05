@@ -200,8 +200,9 @@ tmux_conf_theme_terminal_title="#h ❐ #S ● #I #W"
 tmux_conf_theme_window_status_fg="$tmux_conf_theme_colour_3"
 tmux_conf_theme_window_status_bg="$tmux_conf_theme_colour_1"
 tmux_conf_theme_window_status_attr="dim"
-# padded like the current window, so every gap between tabs is 3 spaces
-tmux_conf_theme_window_status_format=" #{?window_last_flag,#[dim]#I#[nodim],#I} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,} "
+# padded like the current window, so every gap between tabs is 3 spaces;
+# a pink "!" marks an agent that finished while you were away (agent-done.sh)
+tmux_conf_theme_window_status_format=" #{?window_last_flag,#[dim]#I#[nodim],#I} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}#{?@agent-done, #[nodim]#[fg=$tmux_conf_theme_colour_4]#[bold]!,} "
 #tmux_conf_theme_window_status_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -404,6 +405,13 @@ set -g monitor-activity off
 set -g status-style "fg=default,bg=#{?#{==:#{client_theme},dark},#11111b,#dce0e8}" #!important
 set-hook -g client-light-theme[100] "refresh-client"   # full redraw: status bar and pane borders
 set-hook -g client-dark-theme[100]  "refresh-client"
+
+# @agent-done is set by agent-done.sh (Claude Code Stop hook, Codex notify) and
+# cleared when the window is viewed; session-window-changed covers every way of
+# moving between windows (select-, next-, previous-window, mouse).
+set-hook -g session-window-changed[101] "set -wu @agent-done"
+set-hook -g client-session-changed[101] "set -wu @agent-done"
+set-hook -g client-attached[101]        "set -wu @agent-done"
 
 # Ghostty capabilities not advertised by terminfo; fixed index keeps reload idempotent.
 set -g  default-terminal "tmux-256color"
