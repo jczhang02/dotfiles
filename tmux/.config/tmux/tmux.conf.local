@@ -201,7 +201,7 @@ tmux_conf_theme_window_status_fg="$tmux_conf_theme_colour_3"
 tmux_conf_theme_window_status_bg="$tmux_conf_theme_colour_1"
 tmux_conf_theme_window_status_attr="dim"
 # padded like the current window, so every gap between tabs is 3 spaces
-tmux_conf_theme_window_status_format=" #{?window_last_flag,#[dim]#I#[nodim],#I} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}#{?window_activity_flag, #[fg=$tmux_conf_theme_colour_4]•,} "
+tmux_conf_theme_window_status_format=" #{?window_last_flag,#[dim]#I#[nodim],#I} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,} "
 #tmux_conf_theme_window_status_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -226,7 +226,7 @@ tmux_conf_theme_window_status_current_format="#I #[us=$tmux_conf_theme_colour_4]
 # window activity status style
 tmux_conf_theme_window_status_activity_fg="default"
 tmux_conf_theme_window_status_activity_bg="default"
-tmux_conf_theme_window_status_activity_attr="none"   # underline marks the current window; activity gets a pink • instead
+tmux_conf_theme_window_status_activity_attr="none"   # activity monitoring is off (see user customizations)
 
 # window bell status style
 tmux_conf_theme_window_status_bell_fg="#ffffff"
@@ -393,6 +393,9 @@ tmux_conf_urlscan_options="--compact --dedupe"
 
 # status line on top
 set -g status-position top
+
+# no activity marker on window tabs; bells still show
+set -g monitor-activity off
 
 # Tint the bar with Catppuccin Crust so it reads apart from the panes below; the
 # colour follows Ghostty's light/dark switch via #{client_theme}. Embedded
