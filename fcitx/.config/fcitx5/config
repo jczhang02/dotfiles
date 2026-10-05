@@ -26,6 +26,7 @@ ModifierOnlyKeyTimeout=250
 
 [Hotkey/TriggerKeys]
 0=Super+space
+1=Shift_L
 
 [Hotkey/PrevCandidate]
 0=Shift+Tab
