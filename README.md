@@ -186,7 +186,7 @@ Notable package boundaries:
   keybindings, themes, and the `ghostty-notify.sh` hook. The `session-title`
   mod lives in `claude-mods/` instead.
   `settings.json` stays local because Claude Code replaces it on every settings
-  change; the herdr hook is owned by herdr.
+  change.
 - `agents` tracks the global `npx skills` lock, `rules/`, and self-authored
   skills. `skills-restore` reinstalls third-party skills from the lock, and
   tool-installed skills (`plannotator*`, `beads`, `cua-driver`) are left to
