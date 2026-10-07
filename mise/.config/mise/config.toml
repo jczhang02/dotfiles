@@ -38,6 +38,8 @@ claude-code = "latest"
 "http:moshi-hook" = { version = "latest", url = "https://cdn.getmoshi.app/hook/v{{version}}/moshi-hook_Linux_x86_64.tar.gz", version_list_url = "https://cdn.getmoshi.app/hook/latest/version.txt" }
 "github:backnotprop/plannotator" = { version = "latest", asset_pattern = "plannotator-linux-x64", bin = "plannotator" }
 "pipx:kaggle" = "latest"
+antigravity-cli = "latest"
+"github:peteonrails/voxtype" = { version = "1.1.0", asset_pattern = "voxtype-*-linux-x86_64-onnx-avx2", bin = "voxtype", checksum = "sha256:07ee9863f1d611ee3fc638f9ba766f3bd38783b9a97b276d7eceb9b995a7167b" }
 
 [settings]
 minimum_release_age = "0s"
