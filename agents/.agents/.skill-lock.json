@@ -296,6 +296,96 @@
       "skillFolderHash": "f4518a8eab97b8bfebc66a89d34320a89bef6930",
       "installedAt": "2026-10-01T04:43:33.746Z",
       "updatedAt": "2026-10-01T04:43:33.746Z"
+    },
+    "threejs-animation": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-animation/SKILL.md",
+      "skillFolderHash": "0e5c91a99a4838307f8a46d8178d6cd2e0fd3af0",
+      "installedAt": "2026-10-05T12:49:31.339Z",
+      "updatedAt": "2026-10-05T12:49:31.339Z"
+    },
+    "threejs-fundamentals": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-fundamentals/SKILL.md",
+      "skillFolderHash": "918e26abdcc434d3ef7563043a25a97a6209b411",
+      "installedAt": "2026-10-05T12:49:31.340Z",
+      "updatedAt": "2026-10-05T12:49:31.340Z"
+    },
+    "threejs-geometry": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-geometry/SKILL.md",
+      "skillFolderHash": "a8b8defe755f4505ac0258863e05727e37ce056f",
+      "installedAt": "2026-10-05T12:49:31.341Z",
+      "updatedAt": "2026-10-05T12:49:31.341Z"
+    },
+    "threejs-interaction": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-interaction/SKILL.md",
+      "skillFolderHash": "a977e017c2f4f393534b301c8f619183f44c5228",
+      "installedAt": "2026-10-05T12:49:31.341Z",
+      "updatedAt": "2026-10-05T12:49:31.341Z"
+    },
+    "threejs-lighting": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-lighting/SKILL.md",
+      "skillFolderHash": "1a3d8f6fd58d38f7978be27790b959e1dbebf39d",
+      "installedAt": "2026-10-05T12:49:31.341Z",
+      "updatedAt": "2026-10-05T12:49:31.341Z"
+    },
+    "threejs-loaders": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-loaders/SKILL.md",
+      "skillFolderHash": "ce4ab5647b2584a3b8b12d9a6f23604cfc59ca50",
+      "installedAt": "2026-10-05T12:49:31.341Z",
+      "updatedAt": "2026-10-05T12:49:31.341Z"
+    },
+    "threejs-materials": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-materials/SKILL.md",
+      "skillFolderHash": "c063dc0ffc95c7cf2bbfc183967c5dda9ac93df7",
+      "installedAt": "2026-10-05T12:49:31.341Z",
+      "updatedAt": "2026-10-05T12:49:31.341Z"
+    },
+    "threejs-postprocessing": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-postprocessing/SKILL.md",
+      "skillFolderHash": "699f67f0c2f4d50cd493b03c895e0074f7b47a7f",
+      "installedAt": "2026-10-05T12:49:31.342Z",
+      "updatedAt": "2026-10-05T12:49:31.342Z"
+    },
+    "threejs-shaders": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-shaders/SKILL.md",
+      "skillFolderHash": "5b8907aa3a6497db9281a6a6b4f76437ad78faee",
+      "installedAt": "2026-10-05T12:49:31.342Z",
+      "updatedAt": "2026-10-05T12:49:31.342Z"
+    },
+    "threejs-textures": {
+      "source": "CloudAI-X/threejs-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/CloudAI-X/threejs-skills.git",
+      "skillPath": "skills/threejs-textures/SKILL.md",
+      "skillFolderHash": "0931e05e06091787935ef83a33d25a7e58772b73",
+      "installedAt": "2026-10-05T12:49:31.343Z",
+      "updatedAt": "2026-10-05T12:49:31.343Z"
     }
   },
   "dismissed": {
