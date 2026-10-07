@@ -51,3 +51,6 @@ claude-mods/*/tsconfig.json
 
 # Python bytecode
 __pycache__/
+
+# Local VPS connection details
+/ssh/.ssh/config.d/vps
