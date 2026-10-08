@@ -41,10 +41,10 @@ Send one local file to a paired phone through GSConnect. This is a user-invoked 
 
 ## Command pattern
 
-Use this as the default implementation. Replace `TARGET_FILE` only after Step 1 resolves the file.
+Use this as the default implementation, after Step 1 resolves the file. Run it with bash, never in the session's own shell: it uses `mapfile` and bash arrays, and zsh (the Claude Code shell on JC's machine) fails with `command not found: mapfile`. Pass the file as the first argument: `bash -s -- "<file>" <<'EOF'` ... `EOF`, or save the script to a temporary file and run `bash <script> "<file>"`.
 
 ```bash
-TARGET_FILE="/absolute/or/relative/path/to/file"
+TARGET_FILE="$1"
 DEST="org.gnome.Shell.Extensions.GSConnect"
 DEVICE_ROOT="/org/gnome/Shell/Extensions/GSConnect/Device"
 IFACE="org.gnome.Shell.Extensions.GSConnect.Device"
