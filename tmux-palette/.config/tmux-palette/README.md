@@ -5,6 +5,7 @@
 - `theme.json` 选择 `themes/catppuccin-latte.json`；该主题也会出现在主题选择器中。
 - `Autoname Auto` 对当前窗口执行 `tmux-autoname auto`: 手动改名后恢复自动命名 (等同 `rename-window ""`). tmux-autoname 0.7.0 已移除 AI 命名, `refresh`/`explain`/`secrets reload` 不再存在, 对应条目已删除.
 - `Dictionary (kd)` 打开 `kd-popup` (dotfiles `kd` 包): 输入即查, 4 个及以上单词或前缀 `-t` 按长句翻译; Enter 存入历史, 上下键调出, Esc 直接回到原 pane. 在面板输入 `kd <word>` 回车直接查该词并自动存入历史 (查不到的词和翻译失败的句子不存). `kd <word>` 依赖本地插件补丁 (见下). 该条用 `shell` action 调用 `tmux-popup-anim` (dotfiles `tmux` 包; 弹窗前后各 4 帧缩放外框, `TMUX_POPUP_ANIM=0` 关闭): `popup` action 关闭后插件会重新打开面板.
+- `Open in File Manager` 用 `xdg-open` 在默认文件管理器 (本机为 Nautilus) 中打开当前 pane 的目录; 路径经 `#{q:pane_current_path}` 转义, 含空格或引号也能打开. 失败时在状态栏提示.
 - `Windows` 分组补充窗口操作: Move Window to... (放到指定编号, 已占用时其余窗口顺移并重新编号), Swap Window with... / Left / Right (交换后焦点跟随), Renumber Windows (`move-window -r`), Move Window to Session..., Choose Window.
 - `hidden.json` 隐藏内置 `Reload Config` (指向不存在的 `~/.tmux.conf`, 保留的 `Reload tmux Config` 使用 XDG 路径), 以及已有快捷键的导航项: Next/Previous Pane/Window/Session, Last Window, Swap Pane Up/Down, Display Pane Numbers, Cycle Pane Layout.
 

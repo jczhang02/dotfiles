@@ -115,6 +115,21 @@
     }
   },
   {
+    "icon": "󰉋",
+    "title": "Open in File Manager",
+    "description": "Open the current pane's directory in the default file manager",
+    "category": "Tools",
+    "aliases": [
+      "files",
+      "finder",
+      "nautilus",
+      "xdg-open"
+    ],
+    "action": {
+      "tmux": "run-shell -b \"xdg-open #{q:pane_current_path} >/dev/null 2>&1 || tmux display 'xdg-open failed: #{pane_current_path}'\""
+    }
+  },
+  {
     "icon": "󰗊",
     "title": "Dictionary (kd)",
     "description": "Look up a word or translate text; type kd <word> to jump straight in",
