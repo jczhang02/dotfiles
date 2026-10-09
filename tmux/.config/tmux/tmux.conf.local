@@ -448,8 +448,8 @@ set -g detach-on-destroy on
 unbind C-b
 set -g prefix  None
 set -g prefix2 None
-bind -n C-Space { run-shell "~/.config/tmux/ime.sh prefix '#{pane_id}' '#{pane_in_mode}' '#{@ime_hold}'" ; switch-client -T prefix ; run-shell -b "~/.config/tmux/ime.sh watch '#{client_name}'" }
-bind -n C-a     { run-shell "~/.config/tmux/ime.sh prefix '#{pane_id}' '#{pane_in_mode}' '#{@ime_hold}'" ; switch-client -T prefix ; run-shell -b "~/.config/tmux/ime.sh watch '#{client_name}'" }
+bind -n C-Space { run-shell "~/.config/tmux/ime.sh prefix '#{pane_id}' '#{@ime_mode}' '#{@ime_hold}'" ; switch-client -T prefix ; run-shell -b "~/.config/tmux/ime.sh watch '#{client_name}'" }
+bind -n C-a     { run-shell "~/.config/tmux/ime.sh prefix '#{pane_id}' '#{@ime_mode}' '#{@ime_hold}'" ; switch-client -T prefix ; run-shell -b "~/.config/tmux/ime.sh watch '#{client_name}'" }
 bind C-Space send-keys C-Space
 bind C-a     send-keys C-a
 
@@ -585,10 +585,11 @@ set -g @plugin 'jczhang02/tmux-autoname'
 
 # === 每个 pane 记住自己的 fcitx5 中英状态 (逻辑在 ime.sh) ===
 # fcitx5 只按终端窗口记状态, tmux 内部切 pane/window/session 它看不到.
-# 离开 pane 时把状态存到 pane 选项 @ime, 进入时恢复; 新 pane 默认英文; copy mode 里保持英文.
+# 离开 pane 时把状态存到 pane 选项 @ime, 进入时恢复; 新 pane 默认英文.
+# 只在 tmux 自己读键时切英文 (prefix 表, prefix 打开的 mode); 鼠标拖选/双击/滚轮进 copy mode 不动输入法.
 # 保存必须同步, 否则快速切换时可能先恢复了新 pane 再读状态.
 # 终端本身获焦时跳过恢复, fcitx5 自己会恢复; client-focus-in 总在 pane-focus-in 之前触发.
-set-hook -g pane-focus-out[100] { run-shell "~/.config/tmux/ime.sh out '#{pane_id}' '#{client_flags}' '#{pane_in_mode}' '#{@ime_hold}'" }
+set-hook -g pane-focus-out[100] { run-shell "~/.config/tmux/ime.sh out '#{pane_id}' '#{client_flags}' '#{@ime_mode}' '#{@ime_hold}'" }
 set-hook -g client-focus-in[100] { set -g @ime_skip 1 }
 set-hook -g pane-focus-in[100] {
   if -F '#{@ime_skip}' {
@@ -597,7 +598,12 @@ set-hook -g pane-focus-in[100] {
     run-shell -b "~/.config/tmux/ime.sh in '#{pane_id}'"
   }
 }
-set-hook -g pane-mode-changed[100] { run-shell -b "~/.config/tmux/ime.sh mode '#{pane_id}' '#{pane_active}' '#{pane_in_mode}' '#{@ime_mode}' '#{@ime_hold}'" }
+# 只有 prefix 打开的 mode 结束时才需要恢复; 其余 mode 变化 (鼠标 copy mode) 不起进程.
+set-hook -g pane-mode-changed[100] {
+  if -F '#{&&:#{@ime_mode},#{!:#{pane_in_mode}}}' {
+    run-shell -b "~/.config/tmux/ime.sh mode '#{pane_id}' '#{pane_active}' '#{@ime_hold}'"
+  }
+}
 
 # Native tmux copy-mode + OSC52 handles keyboard and mouse copy without helper processes.
 
