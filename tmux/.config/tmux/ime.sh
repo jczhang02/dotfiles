@@ -37,10 +37,16 @@ case "$1" in
     restore "$2"
     ;;
   # prefix PANE IN_MODE HOLD (root binding of a prefix key, synchronous)
+  # Switch to English before writing options: the next key reaches fcitx5 first.
   prefix)
-    [ "$3" = 1 ] || [ "$4" = 1 ] || save "$2"
-    tmux set -g @ime_hold 1
-    fcitx5-remote -c
+    if [ "$3" = 1 ] || [ "$4" = 1 ]; then
+      fcitx5-remote -c
+      tmux set -g @ime_hold 1
+    else
+      state=$(fcitx5-remote)
+      fcitx5-remote -c
+      tmux set -p -t "$2" @ime "$state" \; set -g @ime_hold 1
+    fi
     ;;
   # watch CLIENT (after switch-client -T prefix, background)
   # Wait for the prefix table to end (30 s cap), then restore whatever pane is active now.
