@@ -1,7 +1,7 @@
 {
   "name": "session-title",
-  "version": "0.1.0",
-  "description": "Names each new session from its first prompt, e.g. \"fix: resolve hook timeout on first prompt\"",
+  "version": "0.2.0",
+  "description": "Names each session from what it works on, e.g. \"fix: resolve hook timeout on first prompt\", and renames it when the main task changes",
   "types": "./types/index.d.ts",
   "userConfig": {
     "model": {
@@ -21,6 +21,12 @@
       "title": "First-prompt wait (ms)",
       "description": "How long the first prompt waits for its title; a slower title shows from the next prompt. 0 never waits",
       "default": 1500
+    },
+    "checkTurns": {
+      "type": "number",
+      "title": "Turns between title checks",
+      "description": "Answered turns between two checks of whether the main task changed",
+      "default": 8
     }
   }
 }
