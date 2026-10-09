@@ -443,11 +443,15 @@ set -g exit-unattached off
 set -g detach-on-destroy on
 
 # Prefix → Ctrl-Space (主) + Ctrl-a (备)
+# 不用 tmux 内置 prefix: root 绑定先让 fcitx5 切英文, 再进 prefix 表, 否则中文下 Rime 会吃掉 prefix 后的键.
+# ime.sh watch 等 prefix 表结束后恢复当前 pane 的状态. 见下面 fcitx5 一节.
 unbind C-b
-set -g prefix  C-Space
-set -g prefix2 C-a
-bind C-Space send-prefix
-bind C-a     send-prefix -2
+set -g prefix  None
+set -g prefix2 None
+bind -n C-Space { run-shell "~/.config/tmux/ime.sh prefix '#{pane_id}' '#{pane_in_mode}' '#{@ime_hold}'" ; switch-client -T prefix ; run-shell -b "~/.config/tmux/ime.sh watch '#{client_name}'" }
+bind -n C-a     { run-shell "~/.config/tmux/ime.sh prefix '#{pane_id}' '#{pane_in_mode}' '#{@ime_hold}'" ; switch-client -T prefix ; run-shell -b "~/.config/tmux/ime.sh watch '#{client_name}'" }
+bind C-Space send-keys C-Space
+bind C-a     send-keys C-a
 
 # prefix s → sesh popup picker (shared with zsh startup; see ~/.local/bin/sesh-pick)
 # 覆盖 tmux 默认 choose-tree
@@ -579,12 +583,21 @@ set -g pane-border-lines heavy
 # window names as <activity>:<workspace>[/<area>]
 set -g @plugin 'jczhang02/tmux-autoname'
 
-# === 切 pane/window/session 时强制 fcitx5 回英文 ===
-# tmux 内部焦点事件不触发 wayland focus-in, fcitx5 不会自动 reset.
-# 主动调 fcitx5-remote -c (deactivate).
-set-hook -g after-select-pane[100]       "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
-set-hook -g after-select-window[100]     "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
-set-hook -g client-session-changed[100] "run-shell -b 'command -v fcitx5-remote >/dev/null && fcitx5-remote -c'"
+# === 每个 pane 记住自己的 fcitx5 中英状态 (逻辑在 ime.sh) ===
+# fcitx5 只按终端窗口记状态, tmux 内部切 pane/window/session 它看不到.
+# 离开 pane 时把状态存到 pane 选项 @ime, 进入时恢复; 新 pane 默认英文; copy mode 里保持英文.
+# 保存必须同步, 否则快速切换时可能先恢复了新 pane 再读状态.
+# 终端本身获焦时跳过恢复, fcitx5 自己会恢复; client-focus-in 总在 pane-focus-in 之前触发.
+set-hook -g pane-focus-out[100] { run-shell "~/.config/tmux/ime.sh out '#{pane_id}' '#{client_flags}' '#{pane_in_mode}' '#{@ime_hold}'" }
+set-hook -g client-focus-in[100] { set -g @ime_skip 1 }
+set-hook -g pane-focus-in[100] {
+  if -F '#{@ime_skip}' {
+    set -gu @ime_skip
+  } {
+    run-shell -b "~/.config/tmux/ime.sh in '#{pane_id}'"
+  }
+}
+set-hook -g pane-mode-changed[100] { run-shell -b "~/.config/tmux/ime.sh mode '#{pane_id}' '#{pane_active}' '#{pane_in_mode}' '#{@ime_mode}' '#{@ime_hold}'" }
 
 # Native tmux copy-mode + OSC52 handles keyboard and mouse copy without helper processes.
 
