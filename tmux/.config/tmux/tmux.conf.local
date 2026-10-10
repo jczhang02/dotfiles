@@ -516,7 +516,7 @@ bind C-x display-popup -E -w 60% -h 50% \
 # prefix w → 3.8 switch-mode: fuzzy window switcher in a floating pane, the
 # upstream default for Tab (oh-my-tmux keeps Tab = last-window, BTab = last session)
 %if #{>=:#{version},3.8}
-bind w { new-pane -E -x75% -y30% -X0 -Y0; move-pane -P bottom-centre; switch-mode -wk }
+bind w { new-pane -E -T windows -x75% -y30% -X0 -Y0; move-pane -P bottom-centre; switch-mode -wk }
 %endif
 
 
