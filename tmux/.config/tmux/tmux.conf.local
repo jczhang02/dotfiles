@@ -515,6 +515,12 @@ bind C-x display-popup -E -w 60% -h 50% \
 bind w { new-pane -E -T windows -x75% -y30% -X0 -Y0; move-pane -P bottom-centre; switch-mode -wk }
 %endif
 
+# prefix f → new floating pane in the current directory (3.8 default * stays);
+# replaces find-window, which prefix w and prefix s cover
+%if #{>=:#{version},3.8}
+bind f new-pane -c "#{pane_current_path}"
+%endif
+
 
 # display a message after toggling mouse support
 bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?#{mouse},on,off}'
