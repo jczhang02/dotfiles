@@ -545,10 +545,6 @@ bind G select-window -t :$
 # Note: prefix ? 保留 list-keys 默认; copy-mode 内可直接按 ? 反向搜索
 bind / copy-mode \; send-keys /
 
-# _ (oh-my-tmux) 是唯一的左右分屏键; 上下分屏仍是 - 和 "
-unbind %
-unbind '|'
-
 # ZZ / ZQ — kill window via Z table (vim 退出键)
 unbind Z
 bind Z switch-client -T VIMZ
