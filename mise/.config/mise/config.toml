@@ -43,6 +43,7 @@ antigravity-cli = "latest"
 # Official Baidu Netdisk CLI release, managed directly without its installer or Skill.
 "http:bdpan" = { version = "3.8.7", url = "https://issuecdn.baidupcs.com/issue/netdisk/ai-bdpan/linux/{{version}}/bdpan-{{version}}-linux-amd64.tar.gz", checksum = "sha256:53ba69b062ddacd4a25ea0bd9e112253a0594d2ee1911ca120ef73559f70eacf", strip_components = 1 }
 "npm:ccusage" = "latest"
+"npm:cf" = "latest"
 
 [settings]
 minimum_release_age = "0s"
