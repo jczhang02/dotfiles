@@ -610,8 +610,12 @@ set -g pane-border-lines heavy
 # titles only on floating panes (sesh, switch-mode, prefix *); tiled panes keep bare borders
 set -g pane-border-status top-floating
 set -g pane-border-format ' #{pane_title} '
-# scrollbar shows while scrolling or hovered; it overlays the pane, so TUIs never reflow
-set -g pane-scrollbars auto-hide
+# scrollbar only in copy/view mode, overlaying the pane so TUIs never reflow.
+# Transparent track and a Catppuccin overlay1 slider: the default theme greys
+# clash with both themes. The style is expanded without a client, so
+# #{client_theme} is always empty here; #8c8fa1 suits latte and mocha alike.
+set -g pane-scrollbars modal
+set -g pane-scrollbars-style "bg=default,fg=#8c8fa1,width=1,pad=0"
 # copy mode: R follows new pane output (refresh-toggle); r refreshes once (3.8 default)
 bind -T copy-mode-vi R send -X refresh-toggle
 %endif
