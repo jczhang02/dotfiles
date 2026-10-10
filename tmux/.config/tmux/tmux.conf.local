@@ -429,11 +429,11 @@ set -g update-environment[102] GTK_IM_MODULE
 set -g update-environment[103] QT_IM_MODULE
 set -g update-environment[104] INPUT_METHOD
 
-# Default to English whenever a pane gains focus: pane, window or session
-# switches, and the terminal regaining focus. fcitx5 resets on window focus but
-# cannot see tmux's own focus changes. Switch only when Chinese is on, since
-# every switch flashes the fcitx5 indicator.
-set-hook -g pane-focus-in[100] { run-shell -b 'command -v fcitx5-remote >/dev/null && [ "$(fcitx5-remote)" = 2 ] && fcitx5-remote -c; true' }
+# 每个 pane 记住自己的 fcitx5 中英状态, 新 pane 和 shell 一律英文 (逻辑在 ime.sh).
+# fcitx5 只按 Ghostty 窗口记状态, 看不到 tmux 内部切 pane/window/session.
+# 同步执行: 保存旧 pane 和恢复新 pane 不会交错.
+set -g @ime_english_commands 'zsh bash sh dash fish ssh'
+set-hook -g pane-focus-in[100] { run-shell "~/.config/tmux/ime.sh focus '#{pane_id}' '#{pane_current_command}' '#{@ime}' '#{@ime_english_commands}'" }
 
 # history
 set -g history-limit 100000
