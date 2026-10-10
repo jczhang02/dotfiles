@@ -551,8 +551,14 @@ bind Z switch-client -T VIMZ
 bind -T VIMZ Z confirm-before -y -p "kill window #W? (Y/n)" kill-window
 bind -T VIMZ Q kill-window
 
-# = → equalize layout (vim Ctrl-w =)
-bind '=' select-layout tiled
+# = → equalize the current pane's row or column, keeping the arrangement (vim Ctrl-w =);
+# tiled stays on M-5
+bind '=' select-layout -E
+
+# main-vertical (M-4) / main-horizontal (M-3): the default 80-column main pane
+# is too narrow on a wide screen
+set -g main-pane-width  60%
+set -g main-pane-height 65%
 
 # -- tpm -----------------------------------------------------------------------
 
