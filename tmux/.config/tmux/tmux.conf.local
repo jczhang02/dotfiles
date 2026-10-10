@@ -453,10 +453,17 @@ bind -n C-a     { run-shell "~/.config/tmux/ime.sh prefix '#{pane_id}' '#{@ime_m
 bind C-Space send-keys C-Space
 bind C-a     send-keys C-a
 
-# prefix s → sesh popup picker (shared with zsh startup; see ~/.local/bin/sesh-pick)
+# prefix s → sesh picker (shared with zsh startup; see ~/.local/bin/sesh-pick)
 # 覆盖 tmux 默认 choose-tree
+# 3.8+: modal floating pane. -K sends every key to fzf as a popup did (C-a is a
+# prefix key, C-j/C-k belong to vim-tmux-navigator); -D/-C close it on Esc or an
+# outside click.
 unbind s
+%if #{>=:#{version},3.8}
+bind s new-pane -O -K -D -C -x70% -y70% -X15% -Y15% -T sesh "~/.local/bin/sesh-pick"
+%else
 bind s display-popup -E -w 70% -h 70% -B "~/.local/bin/sesh-pick"
+%endif
 # prefix S → 切回上一个 session
 bind S run-shell -b "sesh last >/dev/null 2>&1 || tmux display-message 'sesh: no previous session'"
 
@@ -494,12 +501,23 @@ bind Q confirm-before -y -p "kill window #W? (Y/n)" kill-window
 bind x confirm-before -y -p "kill-pane #P? (Y/n)" kill-pane
 bind & confirm-before -y -p "kill-window #W? (Y/n)" kill-window
 
+%if #{>=:#{version},3.8}
+bind C-x new-pane -O -K -D -C -x60% -y50% -X20% -Y25% -T "kill sessions" \
+    "sh -c 'tmux list-sessions -F \"#S\" | \
+        fzf --multi --reverse --prompt \"kill> \" --header \"Tab 多选, Enter 确认\" | \
+        xargs -r -I{} tmux kill-session -t {}'"
+%else
 bind C-x display-popup -E -w 60% -h 50% \
     "sh -c 'tmux list-sessions -F \"#S\" | \
         fzf --multi --reverse --prompt \"kill> \" --header \"Tab 多选, Enter 确认\" | \
         xargs -r -I{} tmux kill-session -t {}'"
+%endif
 
-
+# prefix w → 3.8 switch-mode: fuzzy window switcher in a floating pane, the
+# upstream default for Tab (oh-my-tmux keeps Tab = last-window, BTab = last session)
+%if #{>=:#{version},3.8}
+bind w { new-pane -E -x75% -y30% -X0 -Y0; move-pane -P bottom-centre; switch-mode -wk }
+%endif
 
 
 # display a message after toggling mouse support
@@ -509,12 +527,14 @@ bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?
 # -- vim-style bindings --------------------------------------------------------
 
 # gt/gT/gg/ge — window cycle + jump (key-table chord on g)
+# The chord lives in tmux's own `move` table, so 3.8's floating-pane keys stay
+# reachable too: g 1-4 corners, g arrows edges (M- also resizes), g 0 fill.
 unbind g
-bind g switch-client -T VIMG
-bind -T VIMG t next-window
-bind -T VIMG T previous-window
-bind -T VIMG g select-window -t :^         # gg → first window
-bind -T VIMG e select-window -t :$         # ge → last window
+bind g switch-client -T move
+bind -T move t next-window
+bind -T move T previous-window
+bind -T move g select-window -t :^         # gg → first window
+bind -T move e select-window -t :$         # ge → last window
 
 # G → last window (vim G = bottom)
 bind G select-window -t :$
@@ -576,8 +596,15 @@ tmux_conf_uninstall_plugins_on_reload=true
 
 set -g pane-border-lines heavy
 
-# set -g pane-border-status top
-# set -g pane-border-format ' #P #{pane_current_command} '
+%if #{>=:#{version},3.8}
+# titles only on floating panes (sesh, switch-mode, prefix *); tiled panes keep bare borders
+set -g pane-border-status top-floating
+set -g pane-border-format ' #{pane_title} '
+# scrollbar shows while scrolling or hovered; it overlays the pane, so TUIs never reflow
+set -g pane-scrollbars auto-hide
+# copy mode: R follows new pane output (refresh-toggle); r refreshes once (3.8 default)
+bind -T copy-mode-vi R send -X refresh-toggle
+%endif
 
 
 # window names as <activity>:<workspace>[/<area>]
