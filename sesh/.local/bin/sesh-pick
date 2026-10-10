@@ -10,8 +10,9 @@
 #                             other than the one we are attached to
 #
 # Rows are "target<TAB>display"; fzf shows only the display column.
-# Enter on a query with no match: an existing directory becomes a session at
-# that path; anything else becomes a new tmux session in $HOME.
+# Enter on a query with no match (or alt-enter on any query): an existing
+# directory becomes a session at that path; a missing path starting with ~/, /,
+# ./ or ../ is created first; anything else becomes a new tmux session in $HOME.
 
 set -uo pipefail
 
@@ -93,11 +94,18 @@ kill_session() {
 
 # Turn an unmatched query into something `sesh connect` accepts.
 new_target() {
-    local query=$1 name
-    if [[ -d ${query/#\~/$HOME} ]]; then
+    local query=$1 dir=${1/#\~/$HOME} name
+    if [[ -d $dir ]]; then
         printf '%s\n' "$query"
         return
     fi
+    # shellcheck disable=SC2088 # match a literal ~ typed in the query
+    case $query in
+        '~/'* | /* | ./* | ../*)
+            mkdir -p -- "$dir" && (cd -- "$dir" && pwd)
+            return
+            ;;
+    esac
     name=${query//[.:]/_} # tmux forbids . and : in session names
     tmux has-session -t "=$name" 2>/dev/null || tmux new-session -d -s "$name" -c "$HOME"
     printf '%s\n' "$name"
@@ -128,6 +136,7 @@ pick() {
         --bind='change:first'
         --bind='ctrl-/:toggle-preview'
         --bind='enter:accept-or-print-query'
+        --bind='alt-enter:print-query'
         --bind="$(mode_bind ctrl-a all all)"
         --bind="$(mode_bind ctrl-t tmux tmux)"
         --bind="$(mode_bind ctrl-g config config)"
@@ -155,7 +164,7 @@ pick() {
         esc_hint='esc close'
     fi
     opts+=(--footer="$keys
-^d kill  ^/ preview  ⏎ new if no match  $esc_hint")
+^d kill  ^/ preview  ⏎ new if no match  M-⏎ force new  $esc_hint")
 
     local out
     out=$(fzf "${opts[@]}" <<<"$entries") || return 1
