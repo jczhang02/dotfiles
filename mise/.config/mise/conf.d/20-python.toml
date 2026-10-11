@@ -7,5 +7,6 @@
 "pipx:pymupdf" = "1.28.2"
 "pipx:weasyprint" = "69.0"
 "pipx:pre-commit" = "4.5.1"
+"pipx:commitizen" = "4.19.2"
 "pipx:huggingface_hub" = "1.26.0"
 "pipx:gdown" = "6.1.0"
