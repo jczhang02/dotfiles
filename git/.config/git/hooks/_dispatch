@@ -1,0 +1,16 @@
+#!/bin/sh
+# Global git hooks (core.hooksPath in ~/.gitconfig). A global hooksPath hides
+# every repository's own .git/hooks, so each hook name here is a link to this
+# script: it runs the global check for that hook, if any, then the
+# repository's own hook of the same name. Repositories that set their own
+# core.hooksPath (husky, beads) bypass these hooks entirely.
+name=$(basename "$0")
+dir=$(dirname "$0")
+
+if [ "$name" = commit-msg ]; then
+  "$dir/check-commit-msg" "$1" || exit 1
+fi
+
+own="$(git rev-parse --git-common-dir)/hooks/$name"
+[ -x "$own" ] && exec "$own" "$@"
+exit 0

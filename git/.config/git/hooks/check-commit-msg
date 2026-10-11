@@ -1,0 +1,29 @@
+#!/bin/sh
+# Conventional Commits check for the global commit-msg hook. Uses commitizen's
+# `cz check` (Python commitizen-tools; it also applies a repository's own
+# commitizen config), with the same default rule as a regex where cz is
+# missing. Bypass once with `git commit --no-verify`.
+file=$1
+limit=72
+
+# The Python cz, never the npm package of the same name (that one runs git commit).
+cz=$(command -v cz 2>/dev/null)
+case "$cz" in */mise/shims/*) cz=$(mise which cz 2>/dev/null) ;; esac
+if [ -n "$cz" ] && head -c 200 "$cz" 2>/dev/null | grep -q python; then
+  exec "$cz" check --commit-msg-file "$file" --message-length-limit "$limit"
+fi
+
+# Fallback: first non-comment line.
+subject=$(grep -v '^#' "$file" | sed -n '/[^[:space:]]/{p;q;}')
+[ -z "$subject" ] && exit 0 # empty message: git aborts the commit itself
+case "$subject" in Merge*|Revert*|"Pull request"*|fixup!*|squash!*|amend!*) exit 0 ;; esac
+types='build|bump|chore|ci|docs|feat|fix|perf|refactor|revert|style|test'
+if ! printf '%s\n' "$subject" | grep -Eq "^($types)(\([^[:space:])]+\))?!?: [^[:space:]]"; then
+  echo "commit validation failed: \"$subject\"" >&2
+  echo "expected: type(scope): subject, type one of $types (scope and ! optional)" >&2
+  exit 1
+fi
+if [ ${#subject} -gt "$limit" ]; then
+  echo "commit validation failed: first line is ${#subject} characters, limit $limit" >&2
+  exit 1
+fi

@@ -1,27 +1,26 @@
-# Type(<scope>): <subject>
-
+# <type>(<scope>)!: <subject>
+#
 # <body>
-
+#
 # <footer>
 
-# Type should be one of the following:
-# * feat (new feature)
-# * fix (bug fix)
-# * docs (changes to documentation)
-# * style (formatting, missing semi colons, etc; no code change)
-# * refactor (refactoring production code)
-# * test (adding missing tests, refactoring tests; no production code change)
-# * chore (updating grunt tasks etc; no production code change)
-# Scope is just the scope of the change. Something like (admin) or (teacher).
-# Subject should use impertivite tone and say what you did.
-# The body should go into detail about changes made.
-# The footer should contain any JIRA (or other tool) issue references or actions.
-
-# For a full example of how to write a good commit message, check out
-# https://github.com/sparkbox/how_to/tree/master/style/git
-
-# ---------------------------------------------------------------------------------
-# Jira Issue Processing
-# ISSUE_KEY #comment This is a comment
-# ISSUE_KEY #done 
-# ---------------------------------------------------------------------------------
+# Conventional Commits, checked by ~/.config/git/hooks/commit-msg (cz check).
+#
+# type: build | bump | chore | ci | docs | feat | fix | perf | refactor | revert | style | test
+#   feat      a new feature
+#   fix       a bug fix
+#   docs      documentation only
+#   style     formatting; no code change
+#   refactor  code change that neither fixes a bug nor adds a feature
+#   perf      performance improvement
+#   test      adding or fixing tests
+#   build     build system, dependencies, packaging
+#   ci        CI configuration
+#   chore     other changes that touch neither src nor tests
+#   revert    reverts a previous commit
+#   bump      version bump (cz bump)
+# scope: optional, the part of the project, e.g. (toc) or (deploy)
+# !: optional, marks a breaking change (also write BREAKING CHANGE: in the footer)
+# subject: imperative, lowercase, no period; first line at most 72 characters
+# body: what and why, wrapped at 72 characters
+# footer: BREAKING CHANGE: ..., Refs: #123
