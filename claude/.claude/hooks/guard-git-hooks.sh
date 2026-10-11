@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PreToolUse guard for Bash: refuse git commands that skip git hooks
-# (--no-verify, `git commit -n`, or a core.hooksPath override), so the global
+# (--no-verify, `git commit -n`, or setting core.hooksPath), so the global
 # Conventional Commits check in ~/.config/git/hooks always runs for agents.
 cmd=$(jq -r '.tool_input.command // empty')
 grep -q 'git' <<<"$cmd" || exit 0
@@ -10,8 +10,10 @@ cmd=$(sed -E "s/\"[^\"]*\"//g; s/'[^']*'//g" <<<"$cmd")
 reason=''
 if grep -Eq -- '--no-verify\b' <<<"$cmd"; then
   reason='--no-verify skips git hooks'
-elif grep -Eqi 'core\.hookspath' <<<"$cmd"; then
-  reason='overriding core.hooksPath skips the global git hooks'
+elif grep -Eqi -- '-c[[:space:]]*core\.hookspath=' <<<"$cmd" ||
+  { grep -Eqi 'core\.hookspath[[:space:]]+[^-[:space:]]' <<<"$cmd" && ! grep -Eq -- '--(get|unset)' <<<"$cmd"; }; then
+  # Reading it, or unsetting it (back to the global hooks), is fine.
+  reason='setting core.hooksPath skips the global git hooks'
 elif grep -Eq '\bgit\b[^|;&]*\bcommit\b[^|;&]*[[:space:]]-[[:alpha:]]*n[[:alpha:]]*([[:space:]]|$)' <<<"$cmd"; then
   reason='git commit -n skips git hooks'
 fi
