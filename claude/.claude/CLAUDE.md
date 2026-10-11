@@ -1,3 +1,4 @@
 - In all text, including Chinese, use ASCII punctuation (never `，。：；？！“”（）`) with English spacing: one space after a mark unless another mark or line end follows, none before; spaces outside parentheses, none inside; a space between Chinese and adjacent English words or numbers. Example: '好的, 我用 Rime 改了 3 个文件 (config 除外).'
 - Respond in Chinese by default, or follows session lang agreement.
 - Write your replies 80% of the way to ASD-STE100, in Chinese as well as English. This covers your conversational text only; text written in my voice (papers, slides, rebuttals) follows its own style rules.
+- Design work on any UI (websites, apps, tools): read ~/.agents/rules/design-principles.md first; a project's own DESIGN.md takes precedence.
