@@ -21,7 +21,7 @@ The blog is an Astro site in `~/dev/blog`. A post is one folder, `src/content/po
 
 6. **Add the citations.** Every `\cite{key}` needs a BibTeX entry in `src/bibliography.bib` (the files are listed under `bibliography` in `lemma.config.mjs`). Reuse an entry that is already there; otherwise add one with correct metadata (from the publisher, DOI or arXiv page), and a key in the style of the others.
 
-7. **Check the build.** Run `LEMMA_ABOUT=sample bun run build` in `~/dev/blog` (drafts are not published, but they are rendered and checked; the sample About data keeps the private About page out of the build log). Done when the output has no `[mathjax]`, `[cite]`, `[theorems]`, `[tikz]` or `[media]` line for your post. To look at the page, use the dev server if one is running (`bunx astro dev status` gives its URL; drafts appear at `/posts/<slug>/`); one project allows only one dev server, so do not start a second.
+7. **Check the build.** Run `bun run build` in `~/dev/blog` (drafts are not published, but they are rendered and checked). Done when the output has no `[mathjax]`, `[cite]`, `[theorems]`, `[tikz]` or `[media]` line for your post. To look at the page, use the dev server if one is running (`bunx astro dev status` gives its URL; drafts appear at `/posts/<slug>/`); one project allows only one dev server, so do not start a second.
 
 8. **Report** to JC: the folder path, the preview URL (if a dev server runs), the open `[TODO]`s, and any step left to JC (large videos, missing facts).
 
@@ -29,4 +29,4 @@ The blog is an Astro site in `~/dev/blog`. A post is one folder, `src/content/po
 
 Write only inside `src/content/posts/<slug>/`, plus the generated `tikz-cache/` files and `src/bibliography.bib` entries your post needs. The site's code, styles and other posts stay as they are; ask JC if the post seems to need a new feature. JC commits and deploys (`bun run deploy`) after reviewing, so leave git and deployment untouched.
 
-The About page content (`src/content/about/`, and its copies in `dist/` and the `.astro` caches) is JC's alone: never read, search or change it; see `~/dev/blog/AGENTS.md`.
+Do not open or change the About page content (`src/content/about/`) unless JC asks; see `~/dev/blog/AGENTS.md`.
