@@ -618,6 +618,46 @@ set -g pane-scrollbars modal
 set -g pane-scrollbars-style "bg=default,fg=#8c8fa1,width=1,pad=0"
 # copy mode: R follows new pane output (refresh-toggle); r refreshes once (3.8 default)
 bind -T copy-mode-vi R send -X refresh-toggle
+
+# 3.8 paints menus, popups, choose-tree, display-panes and copy-mode matches from
+# a ten-colour theme palette that tmux switches with the client's light/dark
+# report. Its stock greys put fzf-tab's popup in a grey frame, so map the slots
+# to Catppuccin Latte/Mocha by role:
+#   dark-grey   floating surface: Base, the bg fzf paints, so popups and menus
+#               read as the page with a hairline edge
+#   light-grey  hairline: Overlay0, fzf's own border colour
+#   white       text on the surface
+#   black       ink on coloured blocks (#11111b, as on the yellow message bar)
+#   cyan        copy-mode search matches only: a Surface0/Surface1 tint, quiet
+#               enough that the current match stands out
+#   magenta     current search match: the pink accent, as on the current window
+set -s light-theme-black      "#11111b"
+set -s light-theme-white      "#4c4f69"
+set -s light-theme-light-grey "#9ca0b0"
+set -s light-theme-dark-grey  "#eff1f5"
+set -s light-theme-green      "#40a02b"
+set -s light-theme-yellow     "#df8e1d"
+set -s light-theme-red        "#d20f39"
+set -s light-theme-blue       "#1e66f5"
+set -s light-theme-cyan       "#ccd0da"
+set -s light-theme-magenta    "#dd4fa5"
+set -s dark-theme-black       "#11111b"
+set -s dark-theme-white       "#cdd6f4"
+set -s dark-theme-light-grey  "#6c7086"
+set -s dark-theme-dark-grey   "#1e1e2e"
+set -s dark-theme-green       "#a6e3a1"
+set -s dark-theme-yellow      "#f9e2af"
+set -s dark-theme-red         "#f38ba8"
+set -s dark-theme-blue        "#89b4fa"
+set -s dark-theme-cyan        "#45475a"
+set -s dark-theme-magenta     "#dd4fa5"
+# Plain text on the match tint (ink fails on the Mocha tint); choose-tree marks
+# the current window with the accent instead of red, the others in plain text.
+set -g copy-mode-match-style "bg=themecyan,fg=themewhite"
+set -g tree-mode-preview-style "fg=#{?#{||:#{&&:#{pane_format},#{pane_active}},#{&&:#{window_format},#{window_active}}},thememagenta,themewhite}"
+# Popups and menus take the heavy edge of the floating panes, in the hairline grey.
+set -g popup-border-lines heavy
+set -g menu-border-lines heavy
 %endif
 
 
