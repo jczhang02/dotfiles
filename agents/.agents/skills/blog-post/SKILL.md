@@ -19,12 +19,14 @@ The blog is an Astro site in `~/dev/blog`. A post is one folder, `src/content/po
 
 5. **Bring the assets.** Copy figures and videos into the post folder and link them relatively (`![...](./fig.png)`); the post must not point into the project directory. Prefer SVG for line art and PNG under about 2 MB for plots. A video over 25 MiB needs `bun run media:push` (it uploads to R2): leave that to JC and say so in the report.
 
-6. **Cite through Zotero.** Every `\cite{key}` needs an entry in the Zotero collection **G.Blog**; Better BibTeX exports that collection to `src/references.bib` within seconds of a change. Find the item with the Zotero tools, add it to G.Blog if it is not there, then take its citation key from `src/references.bib`. An entry that is not in Zotero goes in `src/references-manual.bib`. `src/references.bib` itself is generated: leave it to the export.
+6. **Add the citations.** Every `\cite{key}` needs a BibTeX entry in `src/bibliography.bib` (the files are listed under `bibliography` in `lemma.config.mjs`). Reuse an entry that is already there; otherwise add one with correct metadata (from the publisher, DOI or arXiv page), and a key in the style of the others.
 
-7. **Check the build.** Run `bun run build` in `~/dev/blog` (drafts are not published, but they are rendered and checked). Done when the output has no `[mathjax]`, `[cite]`, `[theorems]`, `[tikz]` or `[media]` line for your post. To look at the page, use the dev server if one is running (`cat .astro/dev.json` gives its URL; drafts appear at `/posts/<slug>/`); one project allows only one dev server, so do not start a second.
+7. **Check the build.** Run `LEMMA_ABOUT=sample bun run build` in `~/dev/blog` (drafts are not published, but they are rendered and checked; the sample About data keeps the private About page out of the build log). Done when the output has no `[mathjax]`, `[cite]`, `[theorems]`, `[tikz]` or `[media]` line for your post. To look at the page, use the dev server if one is running (`bunx astro dev status` gives its URL; drafts appear at `/posts/<slug>/`); one project allows only one dev server, so do not start a second.
 
 8. **Report** to JC: the folder path, the preview URL (if a dev server runs), the open `[TODO]`s, and any step left to JC (large videos, missing facts).
 
 ## Scope
 
-Write only inside `src/content/posts/<slug>/`, plus the generated `tikz-cache/` files and `references-manual.bib` entries your post needs. The site's code, styles and other posts stay as they are; ask JC if the post seems to need a new feature. JC commits and deploys (`bun run deploy`) after reviewing, so leave git and deployment untouched.
+Write only inside `src/content/posts/<slug>/`, plus the generated `tikz-cache/` files and `src/bibliography.bib` entries your post needs. The site's code, styles and other posts stay as they are; ask JC if the post seems to need a new feature. JC commits and deploys (`bun run deploy`) after reviewing, so leave git and deployment untouched.
+
+The About page content (`src/content/about/`, and its copies in `dist/` and the `.astro` caches) is JC's alone: never read, search or change it; see `~/dev/blog/AGENTS.md`.
