@@ -6,7 +6,7 @@ zstyle ':fzf-tab:complete:*' fzf-preview '
     local target=${realpath#-*=}
     [[ -z $target ]] && return
     if [[ -d $target ]]; then
-        eza -1 --color=always "$target" 2>/dev/null
+        eza -1 --classify=always --color=never "$target" 2>/dev/null
     elif [[ -f $target ]]; then
         bat --color=always --paging=never --style=plain "$target" 2>/dev/null \
             || head -c 4096 "$target" 2>/dev/null

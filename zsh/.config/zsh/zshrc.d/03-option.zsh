@@ -120,8 +120,10 @@ zstyle ':zce:*' keys 'asdghklqwertyuiopzxcvbnmfj;23456789'
 zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid="$word" -o cmd --no-headers -w -w'
 zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
 zstyle ':fzf-tab:complete:kill:*' popup-pad 30 0
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --ignore-glob="*.bbl|*.aux|*.blg|*.fdb_latexmk|*.fls|*.log|*.synctex.gz|indent.log|*.pyg" "$realpath"'
-zstyle ':fzf-tab:complete:cd:*' popup-pad 0 3
+# 预览用普通文字色 + 尾部 /, 比左侧彩色列表安静, 视线先落在候选项上.
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --classify=always --color=never --ignore-glob="*.bbl|*.aux|*.blg|*.fdb_latexmk|*.fls|*.log|*.synctex.gz|indent.log|*.pyg" "$realpath"'
+# 高度跟随候选项, 不留空行; 显式写出, 免得落到下面 *argument-rest* 的 100 8.
+zstyle ':fzf-tab:complete:cd:*' popup-pad 0 0
 zstyle ':fzf-tab:*' popup-min-size 100 8
 
 # fzf-tab 使用 tmux popup 浮窗, 智能跟随光标位置 (空间不足时翻到光标上方).
@@ -132,15 +134,22 @@ zstyle ':fzf-tab:*' popup-min-size 100 8
 # lib/ftb-tmux-popup 是 zsh autoload 函数体 (首行是 #!/hint/zsh), 依赖调用
 # shell 的补全状态和 PID, 不能通过软链作为外部命令执行; 必须在当前 shell source.
 # 保留同名函数, 让 fzf-tab 识别 popup 模式并使用其专用终端处理.
+#
+# 末尾追加的样式参数对所有 fzf-tab 补全生效: fzf-tab-source 给几乎每个 context
+# 都设了 fzf-flags, 全局 ':fzf-tab:*' fzf-flags 会被遮蔽. fzf 合并多个
+# --preview-window, 所以各 context 的位置和大小不变, 只把预览框换成一条分隔线,
+# 不在 popup 外框里再套一个框; 计数移到输入行右端并去掉其下横线, 省掉两行
+# (ftb-tmux-popup 见到 --info=inline 只减一行高度, 横线不去掉会裁掉最后一项).
 function ftb-tmux-popup() {
+    local -a style=(--info=inline-right --no-separator --preview-window=border-line)
     local popup_script="${ZI[HOME_DIR]:-$XDG_DATA_HOME/zi}/plugins/Aloxaf---fzf-tab/lib/ftb-tmux-popup"
     # grouped=1 时 popup 会浮到其他 client; attached=0 (detached) 时 popup 无人可见.
     local -a tmux_state=( ${(s: :)$(command tmux display-message -p '#{session_grouped} #{session_attached}' 2>/dev/null)} )
     if [[ -r $popup_script && -n ${TMUX_PANE:-} ]] \
         && [[ ${tmux_state[1]:-1} != 1 && ${tmux_state[2]:-0} -ge 1 ]]; then
-        source "$popup_script" "$@"
+        source "$popup_script" "$@" $style
     else
-        command fzf "$@"
+        command fzf "$@" $style
     fi
 }
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
