@@ -24,10 +24,18 @@ if (( ${terminfo[colors]:-0} >= 256 )); then
     if (( $+commands[vivid] )); then
         export LS_COLORS="$(vivid generate catppuccin-latte)"
     fi
-    export FZF_DEFAULT_OPTS='--color=bg+:#ccd0da,bg:#eff1f5,spinner:#dc8a78,hl:#d20f39
---color=fg:#4c4f69,header:#d20f39,info:#8839ef,pointer:#dc8a78
---color=marker:#7287fd,fg+:#4c4f69,prompt:#8839ef,hl+:#d20f39
---color=selected-bg:#bcc0cc,border:#9ca0b0,label:#4c4f69'
+    # Ghostty switches Latte/Mocha at runtime, but this is exported once per
+    # shell, so fzf takes no fixed background: text and background follow the
+    # terminal (-1), matches use ANSI red (Ghostty's theme gives each variant its
+    # own), and the rest is the pink accent and greys that read on both: #8c8fa1
+    # for lines, the darker #7c7f93 for secondary text. The current line is the
+    # pink bar plus bold, with a blank gutter; a tinted row would need a colour
+    # per theme.
+    export FZF_DEFAULT_OPTS='--gutter=" "
+--color=fg:-1,bg:-1,fg+:-1:bold,bg+:-1,selected-bg:-1
+--color=hl:1,hl+:1:bold,query:-1:bold,prompt:-1:bold,header:-1,label:-1
+--color=pointer:#dd4fa5,marker:#dd4fa5,spinner:#dd4fa5
+--color=border:#8c8fa1,separator:#8c8fa1,scrollbar:#8c8fa1,info:#7c7f93,ghost:#7c7f93'
 else
     unset LS_COLORS FZF_DEFAULT_OPTS
 fi

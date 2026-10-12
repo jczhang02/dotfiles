@@ -149,9 +149,10 @@ pick() {
         opts+=(--bind="$(mode_bind ctrl-f "~/dev" find)")
         keys+='  ^f ~/dev'
     fi
-    # Quiet chrome when the Catppuccin Latte palette is active.
+    # Quiet chrome when the zsh fzf palette is active; plain text so it reads on
+    # Latte and Mocha alike.
     if [[ -n ${FZF_DEFAULT_OPTS:-} ]]; then
-        opts+=(--color='border:#bcc0cc,label:#8839ef,footer:#8c8fa1,ghost:#9ca0b0')
+        opts+=(--color='label:-1:bold,footer:-1')
     fi
 
     if [[ $mode == print ]]; then

@@ -44,7 +44,8 @@ const MAX_WIDTH = 96; // readable measure on wide terminals
 const MAX_PICKS = 9; // alt-1..9
 
 // 16-color ANSI so entries follow the terminal palette (Latte or Mocha).
-const R = "\x1b[0m", B = "\x1b[1m", DIM = "\x1b[90m";
+// DIM is a fixed grey: ANSI 90 is Surface2 under Mocha, too faint on its Base.
+const R = "\x1b[0m", B = "\x1b[1m", DIM = "\x1b[38;2;124;127;147m";
 const HEAD = "\x1b[1;34m", TAG = "\x1b[35m", POS = "\x1b[32m", BADGE = "\x1b[33m";
 const HL = "\x1b[1;34m"; // the looked-up word inside examples
 
@@ -710,13 +711,13 @@ function pick(query: string): void {
   // Full-width preview: room for long entries, and a Shift+drag selection
   // then takes only the entry, not the history column beside it.
   const full = "down,99%,wrap"; // below the input, which keeps its width; fzf caps at 99%
-  // Catppuccin Latte, matching FZF_DEFAULT_OPTS from the zsh env; popups run
-  // a non-interactive shell that never loads it.
-  const latte = [
-    "bg+:#e6e9ef", "bg:#eff1f5", "fg:#4c4f69", "fg+:#4c4f69:bold", "hl:#d20f39",
-    "hl+:#d20f39", "prompt:#8839ef", "pointer:#8839ef", "info:#9ca0b0", "spinner:#dc8a78",
-    "query:#4c4f69:bold", "border:#ccd0da", "label:#8839ef", "footer:#8c8fa1",
-    "ghost:#9ca0b0", "preview-border:#ccd0da",
+  // Matches FZF_DEFAULT_OPTS from the zsh env, which popups never load (they
+  // run a non-interactive shell): terminal fg/bg, so it follows Latte and Mocha.
+  const palette = [
+    "fg:-1", "bg:-1", "fg+:-1:bold", "bg+:-1", "hl:1", "hl+:1:bold",
+    "prompt:-1:bold", "pointer:#dd4fa5", "info:#7c7f93", "spinner:#dd4fa5",
+    "query:-1:bold", "border:#8c8fa1", "label:-1:bold", "footer:-1",
+    "ghost:#7c7f93", "preview-border:#8c8fa1",
   ].join(",");
   const recall = "transform-query(printf %s {1})";
   const me = `'${SELF}'`;
@@ -726,7 +727,7 @@ function pick(query: string): void {
   );
   const opts = [
     "--ansi", "--disabled", "--layout=reverse", "--style=full:rounded", "--no-scrollbar",
-    `--color=${latte}`, "--highlight-line", "--gutter= ", "--pointer=▌", "--no-sort",
+    `--color=${palette}`, "--highlight-line", "--gutter= ", "--pointer=▌", "--no-sort",
     "--delimiter=\t", "--with-nth=2", "--prompt=❯ ", "--ghost=English or 中文",
     "--info=hidden", "--input-label= 󰗊 kd ", "--list-label= history ",
     "--list-label-pos=-3:bottom", "--footer-border=none",
