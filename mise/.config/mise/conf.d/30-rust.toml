@@ -5,3 +5,7 @@
 "cargo:sccache" = "0.17.0"
 "cargo:tauri-driver" = "2.0.6"
 "github:iii-hq/iii" = "iii/v0.22.1"
+
+# gig, built from the local repository's committed main (not GitHub).
+# Rebuild after new commits: mise install -f "cargo:file:///home/jc/Documents/dev-tools/gig@branch:main"
+"cargo:file:///home/jc/Documents/dev-tools/gig" = "branch:main"
