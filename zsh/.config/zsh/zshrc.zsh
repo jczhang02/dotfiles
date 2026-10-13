@@ -67,7 +67,7 @@ fi
 # extension. Executable helper scripts such as colors.py must not be parsed as
 # shell functions.
 typeset function_file
-for function_file in "$XDG_CONFIG_HOME"/zsh/functions/*(.N); do
+for function_file in "$XDG_CONFIG_HOME"/zsh/functions/*(-.N); do
     [[ ${function_file:t} == *.* ]] && continue
     autoload -Uz "${function_file:t}"
 done
