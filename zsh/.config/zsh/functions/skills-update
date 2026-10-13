@@ -1,0 +1,18 @@
+# DESC: Update global npx skills, then unlink Matt Pocock's skills from Claude Code.
+
+# Claude Code gets these skills from the mattpocock-skills plugin under a
+# prefix. `npx skills update` relinks them into ~/.claude/skills, where they
+# duplicate the plugin and shadow the built-in /code-review.
+
+local lock=$HOME/.agents/.skill-lock.json
+npx skills update -g -y "$@" || return
+
+local -a names linked
+local name
+names=(${(f)"$(jq -r '.skills | to_entries[]
+    | select(.value.source == "mattpocock/skills") | .key' "$lock")"})
+for name in $names; do
+    [[ -L $HOME/.claude/skills/$name ]] && linked+=($name)
+done
+(( $#linked )) || return 0
+npx skills remove -g -a claude-code -y -s $linked
