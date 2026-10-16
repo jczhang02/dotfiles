@@ -85,6 +85,46 @@
     }
   },
   {
+    "icon": "󰓡",
+    "title": "Swap Pane with Next",
+    "description": "Swap places with the next pane (prefix >); the cursor moves with this pane",
+    "category": "Panes",
+    "aliases": [
+      "swapp",
+      "swap",
+      "sp"
+    ],
+    "action": {
+      "tmux": "swap-pane -D"
+    }
+  },
+  {
+    "icon": "󰓡",
+    "title": "Swap Pane with Previous",
+    "description": "Swap places with the previous pane (prefix <)",
+    "category": "Panes",
+    "aliases": [
+      "swapp-prev"
+    ],
+    "action": {
+      "tmux": "swap-pane -U"
+    }
+  },
+  {
+    "icon": "󰚩",
+    "title": "Agent Overview",
+    "description": "Coding agents by session with state and preview (prefix a)",
+    "category": "Agents",
+    "aliases": [
+      "agents",
+      "ov",
+      "herd"
+    ],
+    "action": {
+      "tmux": "choose-tree -Zw -f '#{E:@ov-filter}' -F '#{E:@ov-row}'"
+    }
+  },
+  {
     "icon": "",
     "title": "Lazygit",
     "description": "Git TUI in floating popup",
