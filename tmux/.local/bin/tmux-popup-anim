@@ -37,7 +37,7 @@ frame() { # frame PERCENT
     local w=$((W * $1 / 100)) h=$((H * $1 / 100))
     ((w >= 4 && h >= 3)) || return 0
     # Two arguments make tmux exec sleep directly rather than via a shell.
-    tmux display-popup -E -b rounded -S 'fg=#8c8fa1' -s 'bg=default' \
+    tmux display-popup -E -b heavy -S 'fg=#8c8fa1' -s 'bg=default' \
         -w "$w" -h "$h" sleep 0.012 2>/dev/null
 }
 animate=${TMUX_POPUP_ANIM:-1}

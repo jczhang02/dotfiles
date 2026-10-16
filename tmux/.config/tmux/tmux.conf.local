@@ -69,7 +69,7 @@ tmux_conf_new_pane_reconnect_ssh=false
 # automatic detection relies on the COLORTERM environment variable being defined
 # to 'truecolor' or '24bit' or '$ tput colors' answering '16777216'
 # see https://github.com/termstandard/colors
-tmux_conf_24b_colour=false  # RGB is declared idempotently in terminal-features[100].
+tmux_conf_24b_colour=auto
 
 
 # -- theming -------------------------------------------------------------------
@@ -95,7 +95,7 @@ tmux_conf_theme_colour_4="#dd4fa5"    # Pink       — accent: current window, a
                                       #   (readable on both Latte and Mocha backgrounds)
 tmux_conf_theme_colour_5="#df8e1d"    # Yellow     — messages / copy mode
 tmux_conf_theme_colour_6="#11111b"    # Ink        — text on yellow
-tmux_conf_theme_colour_7="#ffffff"    # White      — unused
+tmux_conf_theme_colour_7="#ffffff"    # White      — text on red (bell, PREFIX)
 tmux_conf_theme_colour_8="#11111b"    # Ink        — text on green
 tmux_conf_theme_colour_9="#df8e1d"    # Yellow     — session section
 tmux_conf_theme_colour_10="default"   # terminal   — uptime section
@@ -144,8 +144,9 @@ tmux_conf_theme_focused_pane_bg="$tmux_conf_theme_colour_2"
 tmux_conf_theme_pane_border_style=thin
 
 # pane borders colours:
-# follows Ghostty's light/dark switch: Latte Surface0 / Mocha Surface1
-tmux_conf_theme_pane_border="#{?#{==:#{client_theme},dark},#45475a,$tmux_conf_theme_colour_2}"
+# follows Ghostty's light/dark switch: Latte Surface0 / Mocha Surface1; a client
+# that reports no theme gets the dark colour
+tmux_conf_theme_pane_border="#{?#{==:#{client_theme},light},$tmux_conf_theme_colour_2,#45475a}"
 tmux_conf_theme_pane_active_border="$tmux_conf_theme_colour_4"
 %if #{>=:#{version},3.2}
 tmux_conf_theme_pane_active_border="#{?pane_in_mode,$tmux_conf_theme_colour_9,#{?synchronize-panes,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_4}}"
@@ -230,7 +231,7 @@ tmux_conf_theme_window_status_activity_bg="default"
 tmux_conf_theme_window_status_activity_attr="none"   # activity monitoring is off (see user customizations)
 
 # window bell status style
-tmux_conf_theme_window_status_bell_fg="#ffffff"
+tmux_conf_theme_window_status_bell_fg="$tmux_conf_theme_colour_7"
 tmux_conf_theme_window_status_bell_bg="$tmux_conf_theme_colour_16"
 tmux_conf_theme_window_status_bell_attr="blink,bold"
 
@@ -282,7 +283,9 @@ tmux_conf_theme_status_left=" #[fg=$tmux_conf_theme_colour_4]❐#[fg=default] #S
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
 # PREFIX is styled inside the conditional: oh-my-tmux's #{prefix} paints its
 # blank placeholder with prefix_bg, which leaves a permanent red block.
-tmux_conf_theme_status_right=" #{?client_prefix,#[fg=#ffffff]#[bg=#d20f39]#[bold] PREFIX #[default],}#{pairing}#{synchronized} | #{username_ssh}#{root} | #{hostname_ssh} "
+# Only the ssh host stays: every #{..._ssh} or #{root} variable runs a shell
+# each status-interval, and locally they all render empty.
+tmux_conf_theme_status_right=" #{?client_prefix,#[fg=$tmux_conf_theme_colour_7]#[bg=$tmux_conf_theme_colour_16]#[bold] PREFIX #[default],}#{pairing}#{synchronized} | #{hostname_ssh} "
 
 # status left style
 tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_14,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_8"
@@ -399,10 +402,11 @@ set -g status-position top
 set -g monitor-activity off
 
 # Tint the bar with Catppuccin Crust so it reads apart from the panes below; the
-# colour follows Ghostty's light/dark switch via #{client_theme}. Embedded
+# colour follows Ghostty's light/dark switch via #{client_theme} (dark when the
+# client reports no theme). Embedded
 # bg=default in the oh-my-tmux formats inherits it. #!important re-applies this
 # after oh-my-tmux's theme step, which would otherwise reset status-style.
-set -g status-style "fg=default,bg=#{?#{==:#{client_theme},dark},#11111b,#dce0e8}" #!important
+set -g status-style "fg=default,bg=#{?#{==:#{client_theme},light},#dce0e8,#11111b}" #!important
 set-hook -g client-light-theme[100] "refresh-client"   # full redraw: status bar and pane borders
 set-hook -g client-dark-theme[100]  "refresh-client"
 
@@ -419,7 +423,8 @@ set -s  terminal-features[100] "xterm-ghostty:RGB:clipboard:hyperlinks:extkeys:s
 set -s  extended-keys always
 set -s  extended-keys-format csi-u                                    # pi works best with csi-u
 
-# resize/redraw: 单 client 立即按尺寸 resize, 减少 TUI (CC/opencode) 重绘 leak
+# Size each window to the smallest client that is actually showing it, not to
+# every client attached to the session.
 set -g aggressive-resize on
 
 # Fcitx5 IME — fixed indices avoid duplicate entries after config reloads.
@@ -429,11 +434,14 @@ set -g update-environment[102] GTK_IM_MODULE
 set -g update-environment[103] QT_IM_MODULE
 set -g update-environment[104] INPUT_METHOD
 
-# 每个 pane 记住自己的 fcitx5 中英状态, 新 pane 和 shell 一律英文 (逻辑在 ime.sh).
-# fcitx5 只按 Ghostty 窗口记状态, 看不到 tmux 内部切 pane/window/session.
-# 同步执行: 保存旧 pane 和恢复新 pane 不会交错.
+# Each pane keeps its own fcitx5 English/Chinese state; new panes and shells
+# start in English (logic in ime.sh). fcitx5 keeps one state per Ghostty window
+# and cannot see pane, window or session switches inside tmux. The hook runs
+# synchronously, so saving the old pane and restoring the new one never overlap.
 set -g @ime_english_commands 'zsh bash sh dash fish ssh'
 set-hook -g pane-focus-in[100] { run-shell "~/.config/tmux/ime.sh focus '#{pane_id}' '#{pane_current_command}' '#{@ime}' '#{@ime_english_commands}'" }
+# Prune @ime_last_<pid> of clients that left, or one stays per old client.
+set-hook -g client-detached[100] { run-shell "~/.config/tmux/ime.sh prune" }
 
 # history
 set -g history-limit 100000
@@ -448,7 +456,7 @@ set -g exit-unattached off
 # Detach the client when its session is destroyed instead of switching sessions.
 set -g detach-on-destroy on
 
-# Prefix → Ctrl-Space (主) + Ctrl-a (备)
+# Prefix → Ctrl-Space (main) + Ctrl-a (fallback)
 unbind C-b
 set -g prefix  C-Space
 set -g prefix2 C-a
@@ -456,7 +464,7 @@ bind C-Space send-prefix
 bind C-a     send-prefix -2
 
 # prefix s → sesh picker (shared with zsh startup; see ~/.local/bin/sesh-pick)
-# 覆盖 tmux 默认 choose-tree
+# (replaces the stock choose-tree).
 # 3.8+: modal floating pane. -K sends every key to fzf as a popup did (C-a is a
 # prefix key, C-j/C-k belong to vim-tmux-navigator); -D/-C close it on Esc or an
 # outside click.
@@ -466,20 +474,21 @@ bind s new-pane -O -K -D -C -x70% -y70% -X15% -Y15% -T sesh "~/.local/bin/sesh-p
 %else
 bind s display-popup -E -w 70% -h 70% -B "~/.local/bin/sesh-pick"
 %endif
-# prefix S → 切回上一个 session
+# prefix S → switch back to the previous session
 bind S run-shell -b "sesh last >/dev/null 2>&1 || tmux display-message 'sesh: no previous session'"
 
-# vi-mode: y → tmux 内部 buffer + OSC52 转发给外层终端 (ghostty 写系统剪贴板)
-# 避开 fork wl-copy 守护进程, 顺带消除 dash-to-dock 误触发的"新应用"动画
+# vi-mode: y → tmux buffer + OSC52 to the outer terminal (Ghostty writes the system
+# clipboard). No forked wl-copy daemon, so dash-to-dock no longer plays its
+# "new app" animation on every copy.
 set -g set-clipboard on
 bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
 bind -T copy-mode    MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel
 bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel
 
-# 移除 oh-my-tmux 的 M-y "yank-and-paste-pop" 绑定 (emacs + vi mode)。
-# 当 copy_to_os_clipboard=false 时其 perl transform 把 "wl-copy; tmux paste-buffer"
-# 字符串中的 wl-copy 剥离 → 残留 "; tmux ..." 被 tmux 当成新命令解析 → syntax error。
-# vi-mode 用户不需要这条 paste-pop 行为。
+# Remove oh-my-tmux's M-y "yank-and-paste-pop" (emacs + vi mode). With
+# copy_to_os_clipboard=false its perl transform strips wl-copy from
+# "wl-copy; tmux paste-buffer", and tmux parses the leftover "; tmux ..." as a
+# new command → syntax error. Vi-mode use does not need paste-pop.
 unbind -T copy-mode    M-y
 unbind -T copy-mode-vi M-y
 # Remove tmux-yank-only bindings left behind when reloading a live server.
@@ -488,30 +497,29 @@ unbind -T copy-mode    y
 unbind -T copy-mode    Y
 unbind -T copy-mode-vi Y
 
-# Kill 快捷键
-# prefix X   → 杀当前 session, 带确认
-# prefix W   → 杀当前 window, 带确认 (替代默认 prefix+&)
-# prefix q/Q → 杀当前 window, 带确认
-# prefix C-x → fzf 多选杀 session (Tab 多选, Enter 确认)
-bind X confirm-before -y -p "kill session #S? (Y/n)" kill-session
-
-bind W confirm-before -y -p "kill window #W? (Y/n)" kill-window
+# Kill keys, one per target; Enter confirms (-y)
+# prefix x   → kill pane
+# prefix q   → kill window (replaces display-panes)
+# prefix X   → kill session
+# prefix C-x → fzf multi-select sessions to kill (Tab marks, Enter confirms)
+bind x confirm-before -y -p "kill pane #P? (Y/n)" kill-pane
 bind q confirm-before -y -p "kill window #W? (Y/n)" kill-window
-bind Q confirm-before -y -p "kill window #W? (Y/n)" kill-window
-
-# 覆盖 oh-my-tmux 默认 prefix+x / prefix+& — Enter 即默认 yes
-bind x confirm-before -y -p "kill-pane #P? (Y/n)" kill-pane
-bind & confirm-before -y -p "kill-window #W? (Y/n)" kill-window
+bind X confirm-before -y -p "kill session #S? (Y/n)" kill-session
+# Retired duplicates; unbinding also clears them from a live server on reload.
+unbind W
+unbind Q
+unbind &
+unbind Z
 
 %if #{>=:#{version},3.8}
 bind C-x new-pane -O -K -D -C -x60% -y50% -X20% -Y25% -T "kill sessions" \
     "sh -c 'tmux list-sessions -F \"#S\" | \
-        fzf --multi --reverse --prompt \"kill> \" --header \"Tab 多选, Enter 确认\" | \
+        fzf --multi --reverse --prompt \"kill> \" --header \"Tab marks, Enter kills\" | \
         xargs -r -I{} tmux kill-session -t {}'"
 %else
 bind C-x display-popup -E -w 60% -h 50% \
     "sh -c 'tmux list-sessions -F \"#S\" | \
-        fzf --multi --reverse --prompt \"kill> \" --header \"Tab 多选, Enter 确认\" | \
+        fzf --multi --reverse --prompt \"kill> \" --header \"Tab marks, Enter kills\" | \
         xargs -r -I{} tmux kill-session -t {}'"
 %endif
 
@@ -534,7 +542,7 @@ bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?
 
 # -- vim-style bindings --------------------------------------------------------
 
-# gt/gT/gg/ge — window cycle + jump (key-table chord on g)
+# gt/gT/gg — window cycle + jump to first (key-table chord on g); G jumps to last
 # The chord lives in tmux's own `move` table, so 3.8's floating-pane keys stay
 # reachable too: g 1-4 corners, g arrows edges (M- also resizes), g 0 fill.
 unbind g
@@ -542,20 +550,14 @@ bind g switch-client -T move
 bind -T move t next-window
 bind -T move T previous-window
 bind -T move g select-window -t :^         # gg → first window
-bind -T move e select-window -t :$         # ge → last window
+unbind -T move e                           # retired ge, same as G
 
 # G → last window (vim G = bottom)
 bind G select-window -t :$
 
 # / → enter copy-mode + forward search (vim /)
-# Note: prefix ? 保留 list-keys 默认; copy-mode 内可直接按 ? 反向搜索
+# prefix ? keeps the stock list-keys; in copy mode ? searches backward
 bind / copy-mode \; send-keys /
-
-# ZZ / ZQ — kill window via Z table (vim 退出键)
-unbind Z
-bind Z switch-client -T VIMZ
-bind -T VIMZ Z confirm-before -y -p "kill window #W? (Y/n)" kill-window
-bind -T VIMZ Q kill-window
 
 # = → equalize the current pane's row or column, keeping the arrangement (vim Ctrl-w =);
 # tiled stays on M-5
@@ -673,7 +675,7 @@ set -g @plugin 'christoomey/vim-tmux-navigator'
 set -g @plugin 'wfxr/tmux-fzf-url'
 
 # M-p (no-prefix) → tmux-palette: Raycast-like command palette (Bun-based)
-# 默认 @palette-key=C-Space 会撞 tmux prefix, 故改 M-p
+# the default @palette-key C-Space is the tmux prefix, so use M-p
 # Fork of eduwass/tmux-palette: `kd <word>` keyword items + IME/CJK input fix;
 # a daily GitHub Action merges upstream main into it.
 set -g @plugin 'jczhang02/tmux-palette'
