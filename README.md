@@ -215,9 +215,9 @@ Notable package boundaries:
   the theme picker rewrites it. The plugin itself is the
   [jczhang02/tmux-palette](https://github.com/jczhang02/tmux-palette) fork,
   which a daily GitHub Action keeps merged with upstream.
-- `tmux` tracks the oh-my-tmux overlay, `tmux-popup-anim` (a `display-popup`
-  wrapper with a grow-in/shrink-out outline), and a parameterized `tmuxp` workspace;
-  project-specific or retired workspaces stay local.
+- `tmux` tracks the oh-my-tmux overlay, the fcitx5 and agent-done helper
+  scripts, and `tmux-popup-anim` (a `display-popup` wrapper with a
+  grow-in/shrink-out outline).
 
 ## Design principles
 
