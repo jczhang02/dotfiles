@@ -315,9 +315,10 @@ tmux_conf_theme_status_left="#{?client_prefix,#[fg=$tmux_conf_theme_text_on_acce
 #     session's marks are on its tabs); pure formats, no shell
 #   - the ssh host of the current pane. Only this one stays of the ssh/user
 #     variables: each runs a shell every status-interval.
+#   - machine uptime (nf-md-timer_outline), at the right edge so it never moves
 # Colours that switch with the theme contain commas, which the *_fg/_bg lists
 # would split, so they are set inline.
-tmux_conf_theme_status_right=" #{pairing}#{synchronized}#{S:#{?#{&&:#{!=:#{session_name},#{client_session}},#{W:#{?@agent-done,1,}}},#[fg=$tmux_conf_theme_text_subtle]❐ #{session_name} #{?#{W:#{?#{==:#{@agent-done},wait},1,}},#[fg=$tmux_conf_theme_mark_wait],#[fg=$tmux_conf_theme_text_accent]}●  ,}} | #{?#{==:#{pane_current_command},ssh},󰣀 ,}#{hostname_ssh} "
+tmux_conf_theme_status_right=" #{pairing}#{synchronized}#{S:#{?#{&&:#{!=:#{session_name},#{client_session}},#{W:#{?@agent-done,1,}}},#[fg=$tmux_conf_theme_text_subtle]❐ #{session_name} #{?#{W:#{?#{==:#{@agent-done},wait},1,}},#[fg=$tmux_conf_theme_mark_wait],#[fg=$tmux_conf_theme_text_accent]}●  ,}} | #{?#{==:#{pane_current_command},ssh},󰣀 ,}#{hostname_ssh} | #[fg=$tmux_conf_theme_text_subtle]󰔛#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
 
 # status left style
 tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_14,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_8"
@@ -327,7 +328,7 @@ tmux_conf_theme_status_left_attr="none,none,none"
 # status right style
 tmux_conf_theme_status_right_fg="$tmux_conf_theme_colour_12,$tmux_conf_theme_colour_13,$tmux_conf_theme_colour_14"
 tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_17"
-tmux_conf_theme_status_right_attr="none,bold,bold"
+tmux_conf_theme_status_right_attr="none,bold,none"
 
 # pairing indicator
 tmux_conf_theme_pairing="⚇"                 # U+2687
