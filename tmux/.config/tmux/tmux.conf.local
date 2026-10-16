@@ -107,6 +107,15 @@ tmux_conf_theme_colour_15="default"   # terminal   — indicators bg
 tmux_conf_theme_colour_16="#d20f39"   # Red        — alerts only (bell, prefix)
 tmux_conf_theme_colour_17="default"   # terminal   — hostname section bg
 
+# Status bar colours that differ between Ghostty's light and dark themes; text
+# meets WCAG AA (4.5:1) on the Crust bar in both. A client that reports no theme
+# gets the dark value.
+tmux_conf_theme_text_accent="#{?#{==:#{client_theme},light},#b4237a,#dd4fa5}"     # Pink; #dd4fa5 is only 2.8:1 on Latte Crust
+tmux_conf_theme_text_subtle="#{?#{==:#{client_theme},light},#5c5f77,#9399b2}"     # Subtext1 / Overlay2, in place of dim
+tmux_conf_theme_text_on_accent="#{?#{==:#{client_theme},light},#ffffff,#11111b}"  # label text on an accent block
+tmux_conf_theme_mark_wait="#{?#{==:#{client_theme},light},#a26715,#f9e2af}"       # Yellow (3:1 glyph on Latte)
+tmux_conf_theme_page_bg="#{?#{==:#{client_theme},light},#eff1f5,#1e1e2e}"         # Ghostty's own background
+
 # default theme (ansi)
 #tmux_conf_theme_colour_1="colour0"
 #tmux_conf_theme_colour_2="colour8"
@@ -198,12 +207,13 @@ tmux_conf_theme_terminal_title="#h ❐ #S ● #I #W"
 #     - #{hostname_full_ssh}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_window_status_fg="$tmux_conf_theme_colour_3"
+tmux_conf_theme_window_status_fg="$tmux_conf_theme_text_subtle"
 tmux_conf_theme_window_status_bg="$tmux_conf_theme_colour_1"
-tmux_conf_theme_window_status_attr="dim"
-# padded like the current window, so every gap between tabs is 3 spaces;
-# a pink "!" marks an agent that finished while you were away (agent-done.sh)
-tmux_conf_theme_window_status_format=" #{?window_last_flag,#[dim]#I#[nodim],#I} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}#{?@agent-done, #[nodim]#[fg=$tmux_conf_theme_colour_4]#[bold]!,} "
+tmux_conf_theme_window_status_attr="none"
+# Inactive tabs: subtle text, no dimming. Marks after the name (agent-done.sh):
+# accent dot = an agent finished while you were away, yellow dot = an agent
+# waits for your answer (Claude Code permission prompt).
+tmux_conf_theme_window_status_format=" #I #W#{?window_zoomed_flag, Z,}#{?window_bell_flag, !,}#{?@agent-done, #{?#{==:#{@agent-done},wait},#[fg=$tmux_conf_theme_mark_wait],#[fg=$tmux_conf_theme_text_accent]}●,} "
 #tmux_conf_theme_window_status_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -217,11 +227,12 @@ tmux_conf_theme_window_status_format=" #{?window_last_flag,#[dim]#I#[nodim],#I} 
 #     - #{hostname_full_ssh}
 #     - #{username}
 #     - #{username_ssh}
-# current window: no block, pink bold text with a pink underline under the name
-tmux_conf_theme_window_status_current_fg="$tmux_conf_theme_colour_4"
-tmux_conf_theme_window_status_current_bg="$tmux_conf_theme_colour_1"
+# current window: a tab in the page colour, so it reads as joined to the pane
+# below; accent bold text, no underline
+tmux_conf_theme_window_status_current_fg="$tmux_conf_theme_text_accent"
+tmux_conf_theme_window_status_current_bg="$tmux_conf_theme_page_bg"
 tmux_conf_theme_window_status_current_attr="bold"
-tmux_conf_theme_window_status_current_format="#I #[us=$tmux_conf_theme_colour_4]#[underscore]#W#[nounderscore]#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+tmux_conf_theme_window_status_current_format=" #I #W#{?window_zoomed_flag, Z,} "
 #tmux_conf_theme_window_status_current_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -236,8 +247,8 @@ tmux_conf_theme_window_status_bell_bg="$tmux_conf_theme_colour_16"
 tmux_conf_theme_window_status_bell_attr="blink,bold"
 
 # window last status style
-tmux_conf_theme_window_status_last_fg="$tmux_conf_theme_colour_14"
-tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_1"   # not dimmed, no block
+tmux_conf_theme_window_status_last_fg="$tmux_conf_theme_text_subtle"
+tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_1"   # same as any other tab
 tmux_conf_theme_window_status_last_attr="none"
 
 # status left/right sections separators
@@ -277,25 +288,29 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-# uptime: dim stopwatch icon (nf-md-timer_outline, U+F051B), then a dim "│"
-# so it reads as separate from the window list that follows.
-tmux_conf_theme_status_left=" #[fg=$tmux_conf_theme_colour_4]❐#[fg=default] #S | #[dim]󰔛#[nodim]#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,}  #[dim]│#[nodim]"
+# Session name only; while the prefix is pressed it turns into an accent block
+# (replaces oh-my-tmux's red PREFIX, which leaves a permanent block when blank).
+tmux_conf_theme_status_left="#{?client_prefix,#[fg=$tmux_conf_theme_text_on_accent]#[bg=$tmux_conf_theme_text_accent]#[bold] #S #[default], #S } "
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
-# PREFIX is styled inside the conditional: oh-my-tmux's #{prefix} paints its
-# blank placeholder with prefix_bg, which leaves a permanent red block.
-# Only the ssh host stays: every #{..._ssh} or #{root} variable runs a shell
-# each status-interval, and locally they all render empty.
-tmux_conf_theme_status_right=" #{?client_prefix,#[fg=$tmux_conf_theme_colour_7]#[bg=$tmux_conf_theme_colour_16]#[bold] PREFIX #[default],}#{pairing}#{synchronized} | #{hostname_ssh} "
+# Right side, all empty in the common case:
+#   - pairing / synchronized-panes indicators
+#   - other sessions with an agent mark, each followed by its dot (the current
+#     session's marks are on its tabs); pure formats, no shell
+#   - the ssh host of the current pane. Only this one stays of the ssh/user
+#     variables: each runs a shell every status-interval.
+# Colours that switch with the theme contain commas, which the *_fg/_bg lists
+# would split, so they are set inline.
+tmux_conf_theme_status_right=" #{pairing}#{synchronized}#{S:#{?#{&&:#{!=:#{session_name},#{client_session}},#{W:#{?@agent-done,1,}}},#[fg=$tmux_conf_theme_text_subtle]#{session_name} #{?#{W:#{?#{==:#{@agent-done},wait},1,}},#[fg=$tmux_conf_theme_mark_wait],#[fg=$tmux_conf_theme_text_accent]}●  ,}} | #{hostname_ssh} "
 
 # status left style
 tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_14,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_8"
 tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_1,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_11"
-tmux_conf_theme_status_left_attr="bold,none,none"
+tmux_conf_theme_status_left_attr="none,none,none"
 
 # status right style
 tmux_conf_theme_status_right_fg="$tmux_conf_theme_colour_12,$tmux_conf_theme_colour_13,$tmux_conf_theme_colour_14"
 tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_17"
-tmux_conf_theme_status_right_attr="none,none,bold"
+tmux_conf_theme_status_right_attr="none,bold,bold"
 
 # pairing indicator
 tmux_conf_theme_pairing="⚇"                 # U+2687
@@ -397,6 +412,9 @@ tmux_conf_urlscan_options="--compact --dedupe"
 
 # status line on top
 set -g status-position top
+
+# tabs carry their own padding
+setw -g window-status-separator "" #!important
 
 # no activity marker on window tabs; bells still show
 set -g monitor-activity off
