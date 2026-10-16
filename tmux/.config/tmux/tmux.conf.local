@@ -304,10 +304,10 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-# Session icon (accent) and name; while the prefix is pressed the label turns
-# into an accent block
-# (replaces oh-my-tmux's red PREFIX, which leaves a permanent block when blank).
-tmux_conf_theme_status_left="#{?client_prefix,#[fg=$tmux_conf_theme_text_on_accent]#[bg=$tmux_conf_theme_text_accent]#[bold] ❐ #S #[default], #[fg=$tmux_conf_theme_text_accent]❐#[fg=default] #S }"
+# Left side: set in the user section below (status-left #!important). oh-my-tmux
+# pads every section with a trailing space in the bar colour, which would leave
+# a strip between the prefix block and the current tab.
+tmux_conf_theme_status_left=""
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
 # Right side, all empty in the common case:
 #   - pairing / synchronized-panes indicators
@@ -434,6 +434,12 @@ set -g status-position top
 
 # tabs carry their own padding
 setw -g window-status-separator "" #!important
+
+# Session icon (accent) and name, ending flush against the current tab. While the
+# prefix is pressed the label turns into an accent block (in place of oh-my-tmux's
+# red PREFIX). Colours as tmux_conf_theme_text_accent / _text_on_accent: the
+# re-applied #!important lines cannot read those variables.
+set -g status-left "#{?client_prefix,#[fg=#{?#{==:#{client_theme},light},#ffffff,#11111b}]#[bg=#{?#{==:#{client_theme},light},#b4237a,#dd4fa5}]#[bold] ❐ #S #[default], #[fg=#{?#{==:#{client_theme},light},#b4237a,#dd4fa5}]❐#[default] #S }" #!important
 
 # no activity marker on window tabs; bells still show
 set -g monitor-activity off
