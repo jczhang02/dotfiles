@@ -460,6 +460,25 @@ set-hook -g session-window-changed[101] "set -wu @agent-done"
 set-hook -g client-session-changed[101] "set -wu @agent-done"
 set-hook -g client-attached[101]        "set -wu @agent-done"
 
+# Agent overview, prefix a: a choose-tree of the windows that run a coding agent,
+# grouped by session, after herdr's agent list. One row per agent with its state
+# and how long it has been in it; each session rolls up to its most urgent state
+# and counts; the live preview shows the selected window; Enter jumps there.
+# States come from agent-done.sh (@agent-state, @agent-done):
+#   ● yellow  blocked  waits for your answer
+#   ● accent  done     finished while you were away, not yet seen
+#   ◐         working
+#   ○         idle     finished and seen, or no turn yet
+# An interrupted turn (Esc) fires no hook, so it shows "working" until the next one.
+set -g @ov-filter '#{||:#{m/r:^(claude|codex|opencode|pi)([:/]|$),#{window_name}},#{==:#{pane_current_command},claude}}'
+set -g @ov-state '#{?#{==:#{@agent-state},blocked},blocked,#{?#{==:#{@agent-done},1},done,#{?#{==:#{@agent-state},working},working,idle}}}'
+set -g @ov-glyph "#{?#{==:#{E:@ov-state},blocked},#[fg=$tmux_conf_theme_mark_wait]●,#{?#{==:#{E:@ov-state},done},#[fg=$tmux_conf_theme_text_accent]●,#[fg=$tmux_conf_theme_text_subtle]#{?#{==:#{E:@ov-state},working},◐,○}}}"
+set -g @ov-age '#{?@agent-since,#{t/r;s/m[0-9]+s$/m/:@agent-since},}'
+set -g @ov-window "#{E:@ov-glyph}#[default] #{p30:window_name} #[fg=$tmux_conf_theme_text_subtle]#{p9:#{E:@ov-state}}#{E:@ov-age}"
+set -g @ov-session "#{?#{W:#{?#{==:#{E:@ov-state},blocked},1,}},#[fg=$tmux_conf_theme_mark_wait]●,#{?#{W:#{?#{==:#{E:@ov-state},done},1,}},#[fg=$tmux_conf_theme_text_accent]●,#[fg=$tmux_conf_theme_text_subtle]#{?#{W:#{?#{==:#{E:@ov-state},working},1,}},◐,○}}}#[fg=$tmux_conf_theme_text_subtle]#{?#{W:#{?#{==:#{E:@ov-state},blocked},1,}},  #{n:#{W:#{?#{==:#{E:@ov-state},blocked},x,}}} blocked,}#{?#{W:#{?#{==:#{E:@ov-state},done},1,}},  #{n:#{W:#{?#{==:#{E:@ov-state},done},x,}}} done,}#{?#{W:#{?#{==:#{E:@ov-state},working},1,}},  #{n:#{W:#{?#{==:#{E:@ov-state},working},x,}}} working,}"
+set -g @ov-row '#{?pane_format,#{pane_current_command},#{?window_format,#{E:@ov-window},#{E:@ov-session}}}'
+bind a choose-tree -Zw -f '#{E:@ov-filter}' -F '#{E:@ov-row}'
+
 # Ghostty capabilities not advertised by terminfo; fixed index keeps reload idempotent.
 set -g  default-terminal "tmux-256color"
 set -s  terminal-features[100] "xterm-ghostty:RGB:clipboard:hyperlinks:extkeys:strikethrough:sync"
