@@ -21,15 +21,19 @@
 #   in Chinese.
 # Switch only when the state differs: every switch flashes the fcitx5 indicator.
 #
+# prune
+#   Called from the client-detached hook: drop @ime_last_<pid> of every client
+#   that is gone. The hook cannot name the client that left: #{client_pid}
+#   there expands to another client, and the leaving one no longer exists.
+#
 # Global option @ime_last_<client pid>: the pane this client last focused.
-
-# Remote hosts without fcitx5 have nothing to do.
-command -v fcitx5-remote >/dev/null || exit 0
 
 # The hook is synchronous: a hung fcitx5 must not freeze tmux for the D-Bus timeout.
 fx() { timeout 1 fcitx5-remote "$@"; }
 
 focus() {
+  # Remote hosts without fcitx5 have nothing to do.
+  command -v fcitx5-remote >/dev/null || return 0
   pane=$1 cmd=$2 ime=$3 english=$4
   client=$(tmux list-clients -F '#{client_pid} #{client_flags} #{pane_id}' |
     awk -v p="$pane" '$3 == p && $2 ~ /(^|,)focused(,|$)/ { print $1; exit }')
@@ -58,7 +62,15 @@ focus() {
   fi
 }
 
+prune() {
+  live=" $(tmux list-clients -F '#{client_pid}' | tr '\n' ' ') "
+  tmux show -g | awk '/^@ime_last_/ { print $1 }' | while read -r opt; do
+    case $live in *" ${opt#@ime_last_} "*) ;; *) tmux set -gu "$opt" ;; esac
+  done
+}
+
 case "$1" in
   focus) shift; focus "$@" ;;
+  prune) prune ;;
 esac
 exit 0
