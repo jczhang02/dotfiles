@@ -36,7 +36,6 @@ app-shells/direnv
 # Terminal and multiplexer
 x11-terms/ghostty
 app-misc/tmux
-app-misc/tmuxp
 # ::jc
 app-shells/sesh
 
