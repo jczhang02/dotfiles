@@ -111,20 +111,6 @@
     }
   },
   {
-    "icon": "󰚩",
-    "title": "Agent Overview",
-    "description": "Coding agents by session with state and preview (prefix a)",
-    "category": "Agents",
-    "aliases": [
-      "agents",
-      "ov",
-      "herd"
-    ],
-    "action": {
-      "tmux": "choose-tree -Zw -f '#{E:@ov-filter}' -F '#{E:@ov-row}'"
-    }
-  },
-  {
     "icon": "",
     "title": "Lazygit",
     "description": "Git TUI in floating popup",
