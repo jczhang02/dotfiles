@@ -699,10 +699,8 @@ set -g menu-border-lines heavy
 %endif
 
 
-# window names as <activity>:<workspace>[/<area>]
+# window names as <project>/<task>; the icon shows the program
 set -g @plugin 'jczhang02/tmux-autoname'
-# drop the workspace when it is the session name: claude, not claude:partjobs
-set -g @tmux-autoname-omit-session on
 
 # Native tmux copy-mode + OSC52 handles keyboard and mouse copy without helper processes.
 
