@@ -85,6 +85,31 @@
     }
   },
   {
+    "icon": "󰑓",
+    "title": "Restore Automatic Window Name",
+    "description": "Forget the manual name; tmux-autoname names the window again",
+    "category": "Windows",
+    "aliases": [
+      "autoname",
+      "auto"
+    ],
+    "action": {
+      "tmux": "rename-window ''"
+    }
+  },
+  {
+    "icon": "󰋼",
+    "title": "Show Window Name Status",
+    "description": "tmux-autoname name, applied name, manual state and icon",
+    "category": "Windows",
+    "aliases": [
+      "autoname-status"
+    ],
+    "action": {
+      "tmux": "display-message 'name: #W | applied: #{@tmux-autoname-applied} | manual: #{?#{&&:#{@tmux-autoname-applied},#{!=:#{window_name},#{@tmux-autoname-applied}}},yes,no} | icon: #{@tmux-autoname-icon}'"
+    }
+  },
+  {
     "icon": "󰓡",
     "title": "Swap Pane with Next",
     "description": "Swap places with the next pane (prefix >); the cursor moves with this pane",
