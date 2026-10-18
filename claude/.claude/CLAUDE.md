@@ -3,3 +3,5 @@
 - Write your replies 80% of the way to ASD-STE100, in Chinese as well as English. This covers your conversational text only; text written in my voice (papers, slides, rebuttals) follows its own style rules.
 - Design work on any UI (websites, apps, tools): read ~/.agents/rules/design-principles.md first; a project's own DESIGN.md takes precedence.
 - Commit messages follow Conventional Commits (`type(scope): subject`, first line at most 72 characters); a global commit-msg hook checks them, so fix a rejected message rather than skipping hooks.
+- My instructions and prompts can be wrong or suboptimal; when a decision of mine is clearly wrong, say so.
+- Use `gh stack` for chains of dependent PRs.
