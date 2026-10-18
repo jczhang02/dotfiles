@@ -36,6 +36,13 @@ old=$(tmux display -p -t "$TMUX_PANE" '#{@notify_id}')
 [ -n "$old" ] && gdbus call --session --dest org.gtk.Notifications --object-path /org/gtk/Notifications \
   --method org.gtk.Notifications.RemoveNotification com.mitchellh.ghostty "$old" >/dev/null 2>&1
 tmux set -p -t "$TMUX_PANE" @notify_id "$body"
+# tmux passes the sequence of a hidden pane to every client whose session has the pane's
+# window, and Ghostty raises the tab of the one that shows it. notify-focus.sh may only
+# switch these clients after a click; another Ghostty window regaining focus is not one.
+window=$(tmux display -p -t "$TMUX_PANE" '#{window_id}')
+sessions=$(tmux list-windows -a -F '#{session_id} #{window_id}' | awk -v w="$window" '$2 == w { print $1 }')
+clients=$(tmux list-clients -F '#{session_id} #{client_name}' | awk -v s=" $(echo $sessions) " 'index(s, " " $1 " ") { printf " %s", $2 }')
+tmux set -p -t "$TMUX_PANE" @notify_clients "$clients "
 
 # With allow-passthrough "on", tmux drops the sequence while the pane is not on screen,
 # which is exactly when the notification is wanted; "all" is set for this pane only.
@@ -53,4 +60,4 @@ for _ in 1 2 3; do
   [ "$(tmux display -p -t "$TMUX_PANE" '#{@notify_id}')" = "$body" ] || exit 0
   grep -qaF -- "$body" "$store" 2>/dev/null && exit 0
 done
-tmux set -pu -t "$TMUX_PANE" @notify_id
+tmux set -pu -t "$TMUX_PANE" @notify_id \; set -pu -t "$TMUX_PANE" @notify_clients

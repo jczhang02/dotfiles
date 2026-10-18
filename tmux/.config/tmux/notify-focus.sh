@@ -7,6 +7,8 @@
 #   notify-focus.sh jump <client_name>
 #       client-focus-in: Ghostty regained focus. A pane whose notification is gone from
 #       GNOME Shell, but not withdrawn here, had it clicked (or closed); select that pane.
+#       Only in a client that received the notification (@notify_clients): a click also
+#       hands focus back to the Ghostty window you were in, and that one must stay put.
 
 # Ghostty sends through org.gtk.Notifications, which accepts removals from any caller.
 withdraw() {
@@ -18,16 +20,20 @@ case "${1:-}" in
   dismiss)
     [ -n "${3:-}" ] || exit 0
     withdraw "$3"
-    tmux set -pu -t "$2" @notify_id
+    tmux set -pu -t "$2" @notify_id \; set -pu -t "$2" @notify_clients
     ;;
   jump)
     # GNOME Shell stores the open org.gtk.Notifications here (a GVariant file, deleted when
     # empty). It is internal to GNOME Shell; if it moves, clicks only raise the Ghostty tab.
     store=${XDG_DATA_HOME:-$HOME/.local/share}/gnome-shell/notifications
-    tmux list-panes -a -F '#{pane_id}	#{@notify_id}' | while IFS='	' read -r pane id; do
+    # \037 as separator: unlike a tab, read does not merge it when a field is empty.
+    us=$(printf '\037')
+    tmux list-panes -a -F "#{pane_id}$us#{@notify_id}$us#{@notify_clients}" |
+    while IFS=$us read -r pane id clients; do
       [ -n "$id" ] || continue
+      case "$clients" in *" $2 "*) ;; *) continue ;; esac
       [ -f "$store" ] && grep -qaF -- "$id" "$store" && continue
-      tmux set -pu -t "$pane" @notify_id
+      tmux set -pu -t "$pane" @notify_id \; set -pu -t "$pane" @notify_clients
       tmux switch-client -c "$2" -t "$pane"
     done
     ;;
