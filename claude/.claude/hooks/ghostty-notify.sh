@@ -35,4 +35,17 @@ tmux set -p -t "$TMUX_PANE" @notify_id "$body"
 # With allow-passthrough "on", tmux drops the sequence while the pane is not on screen,
 # which is exactly when the notification is wanted; "all" is set for this pane only.
 tmux set -p -t "$TMUX_PANE" allow-passthrough all
-printf '\ePtmux;\e\e]777;notify;%s;%s\a\e\\' "$title" "$body" > "$tty"
+
+# Ghostty drops, without queueing, any notification within 1 s of the previous one from the
+# whole process (all windows), and identical ones within 5 s. So check that GNOME Shell got
+# it and resend if not. A dropped one must not keep @notify_id: notify-focus.sh would take
+# the missing notification for a click and jump to this pane. Stop once the id is gone:
+# the pane got focus meanwhile and notify-focus.sh withdrew the notification.
+store=${XDG_DATA_HOME:-$HOME/.local/share}/gnome-shell/notifications
+for _ in 1 2 3; do
+  printf '\ePtmux;\e\e]777;notify;%s;%s\a\e\\' "$title" "$body" > "$tty"
+  sleep 1.2
+  [ "$(tmux display -p -t "$TMUX_PANE" '#{@notify_id}')" = "$body" ] || exit 0
+  grep -qaF -- "$body" "$store" 2>/dev/null && exit 0
+done
+tmux set -pu -t "$TMUX_PANE" @notify_id
