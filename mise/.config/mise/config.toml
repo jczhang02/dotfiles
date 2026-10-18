@@ -32,7 +32,7 @@ shfmt                              = "latest"
 # codelldb remains editor-local because upstream ships VS Code extension archives.
 "npm:pake-cli" = "latest"
 "cargo:worktrunk" = "latest"
-"aqua:dolthub/dolt" = "2.3.1"
+"aqua:dolthub/dolt" = "2.5.0"
 hunk = "latest"
 claude-code = "latest"
 "http:moshi-hook" = { version = "latest", url = "https://cdn.getmoshi.app/hook/v{{version}}/moshi-hook_Linux_x86_64.tar.gz", version_list_url = "https://cdn.getmoshi.app/hook/latest/version.txt" }
