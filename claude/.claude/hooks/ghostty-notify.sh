@@ -20,11 +20,16 @@ tty=$(tmux display -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null) || exit 0
 transcript=$(jq -r .transcript_path <<<"$in")
 title=$(grep '"custom-title"' "$transcript" 2>/dev/null | tail -1 | jq -r '.customTitle // empty')
 [ -n "$title" ] || title=$(basename "$(jq -r .cwd <<<"$in")")
+# Ghostty keeps only the first 63 bytes of the title and 255 of the body, cut mid-character
+# if need be (termio/stream_handler.zig). Cut both on a character boundary first, so the
+# body Ghostty uses as notification id is exactly the one stored below.
+fit() { printf '%s' "$1" | head -c "$2" | iconv -f UTF-8 -t UTF-8 -c 2>/dev/null; }
 # A ';' would end the title field of OSC 777.
-title=${title//;/,}
-# Control characters would break the escape sequence; jq slices by character, so CJK text is not split.
+title=$(fit "${title//;/,}" 63)
+# Control characters would break the escape sequence.
 # The body doubles as the notification id, so it must not be empty.
-body=$(jq -r '(.last_assistant_message // .message // "") | gsub("[[:cntrl:]]+"; " ") | gsub("\\s+"; " ") | .[0:200] | if . == "" then "Done" else . end' <<<"$in")
+body=$(jq -r '(.last_assistant_message // .message // "") | gsub("[[:cntrl:]]+"; " ") | gsub("\\s+"; " ") | if . == "" then "Done" else . end' <<<"$in")
+body=$(fit "$body" 255)
 
 # Replace this pane's previous notification instead of stacking a new one.
 old=$(tmux display -p -t "$TMUX_PANE" '#{@notify_id}')
