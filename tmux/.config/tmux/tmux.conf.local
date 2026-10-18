@@ -218,7 +218,7 @@ tmux_conf_theme_window_status_attr="none"
 # Inactive tabs: subtle text, no dimming. Marks after the name (agent-done.sh):
 # accent dot = an agent finished while you were away, yellow dot = an agent
 # waits for your answer (Claude Code permission prompt).
-tmux_conf_theme_window_status_format=" #I $tmux_conf_theme_window_icon #W#{?window_zoomed_flag, 󰊓,}#{?window_bell_flag, 󰂞,}#{?@agent-done, #{?#{==:#{@agent-done},wait},#[fg=$tmux_conf_theme_mark_wait],#[fg=$tmux_conf_theme_text_accent]}●,} "
+tmux_conf_theme_window_status_format=" #I $tmux_conf_theme_window_icon #W#{?@tmux-autoname-manual, #{@tmux-autoname-manual},}#{?window_zoomed_flag, 󰊓,}#{?window_bell_flag, 󰂞,}#{?@agent-done, #{?#{==:#{@agent-done},wait},#[fg=$tmux_conf_theme_mark_wait],#[fg=$tmux_conf_theme_text_accent]}●,} "
 #tmux_conf_theme_window_status_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -237,7 +237,7 @@ tmux_conf_theme_window_status_format=" #I $tmux_conf_theme_window_icon #W#{?wind
 tmux_conf_theme_window_status_current_fg="$tmux_conf_theme_text_accent"
 tmux_conf_theme_window_status_current_bg="$tmux_conf_theme_page_bg"
 tmux_conf_theme_window_status_current_attr="bold"
-tmux_conf_theme_window_status_current_format=" #I $tmux_conf_theme_window_icon #W#{?window_zoomed_flag, 󰊓,} "
+tmux_conf_theme_window_status_current_format=" #I $tmux_conf_theme_window_icon #W#{?@tmux-autoname-manual, #{@tmux-autoname-manual},}#{?window_zoomed_flag, 󰊓,} "
 #tmux_conf_theme_window_status_current_format="#{circled_window_index} #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
 #tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,🔔,}#{?window_zoomed_flag,🔍,}"
 
@@ -561,9 +561,11 @@ bind C-x display-popup -E -w 60% -h 50% \
 bind w { new-pane -E -T windows -x75% -y30% -X0 -Y0; move-pane -P bottom-centre; switch-mode -wk }
 %endif
 
-# prefix a → windows of the current session with each pane's title (the agent's
-# task). run-shell -C expands #{session_name} at key press; ## stays a format.
-bind a run-shell -C "choose-tree -Zw -f '##{==:##{session_name},#{session_name}}' -F '##{?window_format,##{@tmux-autoname-icon} ##{window_name}  ##{pane_title},}'"
+# prefix a → windows of the current session, each with the task titles of the
+# agents in any of its panes (shells only carry the host name, so they show
+# none). Names are cut and padded so the titles line up. run-shell -C expands
+# #{session_name} at key press; ## stays a format.
+bind a run-shell -C "choose-tree -Zw -f '##{==:##{session_name},#{session_name}}' -F '##{?window_format,##{@tmux-autoname-icon} ##{p32:##{=/31/…:window_name}}##{P:##{?##{m/r:^(claude|codex|pi|opencode)$,##{pane_current_command}},##{pane_title}  ,}},}'"
 
 # prefix f → new floating pane in the current directory (3.8 default * stays);
 # replaces find-window, which prefix w and prefix s cover
