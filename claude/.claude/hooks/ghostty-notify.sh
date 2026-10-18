@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Desktop notification carrying the session title and Claude's last reply.
+# Desktop notification through Ghostty (OSC 777) carrying the session title and Claude's last reply.
 # Wired to the Stop and Notification hooks; replaces the built-in "Claude is waiting" text.
-# Skipped when the pane's window is on screen in a focused Ghostty. The notification id is
-# kept in the pane option @notify_id, so notify-dismiss.sh can withdraw it once the pane
-# gets focus (tmux pane-focus-in hook).
+# Skipped when the pane's window is on screen in a focused Ghostty. Clicking the notification
+# raises the Ghostty tab. Ghostty sends it through org.gtk.Notifications with the body as id;
+# the pane option @notify_id keeps that id, so tmux's notify-focus.sh can withdraw the
+# notification once the pane gets focus, or select the pane after a click.
 in=$(cat)
 [ -n "$TMUX_PANE" ] || exit 0
 
@@ -14,18 +15,24 @@ if [ -z "${GHOSTTY_NOTIFY_FORCE:-}" ]; then
   read -r viewed session < <(tmux display -p -t "$TMUX_PANE" '#{&&:#{window_active},#{session_attached}} #{session_id}' 2>/dev/null) || exit 0
   [ "$viewed" = 1 ] && tmux list-clients -t "$session" -F '#{client_flags}' | grep -qw focused && exit 0
 fi
+tty=$(tmux display -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null) || exit 0
 
 transcript=$(jq -r .transcript_path <<<"$in")
 title=$(grep '"custom-title"' "$transcript" 2>/dev/null | tail -1 | jq -r '.customTitle // empty')
 [ -n "$title" ] || title=$(basename "$(jq -r .cwd <<<"$in")")
-# jq slices by character, so CJK text is not split.
-body=$(jq -r '(.last_assistant_message // .message // "") | gsub("[[:cntrl:]]+"; " ") | gsub("\\s+"; " ") | .[0:200]' <<<"$in")
+# A ';' would end the title field of OSC 777.
+title=${title//;/,}
+# Control characters would break the escape sequence; jq slices by character, so CJK text is not split.
+# The body doubles as the notification id, so it must not be empty.
+body=$(jq -r '(.last_assistant_message // .message // "") | gsub("[[:cntrl:]]+"; " ") | gsub("\\s+"; " ") | .[0:200] | if . == "" then "Done" else . end' <<<"$in")
 
-# libnotify instead of OSC 777: a Ghostty notification has no id, so it cannot be withdrawn.
-# No desktop-entry hint: GNOME Shell then ties the notification to the sender's D-Bus name
-# and removes it as soon as notify-send exits.
-# --replace-id makes a new turn in the same pane update its old notification.
+# Replace this pane's previous notification instead of stacking a new one.
 old=$(tmux display -p -t "$TMUX_PANE" '#{@notify_id}')
-id=$(notify-send --print-id --app-name=Ghostty --icon=com.mitchellh.ghostty \
-  ${old:+--replace-id="$old"} -- "$title" "$body") || exit 0
-tmux set -p -t "$TMUX_PANE" @notify_id "$id"
+[ -n "$old" ] && gdbus call --session --dest org.gtk.Notifications --object-path /org/gtk/Notifications \
+  --method org.gtk.Notifications.RemoveNotification com.mitchellh.ghostty "$old" >/dev/null 2>&1
+tmux set -p -t "$TMUX_PANE" @notify_id "$body"
+
+# With allow-passthrough "on", tmux drops the sequence while the pane is not on screen,
+# which is exactly when the notification is wanted; "all" is set for this pane only.
+tmux set -p -t "$TMUX_PANE" allow-passthrough all
+printf '\ePtmux;\e\e]777;notify;%s;%s\a\e\\' "$title" "$body" > "$tty"
