@@ -449,6 +449,10 @@ set-hook -g session-window-changed[101] "set -wu @agent-done"
 set-hook -g client-session-changed[101] "set -wu @agent-done"
 set-hook -g client-attached[101]        "set -wu @agent-done"
 
+# Withdraw the pane's desktop notification (sent by Claude Code's ghostty-notify.sh) once
+# you look at it. pane-focus-in also fires when Ghostty itself regains focus.
+set-hook -g pane-focus-in[101] { run-shell -b "~/.config/tmux/notify-dismiss.sh '#{pane_id}' '#{@notify_id}'" }
+
 # Ghostty capabilities not advertised by terminfo; fixed index keeps reload idempotent.
 set -g  default-terminal "tmux-256color"
 set -s  terminal-features[100] "xterm-ghostty:RGB:clipboard:hyperlinks:extkeys:strikethrough:sync"
