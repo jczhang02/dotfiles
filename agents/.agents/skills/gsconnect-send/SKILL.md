@@ -1,12 +1,11 @@
 ---
 name: gsconnect-send
 description: Send any local file to phone through GSConnect.
-disable-model-invocation: true
 ---
 
 # GSConnect Send
 
-Send one local file to a paired phone through GSConnect. This is a user-invoked skill: run it only when the user explicitly asks for this skill or explicitly asks to send a file through GSConnect.
+Send one local file to a paired phone through GSConnect. The agent may run this skill itself, but only when the user explicitly asks in the current turn to send that file to the phone (for example `/partjob send <package-id> --via phone` after JC approves). Sending a file out still needs that request; never send on the agent's own initiative.
 
 ## Steps
 
@@ -112,4 +111,4 @@ busctl --user list | grep -i gsconnect
 
 ## Safety
 
-Sending a file is an external side effect. This skill is already user-invoked, so do not ask for a second confirmation when the target file and single device are unambiguous. Ask only when the file or device is ambiguous.
+Sending a file is an external side effect. The user's explicit request to send the file (see above) is the approval, so do not ask for a second confirmation when the target file and single device are unambiguous. Ask only when the file or device is ambiguous.
