@@ -27,14 +27,16 @@ fit() { printf '%s' "$1" | head -c "$2" | iconv -f UTF-8 -t UTF-8 -c 2>/dev/null
 # A ';' would end the title field of OSC 777.
 title=$(fit "${title//;/,}" 63)
 # Control characters would break the escape sequence.
-# The body doubles as the notification id, so it must not be empty.
+# The body doubles as the notification id, so the pane's place leads it: without it, the same
+# permission prompt in two panes would be one notification, withdrawn by either pane.
+place=$(tmux display -p -t "$TMUX_PANE" '#{session_name}:#{window_index}#{?#{>:#{window_panes},1},.#{pane_index},}')
 body=$(jq -r '(.last_assistant_message // .message // "") | gsub("[[:cntrl:]]+"; " ") | gsub("\\s+"; " ") | if . == "" then "Done" else . end' <<<"$in")
-body=$(fit "$body" 255)
+body=$(fit "[$place] $body" 255)
 
 # Replace this pane's previous notification instead of stacking a new one.
 old=$(tmux display -p -t "$TMUX_PANE" '#{@notify_id}')
 [ -n "$old" ] && gdbus call --session --dest org.gtk.Notifications --object-path /org/gtk/Notifications \
-  --method org.gtk.Notifications.RemoveNotification com.mitchellh.ghostty "$old" >/dev/null 2>&1
+  --method org.gtk.Notifications.RemoveNotification -- com.mitchellh.ghostty "$old" >/dev/null 2>&1
 tmux set -p -t "$TMUX_PANE" @notify_id "$body"
 # tmux passes the sequence of a hidden pane to every client whose session has the pane's
 # window, and Ghostty raises the tab of the one that shows it. notify-focus.sh may only

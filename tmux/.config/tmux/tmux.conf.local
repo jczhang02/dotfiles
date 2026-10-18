@@ -452,7 +452,7 @@ set-hook -g client-attached[101]        "set -wu @agent-done"
 # Desktop notifications from Claude Code's ghostty-notify.sh: withdraw a pane's notification
 # once you look at it (pane-focus-in also fires when Ghostty itself regains focus), and
 # select the pane whose notification you clicked.
-set-hook -g pane-focus-in[101]   { run-shell -b "~/.config/tmux/notify-focus.sh dismiss '#{pane_id}' '#{@notify_id}'" }
+set-hook -g pane-focus-in[101]   { run-shell -b "~/.config/tmux/notify-focus.sh dismiss '#{pane_id}'" }
 set-hook -g client-focus-in[101] { run-shell -b "~/.config/tmux/notify-focus.sh jump '#{client_name}'" }
 
 # Ghostty capabilities not advertised by terminfo; fixed index keeps reload idempotent.
