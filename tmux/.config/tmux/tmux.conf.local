@@ -472,6 +472,11 @@ set -g update-environment[102] GTK_IM_MODULE
 set -g update-environment[103] QT_IM_MODULE
 set -g update-environment[104] INPUT_METHOD
 
+# Refresh SSH vars on attach, so a server started over SSH does not leave a
+# stale SSH_CLIENT that makes p10k show user@host in local panes.
+set -g update-environment[110] SSH_CLIENT
+set -g update-environment[111] SSH_TTY
+
 # Each pane keeps its own fcitx5 English/Chinese state; new panes and shells
 # start in English (logic in ime.sh). fcitx5 keeps one state per Ghostty window
 # and cannot see pane, window or session switches inside tmux. The hook runs
