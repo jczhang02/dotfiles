@@ -181,9 +181,11 @@ zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' fzf-preview '
   [[ -r $f[1] ]] || return
   local meta="$(date -r $f[1] "+%m-%d %H:%M") · $(numfmt --to=iec --suffix=B $(stat -c %s $f[1])) · ${word:0:8}"
   jq -nr --arg meta $meta -f ${ZDOTDIR:-$HOME/.config/zsh}/preview/claude-session.jq $f[1] 2>/dev/null'
-zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' fzf-flags '--preview-window=right:45%:wrap'
+zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' fzf-flags '--preview-window=right:40%:wrap'
 # 弹窗默认只有候选项宽, 预览会挤掉列表里排在最后的标题; 加宽加高, 让标题完整, 预览放得下首尾输入.
 zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' popup-pad 80 12
+# 默认的 prefix 查询会把标题的共同开头 (如 "docs: ") 填进 fzf 输入框; 只用已输入的内容.
+zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' query-string input
 
 ## history
 command mkdir -p -m 700 -- "$XDG_STATE_HOME/zsh"

@@ -68,7 +68,7 @@ _claude_session_ids() {
   # prints the current value of a variable when `local`/`typeset` is
   # applied to it a second time in the same scope (treats it like
   # `typeset -p`), so the second pass must *not* redeclare these.
-  local -a jsonl_files mtimes sizes candidates top
+  local -a jsonl_files mtimes sizes candidates top titles ages
   local line filepath uuid mtime size title branch info reltime sizestr
   local _jb _jcustom _jai _jsum _jprompt _jcmd
   local count=0 headroom idx d h m days weeks months years kb mb gb now
@@ -173,55 +173,42 @@ _claude_session_ids() {
     [[ -z "$title" ]] && continue
     # Trim/normalize for one-line display.
     title="${title//$'\n'/ }"
-    (( ${#title} > 80 )) && title="${title:0:80}"
+    # Local patch (dotfiles): titles are how sessions get picked, so keep up
+    # to 120 chars and let fzf truncate only when the popup is too narrow.
+    (( ${#title} > 120 )) && title="${title:0:120}"
 
-    # Relative time — same buckets `/resume` uses.
+    # Local patch (dotfiles): sessions get picked by title, so labels are
+    # "<title>  <age>" with a short age ("3m", "2d", "5mo") instead of
+    # "3 minutes ago · main · 3.7MB - <id>: <title>". The title starts in
+    # column 0 and a narrow popup cuts the age first. Branch, size and id are
+    # in the fzf-tab preview (zshrc.d/03-option.zsh). No ANSI styling: fzf
+    # --ansi strips it from {}, and fzf-tab's preview then can't find the
+    # candidate.
     d=$(( now - mtime ))
     (( d < 0 )) && d=0
-    if (( d < 60 )); then
-      (( d == 1 )) && reltime="1 second ago" || reltime="${d} seconds ago"
-    elif (( d < 3600 )); then
-      m=$(( d / 60 ))
-      (( m == 1 )) && reltime="1 minute ago" || reltime="${m} minutes ago"
-    elif (( d < 86400 )); then
-      h=$(( d / 3600 ))
-      (( h == 1 )) && reltime="1 hour ago" || reltime="${h} hours ago"
-    elif (( d < 604800 )); then
-      days=$(( d / 86400 ))
-      (( days == 1 )) && reltime="1 day ago" || reltime="${days} days ago"
-    elif (( d < 2592000 )); then
-      weeks=$(( d / 604800 ))
-      (( weeks == 1 )) && reltime="1 week ago" || reltime="${weeks} weeks ago"
-    elif (( d < 31536000 )); then
-      months=$(( d / 2592000 ))
-      (( months == 1 )) && reltime="1 month ago" || reltime="${months} months ago"
-    else
-      years=$(( d / 31536000 ))
-      (( years == 1 )) && reltime="1 year ago" || reltime="${years} years ago"
-    fi
-
-    # Human-readable size, one decimal place. Avoids forking awk/bc; zsh
-    # integer arithmetic keeps the pass-2 loop hot for projects with
-    # hundreds of sessions.
-    if (( size < 1024 )); then
-      sizestr="${size}B"
-    elif (( size < 1048576 )); then
-      kb=$(( size * 10 / 1024 ))
-      (( kb % 10 == 0 )) && sizestr="$((kb/10))KB" || sizestr="$((kb/10)).$((kb%10))KB"
-    elif (( size < 1073741824 )); then
-      mb=$(( size * 10 / 1048576 ))
-      (( mb % 10 == 0 )) && sizestr="$((mb/10))MB" || sizestr="$((mb/10)).$((mb%10))MB"
-    else
-      gb=$(( size * 10 / 1073741824 ))
-      (( gb % 10 == 0 )) && sizestr="$((gb/10))GB" || sizestr="$((gb/10)).$((gb%10))GB"
+    if   (( d < 60 ));       then reltime="${d}s"
+    elif (( d < 3600 ));     then reltime="$(( d / 60 ))m"
+    elif (( d < 86400 ));    then reltime="$(( d / 3600 ))h"
+    elif (( d < 604800 ));   then reltime="$(( d / 86400 ))d"
+    elif (( d < 2592000 ));  then reltime="$(( d / 604800 ))w"
+    elif (( d < 31536000 )); then reltime="$(( d / 2592000 ))mo"
+    else                          reltime="$(( d / 31536000 ))y"
     fi
 
     ids+=("$uuid")
-    labels+=("${reltime} · ${branch} · ${sizestr} - ${uuid:0:8}: ${title}")
+    titles+=("$title")
+    ages+=("$reltime")
     (( count++ ))
   done
 
   [[ ${#ids} -eq 0 ]] && return 1
+  # Local patch (dotfiles): pad titles to the widest one ((m) counts CJK as
+  # two columns) so ages line up in one right-hand column.
+  local -i tw=0
+  for title in "${titles[@]}"; do (( ${(m)#title} > tw )) && tw=${(m)#title}; done
+  for idx in {1..${#ids}}; do
+    labels+=("${(mr:tw:)titles[idx]}  ${(l:4:)ages[idx]}")
+  done
   local expl
   # `-V sessions` names the group (for zstyle targeting). `-o nosort` is
   # what actually disables alphabetical re-sorting — `-V` alone is
