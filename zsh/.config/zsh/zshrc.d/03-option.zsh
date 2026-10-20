@@ -174,18 +174,16 @@ zstyle ':fzf-tab:complete:*:options' fzf-preview
 ## Claude Code
 # 保持 _claude 按最近使用排序的会话列表, 不被 fzf-tab 按字母重排.
 zstyle ':completion:*:claude:*' sort false
-# claude -r/--resume <Tab>: 预览会话 transcript (❯ 为用户输入).
+# claude -r/--resume <Tab>: 预览会话标题, 时间, 开头和结尾的用户输入 (见 preview/claude-session.jq).
 # 会话文件位于 ~/.claude/projects/<mangled-cwd>/<id>.jsonl.
 zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' fzf-preview '
   local -a f=( ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects/*/$word.jsonl(N) )
   [[ -r $f[1] ]] || return
-  jq -r '"'"'
-    select((.type=="user" or .type=="assistant") and (.isMeta|not) and (.isSidechain|not))
-    | (.message.content | if type=="string" then . else (map(select(.type=="text").text) | join(" ")) end) as $t
-    | select($t != "" and ($t|startswith("<")|not))
-    | (if .type=="user" then "\u001b[1;35m❯\u001b[0m " else "  " end) + ($t|gsub("\\s+";" ")|.[0:400])
-  '"'"' $f[1] 2>/dev/null | tail -n 60'
-zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' fzf-flags '--preview-window=right:55%:wrap:follow'
+  local meta="$(date -r $f[1] "+%m-%d %H:%M") · $(numfmt --to=iec --suffix=B $(stat -c %s $f[1])) · ${word:0:8}"
+  jq -nr --arg meta $meta -f ${ZDOTDIR:-$HOME/.config/zsh}/preview/claude-session.jq $f[1] 2>/dev/null'
+zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' fzf-flags '--preview-window=right:45%:wrap'
+# 弹窗默认只有候选项宽, 预览会挤掉列表里排在最后的标题; 加宽加高, 让标题完整, 预览放得下首尾输入.
+zstyle ':fzf-tab:complete:claude:option-(-resume|r)-1' popup-pad 80 12
 
 ## history
 command mkdir -p -m 700 -- "$XDG_STATE_HOME/zsh"
