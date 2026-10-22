@@ -1,3 +1,12 @@
 # hunk (modem-dev/hunk): git's pager for `git diff` (see git/.gitconfig pager.diff).
 # Soft-wrap long diff lines instead of truncating them to one row; `w` toggles per session.
 wrap_lines = true
+
+# Keys. A listed set replaces that command's defaults, so the defaults are repeated
+# where they stay. Ctrl-h/j/k/l and Alt-h/j/k/l never reach hunk: tmux takes them.
+[keybindings]
+# vim paging: ctrl+f / ctrl+b beside the stock keys
+"hunk.review.pageDown" = ["pagedown", "space", "f", "ctrl+f"]
+"hunk.review.pageUp"   = ["pageup", "shift+space", "b", "ctrl+b"]
+# ctrl+s is terminal flow control (zsh keeps ixon on); Ghostty sends ctrl+enter as CSI u
+"hunk.review.saveNote" = "ctrl+enter"
