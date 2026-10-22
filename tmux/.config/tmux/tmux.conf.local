@@ -509,7 +509,7 @@ bind C-a     send-prefix -2
 # prefix s → sesh picker (shared with zsh startup; see ~/.local/bin/sesh-pick)
 # (replaces the stock choose-tree).
 # 3.8+: modal floating pane. -K sends every key to fzf as a popup did (C-a is a
-# prefix key, C-j/C-k belong to vim-tmux-navigator); -D/-C close it on Esc or an
+# prefix key, C-j/C-k belong to smart-splits); -D/-C close it on Esc or an
 # outside click.
 unbind s
 %if #{>=:#{version},3.8}
@@ -717,8 +717,11 @@ set -g @plugin 'jczhang02/tmux-autoname'
 
 # Native tmux copy-mode + OSC52 handles keyboard and mouse copy without helper processes.
 
-# Ctrl-h/j/k/l moves across vim splits + tmux panes
-set -g @plugin 'christoomey/vim-tmux-navigator'
+# Ctrl-h/j/k/l moves across nvim splits + tmux panes. tmux half of smart-splits.nvim v3:
+# branches on the pane option @pane-is-vim (set by the nvim plugin) instead of
+# running ps on every keypress. @smart-splits_at_edge must match nvim move.at_edge.
+set -g @plugin 'smart-splits-nvim/backend-tmux'
+set -g @smart-splits_at_edge 'wrap'
 
 # prefix u → fuzzy pick URL from current pane, open in browser
 set -g @plugin 'wfxr/tmux-fzf-url'
