@@ -1,0 +1,3 @@
+# hunk (modem-dev/hunk): git's pager for `git diff` (see git/.gitconfig pager.diff).
+# Soft-wrap long diff lines instead of truncating them to one row; `w` toggles per session.
+wrap_lines = true
