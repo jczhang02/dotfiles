@@ -1,0 +1,13 @@
+[Unit]
+Description=Select the tmux pane of a clicked Ghostty notification
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.config/tmux/ghostty-notify.py watch
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

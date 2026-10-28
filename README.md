@@ -132,6 +132,7 @@ skills-restore      # third-party agent skills from the tracked lock
 ya pkg install      # Yazi plugins and flavor
 fc-cache -f         # fonts from @dotfiles and the hand-installed sets below
 systemctl --user enable --now kd-server.service  # dictionary daemon
+systemctl --user enable --now ghostty-notify-click.service  # notification click → tmux pane
 ```
 
 - Copy the hand-installed font sets listed under
