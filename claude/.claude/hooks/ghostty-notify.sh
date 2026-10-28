@@ -8,8 +8,7 @@
 # ghostty-notify-click.service selects the pane after a click.
 in=$(cat)
 [ -n "$TMUX_PANE" ] || exit 0
-# One run per pane at a time: a run that ends resets the pane's allow-passthrough (below),
-# which would drop the sequence of a run still sending.
+# One run per pane at a time: two runs would race on the pane's @notify_id (below).
 exec 9>"${XDG_RUNTIME_DIR:-/tmp}/ghostty-notify-${TMUX_PANE#%}.lock"
 flock 9
 
@@ -20,7 +19,7 @@ if [ -z "${GHOSTTY_NOTIFY_FORCE:-}" ]; then
   read -r viewed session < <(tmux display -p -t "$TMUX_PANE" '#{&&:#{window_active},#{session_attached}} #{session_id}' 2>/dev/null) || exit 0
   [ "$viewed" = 1 ] && tmux list-clients -t "$session" -F '#{client_flags}' | grep -qw focused && exit 0
 fi
-tty=$(tmux display -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null) || exit 0
+tmux display -p -t "$TMUX_PANE" '' >/dev/null 2>&1 || exit 0 # the pane is gone
 
 transcript=$(jq -r .transcript_path <<<"$in")
 title=$(grep '"custom-title"' "$transcript" 2>/dev/null | tail -1 | jq -r '.customTitle // empty')
@@ -45,19 +44,44 @@ old=$(tmux display -p -t "$TMUX_PANE" '#{@notify_id}')
 [ "$old" = "$body" ] && "$notify" has "$body" && exit 0
 [ -n "$old" ] && "$notify" withdraw "$old"
 tmux set -p -t "$TMUX_PANE" @notify_id "$body"
-# tmux passes the sequence of a hidden pane to every client whose session has the pane's
-# window, and Ghostty raises the tab of the one that shows it. After a click,
-# ghostty-notify.py watch switches only these clients.
+# The sequence goes to every client whose session has the pane's window (a helper in each
+# of these sessions, below), and Ghostty raises the tab of the one that shows it. After a
+# click, ghostty-notify.py watch switches only these clients.
 window=$(tmux display -p -t "$TMUX_PANE" '#{window_id}')
 sessions=$(tmux list-windows -a -F '#{session_id} #{window_id}' | awk -v w="$window" '$2 == w { print $1 }')
 clients=$(tmux list-clients -F '#{session_id} #{client_name}' | awk -v s=" $(echo $sessions) " 'index(s, " " $1 " ") { printf " %s", $2 }')
 tmux set -p -t "$TMUX_PANE" @notify_clients "$clients "
 
-# With allow-passthrough "on", tmux drops the sequence while the pane is not on screen,
-# which is exactly when the notification is wanted; "all" is set for this pane only, and
-# only while sending, so programs in a hidden pane cannot write to Ghostty otherwise.
-tmux set -p -t "$TMUX_PANE" allow-passthrough all
-trap 'tmux set -pu -t "$TMUX_PANE" allow-passthrough' EXIT
+# Never write to this pane's tty: Claude Code writes long sequences there (a kitty picture
+# can be 90 KB) in several writes, and a sequence landing between two of them ends Claude
+# Code's tmux passthrough early, so the rest of it is drawn as text. Each try sends through
+# a helper window in each session instead: tmux parses every pane on its own and passes a
+# whole passthrough to Ghostty at once, so the two cannot mix. The helper is left out of
+# the status line and has allow-passthrough "all", as "on" drops the sequence of a pane
+# that is not on screen; it is closed once tmux has read the sequence.
+helpers=()
+close_helpers() {
+  local w
+  for w in "${helpers[@]}"; do tmux kill-window -t "$w" 2>/dev/null; done
+  helpers=()
+}
+trap close_helpers EXIT
+send() {
+  local sid name target pane window tty
+  for sid in $sessions; do
+    name="notify-$$-$RANDOM"
+    target="$sid:=$name"
+    # One tmux call, so no status line is drawn before the helper is hidden.
+    read -r pane window < <(tmux new-window -d -n "$name" -P -F '#{pane_id} #{window_id}' -t "$sid:" 'exec sleep 10' \
+      \; set -w -t "$target" window-status-format '' \; set -w -t "$target" window-status-current-format '' \
+      \; set -p -t "$target" allow-passthrough all) || continue
+    helpers+=("$window")
+    tty=$(tmux display -p -t "$pane" '#{pane_tty}') || continue
+    printf '\ePtmux;\e\e]777;notify;%s;%s\a\e\\' "$title" "$body" > "$tty"
+  done
+  sleep 0.2
+  close_helpers
+}
 
 # Ghostty drops, without queueing, any notification within 1 s of the previous one from the
 # whole process (all windows), and identical ones within 5 s. So check that GNOME Shell got
@@ -66,8 +90,8 @@ trap 'tmux set -pu -t "$TMUX_PANE" allow-passthrough' EXIT
 # withdraws a notification itself 3 s after sending it to a focused window, which is
 # after the first check.
 for _ in 1 2 3 4 5; do
-  printf '\ePtmux;\e\e]777;notify;%s;%s\a\e\\' "$title" "$body" > "$tty"
-  sleep 1.2
+  send
+  sleep 1
   [ "$(tmux display -p -t "$TMUX_PANE" '#{@notify_id}')" = "$body" ] || exit 0
   "$notify" has "$body" && exit 0
 done
