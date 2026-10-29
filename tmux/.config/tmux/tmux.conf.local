@@ -493,6 +493,12 @@ set -g mouse on
 set -g status-keys vi
 set -g mode-keys  vi
 
+# Wheel in a full-screen app that does not take the mouse (less without --mouse,
+# as bat and delta run it): send 3 Up/Down keys. A drag there still starts tmux
+# copy mode, so text stays selectable.
+bind -n WheelUpPane   if -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" { send-keys -M } { if -F "#{alternate_on}" { send-keys -N 3 Up } { copy-mode -e } }
+bind -n WheelDownPane if -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" { send-keys -M } { if -F "#{alternate_on}" { send-keys -N 3 Down } }
+
 # DO NOT exit-unattached: A3 grouped sessions need server to outlive last client
 set -g exit-unattached off
 # Detach the client when its session is destroyed instead of switching sessions.
