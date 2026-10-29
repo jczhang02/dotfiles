@@ -441,6 +441,8 @@ set -g monitor-activity off
 set -g status-style "fg=default,bg=#{?#{==:#{client_theme},light},#dce0e8,#11111b}" #!important
 set-hook -g client-light-theme[100] "refresh-client"   # full redraw: status bar and pane borders
 set-hook -g client-dark-theme[100]  "refresh-client"
+set-hook -g client-light-theme[101] "run-shell -b '~/.config/tmux/nvim-theme.sh light'"   # running Nvims
+set-hook -g client-dark-theme[101]  "run-shell -b '~/.config/tmux/nvim-theme.sh dark'"
 
 # @agent-done is set by agent-done.sh (Claude Code Stop hook, Codex notify) and
 # cleared when the window is viewed; session-window-changed covers every way of
