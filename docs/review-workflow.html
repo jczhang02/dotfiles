@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent 改, 我来看: git review 工作流</title>
+<script>
+  // Apply the saved or system theme before the first paint.
+  (function () {
+    var t = localStorage.getItem("theme");
+    if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<style>
+  :root {
+    --paper: #faf9f5; --ink: #191917; --muted: #66655f; --rule: #e6e3d9;
+    --surface: #f2f0e8; --raised: #fffefb; --accent: #a64a28; --selection: #ead9cc;
+    --shade: rgba(25, 25, 23, .12);
+    --serif: "Source Serif 4", "Libertinus Serif", "Noto Serif", "LXGW Neo ZhiSong", "Noto Serif CJK SC", serif;
+    --sans: "Inter", "Adwaita Sans", "Noto Sans", "LXGW Neo XiHei", "Noto Sans CJK SC", sans-serif;
+    --mono: "Iosevka", "Iosevka Fixed", "LXGW WenKai Mono", monospace;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --paper: #171715; --ink: #e9e6de; --muted: #a29f95; --rule: #2e2d29;
+    --surface: #201f1c; --raised: #22211e; --accent: #e08b66; --selection: #4a3328;
+    --shade: rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 1.5rem; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 400 1.0625rem/1.8 var(--serif);
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--selection); }
+  a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px;
+  }
+
+  .shell { display: grid; grid-template-columns: 15rem minmax(0, 46rem); gap: 4rem; justify-content: center; padding: 0 1.5rem; }
+  nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; overflow-x: hidden; padding: 2.5rem 0 2rem; font: 400 .875rem/1.4 var(--sans); }
+  nav.toc .label { color: var(--muted); font-size: .8125rem; letter-spacing: .04em; margin: 0 0 .5rem; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; }
+  nav.toc li ol { padding-left: .9rem; }
+  nav.toc a {
+    display: flex; align-items: center; min-height: 44px; padding: 0 .5rem; margin: 0 -.5rem;
+    color: var(--muted); text-decoration: none; border-radius: 4px;
+  }
+  nav.toc li ol a { min-height: 36px; }
+  nav.toc a:hover { color: var(--ink); background: var(--surface); }
+  nav.toc a[aria-current="true"] { color: var(--accent); }
+  details.toc-mobile { display: none; }
+  details.toc-mobile + h2 { margin-top: 2rem; }
+
+  main { padding: 2.5rem 0 6rem; min-width: 0; }
+  header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+  .eyebrow { font: 400 .8125rem/1.4 var(--sans); color: var(--muted); letter-spacing: .04em; margin: 0 0 .75rem; }
+  h1 { font-size: clamp(1.9rem, 4.5vw, 2.5rem); line-height: 1.25; font-weight: 500; letter-spacing: -.015em; margin: 0 0 1rem; }
+  .lead { font-size: 1.1875rem; color: var(--ink); margin: 0 0 .75rem; }
+  .meta { font: 400 .875rem/1.5 var(--sans); color: var(--muted); margin: 0; }
+  #theme {
+    flex: none; min-width: 44px; min-height: 44px; padding: 0 .8rem; border: 1px solid var(--rule); border-radius: 999px;
+    background: transparent; color: var(--muted); font: 400 .8125rem var(--sans); cursor: pointer;
+  }
+  #theme:hover { color: var(--ink); border-color: var(--muted); }
+
+  h2 { font-size: 1.5rem; line-height: 1.35; font-weight: 600; letter-spacing: -.01em; margin: 4rem 0 1rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
+  h3 { font-size: 1.1875rem; line-height: 1.5; font-weight: 600; margin: 2.5rem 0 .5rem; }
+  h4 { font: 600 .9375rem/1.5 var(--sans); margin: 1.75rem 0 .25rem; color: var(--ink); }
+  p, ul, ol { margin: 0 0 1rem; }
+  ul, ol { padding-left: 1.4rem; }
+  li { margin: .25rem 0; }
+  li::marker { color: var(--muted); }
+  strong { font-weight: 600; }
+  .muted { color: var(--muted); }
+
+  code, kbd, pre { font-family: var(--mono); font-size: .9em; }
+  code { background: var(--surface); padding: .08em .35em; border-radius: 4px; overflow-wrap: anywhere; }
+  kbd {
+    display: inline-block; min-width: 1.6em; text-align: center; padding: 0 .4em; line-height: 1.6;
+    border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 5px; background: var(--raised); font-size: .85em;
+  }
+  pre {
+    margin: 0 0 1.25rem; padding: .9rem 1.1rem; line-height: 1.6; border-radius: 6px; overflow-x: auto;
+    background:
+      linear-gradient(to right, var(--surface) 30%, transparent) left / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--surface) 30%, transparent) right / 2rem 100% no-repeat local,
+      linear-gradient(to right, var(--shade), transparent) left / .75rem 100% no-repeat scroll,
+      linear-gradient(to left, var(--shade), transparent) right / .75rem 100% no-repeat scroll,
+      var(--surface);
+  }
+  pre code { background: none; padding: 0; overflow-wrap: normal; }
+  .c { color: var(--muted); }
+
+  .table-wrap {
+    overflow-x: auto; margin: 0 0 1.5rem;
+    background:
+      linear-gradient(to right, var(--paper) 30%, transparent) left / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--paper) 30%, transparent) right / 2rem 100% no-repeat local,
+      linear-gradient(to right, var(--shade), transparent) left / .75rem 100% no-repeat scroll,
+      linear-gradient(to left, var(--shade), transparent) right / .75rem 100% no-repeat scroll;
+  }
+  table { border-collapse: collapse; width: 100%; font: 400 .9375rem/1.55 var(--sans); }
+  th, td { text-align: left; vertical-align: top; padding: .55rem .75rem .55rem 0; border-bottom: 1px solid var(--rule); }
+  th { font-weight: 600; color: var(--muted); font-size: .8125rem; letter-spacing: .03em; border-bottom-color: var(--muted); }
+  td code, td kbd { white-space: nowrap; }
+
+  .rules { list-style: none; padding: 0; counter-reset: r; }
+  .rules > li { counter-increment: r; position: relative; padding: .9rem 0 .9rem 2.6rem; border-bottom: 1px solid var(--rule); margin: 0; }
+  .rules > li::before {
+    content: counter(r); position: absolute; left: 0; top: .9rem; width: 1.7rem; height: 1.7rem; border-radius: 50%;
+    border: 1px solid var(--accent); color: var(--accent); font: 600 .875rem/1.6rem var(--sans); text-align: center;
+  }
+
+  .repo-rule { border-left: 2px solid var(--accent); padding: .1rem 0 .1rem 1rem; margin: 0 0 1.25rem; }
+  .repo-rule p { margin: 0 0 .35rem; }
+  .repo-rule .tag { font: 600 .8125rem/1.5 var(--sans); color: var(--accent); letter-spacing: .03em; }
+  .say { margin: 0 0 1.25rem; padding: 0; list-style: none; }
+  .say li { position: relative; padding: .35rem 0 .35rem 1.4rem; margin: 0; }
+  .say li::before { content: "›"; position: absolute; left: .2rem; color: var(--accent); font-family: var(--sans); font-weight: 600; }
+  .say q { quotes: none; font-family: var(--sans); font-size: .95em; }
+  .note { font: 400 .9375rem/1.65 var(--sans); color: var(--muted); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: .75rem 0; margin: 0 0 1.5rem; }
+  .note strong { color: var(--ink); }
+
+  .layout { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 6px; margin: 0 0 .5rem; font: 400 .875rem/1.45 var(--sans); }
+  .layout > div { border: 1px solid var(--rule); border-radius: 6px; padding: .75rem .9rem; background: var(--raised); min-height: 6.5rem; }
+  .layout .title { font-weight: 600; display: block; margin-bottom: .25rem; }
+  .layout .bar { grid-column: 1 / -1; min-height: 0; padding: .45rem .9rem; background: var(--surface); font-family: var(--mono); font-size: .8125rem; }
+  .layout .wide { grid-column: 1 / -1; }
+  .caption { font: 400 .8125rem/1.5 var(--sans); color: var(--muted); margin: 0 0 1.5rem; }
+
+  footer { margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); font: 400 .875rem/1.6 var(--sans); color: var(--muted); }
+
+  @media (max-width: 1100px) {
+    .shell { grid-template-columns: minmax(0, 46rem); gap: 0; }
+    nav.toc { display: none; }
+    details.toc-mobile { display: block; margin: 1.75rem 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font: 400 .9375rem/1.4 var(--sans); }
+    details.toc-mobile summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--muted); }
+    details.toc-mobile ol { list-style: none; padding: 0 0 .75rem; margin: 0; }
+    details.toc-mobile li ol { padding: 0 0 0 1rem; }
+    details.toc-mobile a { display: flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration: none; }
+  }
+  @media (max-width: 640px) {
+    body { font-size: 1rem; }
+    .shell { padding: 0 1.1rem; }
+    .layout { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="toc" aria-label="目录">
+  <p class="label">目录</p>
+  <ol id="toc-list">
+    <li><a href="#rules">先记住 3 条</a></li>
+    <li><a href="#desk">工作台</a></li>
+    <li><a href="#tools">工具和 4 个时刻</a></li>
+    <li><a href="#repos">按 repo 的流程</a>
+      <ol>
+        <li><a href="#monge">monge-ampere-equations</a></li>
+        <li><a href="#maesolvers">maesolvers</a></li>
+        <li><a href="#dotfiles">dotfiles</a></li>
+        <li><a href="#blog">blog 和 partjobs</a></li>
+      </ol>
+    </li>
+    <li><a href="#cases">常见情况</a></li>
+    <li><a href="#keys">按键速查</a></li>
+    <li><a href="#theme-sec">外观</a></li>
+    <li><a href="#donts">不要做的事</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <div>
+    <p class="eyebrow">dotfiles · 使用教程</p>
+    <h1>Agent 改, 我来看: git review 工作流</h1>
+  </div>
+  <button id="theme" type="button" aria-label="切换主题">跟随系统</button>
+</header>
+<p class="lead">Claude 在一个 pane 里改文件, 你在旁边的 pane 里看. 这份教程告诉你在每个时刻, 每个 repo 里该运行哪个命令, 按哪个键, 以及该对 agent 说什么.</p>
+<p class="meta">2026-10-29 · 配置在 <code>~/dev/dotfiles</code> · 文中的按键和命令都已按当前配置核对过</p>
+
+<details class="toc-mobile">
+  <summary>目录</summary>
+  <ol id="toc-mobile-list"></ol>
+</details>
+
+<h2 id="rules">先记住 3 条</h2>
+<ol class="rules">
+  <li><strong>review 发生在 4 个时刻.</strong> agent 改的时候, commit 之前 (A), 合并之前 (B), 事后 (C). 每个 repo 的 git 规则决定你主要在哪个时刻看: agent 不能自己 commit 的 repo, 重点在 A; agent 可以自己 commit 的 repo, 重点在 B 或 C.</li>
+  <li><strong>和 main 对比, 只用三个点.</strong> 用 <code>git diff main...HEAD</code> 或 <code>git diff --merge-base main</code>, 不用 <code>git diff main</code>. 分支落后 main 时, 两个点会把 main 的新内容显示成 "你删掉的".</li>
+  <li><strong>只看用 shell, 要动手用 nvim.</strong> hunk 和 delta 只能看. 要编辑, 选一部分 stage, 或解决冲突, 用 nvim 里的 diffview, fugitive 和 gitsigns.</li>
+</ol>
+
+<h2 id="desk">工作台</h2>
+<div class="layout" aria-hidden="true">
+  <div class="bar">tmux session: monge-ampere-equations · window: monge-ampere-equations/flow1-exp</div>
+  <div><span class="title">pane 1: Claude Code</span>在 worktree 里改文件, 运行 <code>just check</code>, 等你说 "commit".</div>
+  <div><span class="title">pane 2: shell</span><code>git diff</code> 打开 hunk, agent 写文件时自动刷新. 也用来运行 <code>wt</code>, <code>git log</code>.</div>
+  <div class="wide"><span class="title">nvim (同一个 window 的另一个 pane, 或另一个 window)</span>文件被 agent 改了会自动重新载入. 用 <kbd>Space</kbd> <kbd>g</kbd> 开头的键做 stage, 分支 review 和冲突处理.</div>
+</div>
+<p class="caption">一个 repo 一个 session, 一个 worktree 一个 window.</p>
+<ul>
+  <li><strong>session:</strong> 按 <kbd>C-Space</kbd> <kbd>s</kbd> 用 sesh 选 repo, 按 <kbd>C-Space</kbd> <kbd>S</kbd> 回到上一个 session.</li>
+  <li><strong>window:</strong> tmux-autoname 会把 window 名改成 <code>repo/branch</code>. 所以 shell <code>cd</code> 进 worktree 后, 你在状态栏就能看到自己在哪个分支.</li>
+  <li><strong>agent 看不到 hunk.</strong> agent 自己运行 <code>git diff</code> 时没有终端, 不会打开 hunk, 输出的是普通文本. <code>[pager] diff = hunk pager</code> 只对你有效.</li>
+  <li><strong>不要在 Claude 输入框里用 <code>!</code> 运行 hunk 或 nvim.</strong> 它们是交互界面, 在 Claude 里打不开. 请在 pane 2 里运行.</li>
+</ul>
+
+<h2 id="tools">工具和 4 个时刻</h2>
+<h3>谁做什么</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="工具分工表">
+<table>
+  <thead><tr><th>工具</th><th>在哪里</th><th>用来做什么</th><th>不能做什么</th></tr></thead>
+  <tbody>
+    <tr><td>hunk</td><td>shell: <code>git diff</code>, <code>git rs</code>, <code>hunk diff</code></td><td>看改动, 自动刷新, 写 note 给 agent</td><td>编辑, stage</td></tr>
+    <tr><td>delta</td><td>shell: <code>git show</code>, <code>git log -p</code></td><td>看历史, 看某个 commit</td><td>交互</td></tr>
+    <tr><td>diffview</td><td>nvim: <kbd>Space</kbd><kbd>g</kbd><kbd>m</kbd> 等</td><td>多文件 diff, 右边直接编辑, 3 方冲突</td><td>写 commit</td></tr>
+    <tr><td>fugitive</td><td>nvim: <kbd>Space</kbd><kbd>g</kbd><kbd>g</kbd></td><td>按 hunk stage, commit, amend, push</td><td>看整个分支</td></tr>
+    <tr><td>gitsigns</td><td>nvim, 当前文件</td><td>在源文件里跳 hunk, 预览, stage, 还原, blame</td><td>多文件</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>4 个时刻, 各用什么</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="4 个 review 时刻">
+<table>
+  <thead><tr><th>时刻</th><th>你要回答的问题</th><th>shell</th><th>nvim</th></tr></thead>
+  <tbody>
+    <tr><td>0 改的时候</td><td>agent 现在在改什么?</td><td><code>git diff</code></td><td>不用操作, 自动重新载入</td></tr>
+    <tr><td>A commit 前</td><td>哪些改动要留下?</td><td><code>git diff</code><br><code>git diff --staged</code></td><td><kbd>Space</kbd><kbd>g</kbd><kbd>g</kbd>, <kbd>]</kbd><kbd>h</kbd> + <kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>s</kbd></td></tr>
+    <tr><td>B 合并前</td><td>这个分支一共会给 main 带来什么?</td><td><code>git log --oneline main..HEAD</code><br><code>git diff main...HEAD</code><br><code>git diff --merge-base main</code></td><td><kbd>Space</kbd><kbd>g</kbd><kbd>m</kbd>, <kbd>Space</kbd><kbd>g</kbd><kbd>M</kbd></td></tr>
+    <tr><td>C 事后</td><td>某个 commit 做了什么? 这行是谁改的?</td><td><code>git show &lt;sha&gt;</code><br><code>git rs &lt;sha&gt;</code><br><code>git log -p</code></td><td><kbd>Space</kbd><kbd>g</kbd><kbd>f</kbd>, <kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>b</kbd></td></tr>
+  </tbody>
+</table>
+</div>
+<p class="note"><strong>git log 的两个点和 git diff 的三个点不矛盾.</strong> <code>git log main..HEAD</code> 列出 "在 HEAD 上, 不在 main 上" 的 commit, 这正是分支自己的 commit. <code>git diff</code> 的两个点意思不同, 它直接对比两个端点, 所以会混入 main 的新内容.</p>
+
+<h2 id="repos">按 repo 的流程</h2>
+<p>每个 repo 的 <code>CLAUDE.md</code> 或 <code>AGENTS.md</code> 写了 agent 能自己做什么. 这决定你在哪个时刻 review. 下面每个 repo 先列规则, 再列流程, 最后列可以直接发给 Claude 的话.</p>
+
+<h3 id="monge">monge-ampere-equations: 论文和研究代码</h3>
+<div class="repo-rule">
+  <p class="tag">规则 → 重点在时刻 A</p>
+  <p>必须在 <code>.worktrees/</code> 里工作, 不在主树切换分支. agent 在 commit, push, 开 PR, merge, 打 tag 之前都要问你. CI 不检查 push 和 PR, 所以本地要运行 <code>just check</code> 和 <code>just pdf &lt;dir&gt;</code>. LaTeX 和 Markdown 一句一行.</p>
+</div>
+<h4>1. 开始一个任务</h4>
+<ul>
+  <li>你的习惯是让 agent 自己建分支. 告诉它分支名, 它会建 <code>.worktrees/&lt;branch-with-dashes&gt;</code>.</li>
+  <li>自己开也可以: <code>wt switch -c fix/xxx</code>. 这会从 main 建分支, 把 worktree 放在 <code>.worktrees/fix-xxx</code>, 并把当前 shell <code>cd</code> 进去.</li>
+  <li>已经有的 worktree: <code>wt switch flow1-exp</code>, 或者只输入 <code>wt switch</code>, 从列表里选.</li>
+</ul>
+<h4>2. agent 改的时候</h4>
+<ol>
+  <li>在 pane 2 里进入同一个 worktree, 运行 <code>git diff</code>.</li>
+  <li>按 <kbd>]</kbd> <kbd>[</kbd> 跳 hunk, 按 <kbd>.</kbd> <kbd>,</kbd> 换文件. LaTeX 长行会自动换行, 按 <kbd>w</kbd> 切换.</li>
+  <li>看到问题, 按 <kbd>c</kbd> 写 note, 按 <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 保存. 这时先不要退出 hunk.</li>
+  <li>对 Claude 说下面的第一句. 它会用 <code>hunk session comment list</code> 读到你的 note.</li>
+</ol>
+<h4>3. agent 问 "要 commit 吗?" 的时候 (时刻 A)</h4>
+<ol>
+  <li>全部改动都要: 在 hunk 里看完, 再看 agent 是否运行了 <code>just check</code> 和对应的 <code>just pdf</code>. 都通过就回复 "commit".</li>
+  <li>只要一部分: 在 nvim 里按 <kbd>Space</kbd><kbd>g</kbd><kbd>g</kbd>, 在文件上按 <kbd>=</kbd> 展开, 在想要的 hunk 上按 <kbd>s</kbd>. 然后告诉 agent 只 commit 已 stage 的部分.</li>
+  <li>想自己改几个字: 直接在 nvim 里改, 保存后告诉 agent "我改了 X 文件, 一起 commit".</li>
+  <li>新建的文件 (<code>??</code>) 不会出现在 <code>git diff</code> 里. 要看就先 <code>git add -N &lt;path&gt;</code>, 或者在 nvim 里用 <kbd>Space</kbd><kbd>g</kbd><kbd>d</kbd>.</li>
+</ol>
+<h4>4. 跑服务器实验之前</h4>
+<p>MLflow 会记录实验用的 commit, 以及工作区是否有未提交的改动. 所以要先 review, 再 commit, 然后才 <code>just push</code> 和 <code>just remote ...</code>. 不要先跑实验再回头改代码.</p>
+<h4>5. 合并到 main 之前 (时刻 B)</h4>
+<ol>
+  <li><code>wt list</code>: 看 <code>main↕</code> 这一列. <code>↑80 ↓60</code> 的意思是分支有 80 个 main 没有的 commit, 同时落后 main 60 个.</li>
+  <li>在 nvim 里按 <kbd>Space</kbd><kbd>g</kbd><kbd>m</kbd>: 只显示分支自己的改动. 右边是磁盘上的文件, 可以直接改.</li>
+  <li>想按 commit 看: <kbd>Space</kbd><kbd>g</kbd><kbd>M</kbd>.</li>
+  <li>确认后, 明确告诉 agent merge. 这一步必须由你说出来.</li>
+</ol>
+<h4>6. 合并之后</h4>
+<p><code>wt remove fix/xxx</code>: 删除 worktree. 分支已经合并时, 它会一起删掉分支. 分支还没合并时, 分支会保留, 要删得加 <code>-D</code>. 然后关掉对应的 tmux window.</p>
+<h4>可以直接对 Claude 说</h4>
+<ul class="say">
+  <li><q>读我在 hunk 里写的 note, 逐条修改, 改完告诉我每条怎么处理的.</q></li>
+  <li><q>在新 worktree 里做: 分支 fix/flow1-tables, 从 main 开.</q></li>
+  <li><q>只 commit 已经 stage 的部分, 不要再 git add.</q></li>
+  <li><q>把你的每处改动的理由写成 hunk note.</q> <span class="muted">(要先在 pane 2 打开 hunk, 然后按 <kbd>a</kbd> 显示 agent 的 note.)</span></li>
+  <li><q>build writing/reports/midterm, 再 just check, 都过了再问我 commit.</q></li>
+</ul>
+
+<h3 id="maesolvers">maesolvers: Python 求解器库</h3>
+<div class="repo-rule">
+  <p class="tag">规则 → 重点在时刻 B 和 PR</p>
+  <p>必须用 worktree. agent 可以自己 commit, push 分支, 开 PR, 不用问你. 要问你的是: merge 进 main, 打 tag, 改已 push 的 commit, 改固定的复现数值, 改已接受的 ADR. 有依赖关系的一串 PR 用 <code>gh stack</code>.</p>
+</div>
+<h4>流程</h4>
+<ol>
+  <li><strong>开始:</strong> 和 monge 一样, 让 agent 建 worktree, 或用 <code>wt switch -c</code>.</li>
+  <li><strong>改的时候:</strong> agent 会自己 commit, 所以 <code>git diff</code> 经常是空的. 改用 <code>hunk diff main...HEAD</code> 看整个分支, 按 <kbd>r</kbd> 刷新.</li>
+  <li><strong>看 agent 的每个 commit:</strong> 在 nvim 里按 <kbd>Space</kbd><kbd>g</kbd><kbd>M</kbd>, 或在 shell 里运行 <code>git rs</code> (hunk 显示最新的 commit).</li>
+  <li><strong>PR 开了以后:</strong> <code>hunk gh pr &lt;编号&gt;</code> 在 hunk 里看 GitHub 上的 PR. 想让另一个 agent 帮你看, 在 Claude 里运行 <code>/code-review</code>.</li>
+  <li><strong>合并:</strong> 你看完后说 "merge PR #N". 合并后 <code>wt remove</code>.</li>
+</ol>
+<p class="note"><strong>实验:</strong> 和 monge 相同, 先 commit 再 <code>just push</code>. 不同点: maesolvers 在服务器上每个分支有自己的 worktree, 路径是 <code>/jczhang02/maesolvers-wt/&lt;branch&gt;</code>.</p>
+<h4>可以直接对 Claude 说</h4>
+<ul class="say">
+  <li><q>把这个改动拆成 3 个依赖的 PR, 用 gh stack.</q></li>
+  <li><q>/code-review since main</q></li>
+  <li><q>PR #12 的第 2 个 commit 改错了, 新加一个 commit 修复, 不要 amend.</q></li>
+</ul>
+
+<h3 id="dotfiles">dotfiles: 配置</h3>
+<div class="repo-rule">
+  <p class="tag">规则 → 重点在时刻 C</p>
+  <p>直接在 main 上工作. agent 验证完就 commit 并 push, 只 stage 和任务有关的文件. 要改 repo 里的文件, 不改 <code>$HOME</code> 下的 symlink 路径. <code>nvim/.config/nvim</code> 是 submodule: 先在里面 commit 和 push, 再在 dotfiles 里 commit 指针.</p>
+</div>
+<h4>流程</h4>
+<ol>
+  <li><strong>看 agent 刚做了什么:</strong> <code>git log --oneline -5</code>, 然后 <code>git show</code> (delta) 或 <code>git rs</code> (hunk). 两个都默认显示最新的 commit.</li>
+  <li><strong>nvim 配置的改动:</strong> dotfiles 里的 commit 只显示 "Subproject commit" 指针变了. 要看内容, 进入 <code>nvim/.config/nvim</code> 再 <code>git show</code>.</li>
+  <li><strong>不满意:</strong> 对 agent 说 "revert &lt;sha&gt;". 已 push 的 main 不能改写, 所以撤销是新加一个 revert commit. 之前 tmux 鼠标设置就是这样撤销的.</li>
+  <li><strong>你自己的未提交改动</strong> (mise, zsh 等) 会一直留在 <code>git status</code> 里. agent 不会动它们. commit 前想确认, 运行 <code>git diff --staged</code>.</li>
+</ol>
+<h4>可以直接对 Claude 说</h4>
+<ul class="say">
+  <li><q>撤销你刚才的 tmux 改动, 用 revert.</q></li>
+  <li><q>改 nvim 配置, 记得 submodule 先提交.</q></li>
+</ul>
+
+<h3 id="blog">blog 和 partjobs</h3>
+<div class="repo-rule">
+  <p class="tag">规则 → 重点在时刻 A</p>
+  <p>这些 repo 只要求 Conventional Commits, 没有 worktree 规则. Claude Code 默认只在你说了以后才 commit, 所以流程和 monge 的时刻 A 一样: <code>git diff</code> 看, 回复 "commit".</p>
+</div>
+<ul>
+  <li><strong>blog:</strong> <code>.gitattributes</code> 让 About 文件夹的文字不出现在 <code>git diff</code> 里. 所以 hunk 里看不到那里的改动, 这是故意的. 看页面效果用 <code>bun run dev</code>.</li>
+  <li><strong>partjobs:</strong> <code>~/dev/partjobs</code> 本身不是 git repo, 每个子目录才是. 你常从 <code>~/dev/partjobs</code> 启动 Claude, 所以先 <code>cd</code> 进子目录再运行 <code>git diff</code>.</li>
+</ul>
+
+<h2 id="cases">常见情况</h2>
+
+<h3>分支落后 main 很多</h3>
+<pre tabindex="0" aria-label="分支示意图"><code>main:       ──M──m1──m2── … ──m60
+                \
+flow1-exp:       f1──f2── … ──f80  + 未 commit 的改动</code></pre>
+<p><code>M</code> 是 merge-base: 分支从 main 分出去的那个 commit. 用 <code>git merge-base main HEAD</code> 查.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="三种对比">
+<table>
+  <thead><tr><th>命令</th><th>从 → 到</th><th>显示</th></tr></thead>
+  <tbody>
+    <tr><td><code>git diff main</code></td><td>m60 → 工作区</td><td>f1-f80, 未 commit 的改动, <strong>还有 m1-m60 的反向内容</strong>. 不要用.</td></tr>
+    <tr><td><code>git diff main...HEAD</code></td><td>M → f80</td><td>只有分支的 commit. <kbd>Space</kbd><kbd>g</kbd><kbd>m</kbd> 用的就是这个.</td></tr>
+    <tr><td><code>git diff --merge-base main</code></td><td>M → 工作区</td><td>分支的 commit 加上未 commit 的改动.</td></tr>
+  </tbody>
+</table>
+</div>
+<p>想让分支跟上 main, 对 agent 说 "把 main merge 进这个分支". 在 monge 里 rebase 已 push 的分支要先问你, 所以 merge 更省事.</p>
+
+<h3>merge 有冲突</h3>
+<ol>
+  <li>在 nvim 里按 <kbd>Space</kbd><kbd>g</kbd><kbd>d</kbd>. 冲突的文件会打开 3 个窗口.</li>
+  <li><kbd>]</kbd><kbd>x</kbd> / <kbd>[</kbd><kbd>x</kbd> 跳到下一个 / 上一个冲突.</li>
+  <li>选一个版本: <kbd>Space</kbd><kbd>c</kbd><kbd>o</kbd> ours, <kbd>Space</kbd><kbd>c</kbd><kbd>t</kbd> theirs, <kbd>Space</kbd><kbd>c</kbd><kbd>b</kbd> base (共同祖先), <kbd>Space</kbd><kbd>c</kbd><kbd>a</kbd> 全部保留, <kbd>d</kbd><kbd>x</kbd> 整块删除.</li>
+  <li>冲突标记是 <code>zdiff3</code> 格式, 中间的 <code>|||||||</code> 段是 base 的内容. 看它就知道两边各改了什么.</li>
+  <li>在文件列表里按 <kbd>-</kbd> 标记为已解决, 再让 agent 完成 merge commit.</li>
+</ol>
+
+<h3>你和 agent 用 hunk note 来回讨论</h3>
+<ol>
+  <li>你: 在 pane 2 里运行 <code>git diff</code>, 按 <kbd>c</kbd> 写 note, 按 <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 保存.</li>
+  <li>agent: 对它说 "读我在 hunk 里的 note". 它会运行 <code>hunk session comment list --repo . --type user</code>.</li>
+  <li>agent 也可以反过来写 note: <code>hunk session comment add</code>. 你按 <kbd>a</kbd> 显示 agent 的 note.</li>
+  <li>note 只在 hunk 运行时存在. 退出 hunk, note 就没了. 所以要先让 agent 读完, 再退出.</li>
+</ol>
+
+<h3>只看一个文件</h3>
+<ul>
+  <li>shell: <code>git diff -- path/to/file</code>.</li>
+  <li>nvim, 当前文件对比 index: <kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>d</kbd>. 对比上一个 commit: <kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>D</kbd>.</li>
+  <li>nvim, 左边的 sign 改成对比 main: <kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>m</kbd>, 再按一次切回 index.</li>
+</ul>
+
+<h3>找一个旧版本, 或找是谁改的</h3>
+<ul>
+  <li>当前文件的历史: <kbd>Space</kbd><kbd>g</kbd><kbd>f</kbd>. 在列表里按 <kbd>L</kbd> 看 commit 说明, 按 <kbd>y</kbd> 复制 SHA.</li>
+  <li>当前行是谁改的: <kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>b</kbd>. 整个文件: <kbd>Space</kbd><kbd>g</kbd><kbd>B</kbd>.</li>
+  <li>在终端里翻历史: <code>hunk log</code>, 或 <code>git log -p -- path</code> (delta).</li>
+</ul>
+
+<h3>同时有好几个 worktree</h3>
+<ul>
+  <li><code>wt list</code>: 每个 worktree 的路径, 和 main 的差距, 是否有未提交的改动.</li>
+  <li><code>hunk status</code>: 当前 repo 和它的所有 worktree.</li>
+  <li>每个 worktree 开一个 tmux window. window 名就是 <code>repo/branch</code>, 用 <kbd>C-Space</kbd> 加数字切换.</li>
+</ul>
+
+<h2 id="keys">按键速查</h2>
+<p class="muted">nvim 的 leader 是空格. 不确定时: hunk 里按 <kbd>?</kbd>, diffview 和 fugitive 里按 <kbd>g</kbd><kbd>?</kbd>.</p>
+
+<h3>hunk</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="hunk 按键">
+<table>
+  <thead><tr><th>键</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>]</kbd> <kbd>[</kbd></td><td>下 / 上一个 hunk</td></tr>
+    <tr><td><kbd>.</kbd> <kbd>,</kbd></td><td>下 / 上一个文件</td></tr>
+    <tr><td><kbd>j</kbd> <kbd>k</kbd> · <kbd>d</kbd> · <kbd>Space</kbd> <kbd>b</kbd></td><td>一行 · 半页 · 一页</td></tr>
+    <tr><td><kbd>c</kbd> · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> · <kbd>a</kbd></td><td>写 note · 保存 note · 显示 / 隐藏 agent 的 note</td></tr>
+    <tr><td><kbd>w</kbd> · <kbd>l</kbd> · <kbd>2</kbd> · <kbd>0</kbd></td><td>自动换行 · 行号 · 左右对比 · 自动布局</td></tr>
+    <tr><td><kbd>e</kbd> · <kbd>r</kbd> · <kbd>t</kbd></td><td>用编辑器打开文件 · 刷新 · 选主题</td></tr>
+    <tr><td><kbd>Tab</kbd> · <kbd>?</kbd> · <kbd>q</kbd></td><td>在文件列表和 diff 之间切换 · 所有按键 · 退出</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>nvim: 打开视图</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="nvim git 视图按键">
+<table>
+  <thead><tr><th>键</th><th>打开</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>d</kbd></td><td>diffview: 工作区对比 index, 也用来解决冲突</td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>m</kbd></td><td>diffview: 分支对比 main (<code>main...HEAD</code>), 右边可编辑</td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>M</kbd></td><td>diffview: 分支的 commit 逐个看</td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>f</kbd></td><td>diffview: 当前文件的历史</td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>g</kbd></td><td>fugitive: status, stage, commit</td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>H</kbd></td><td>浮窗里的 hunk diff</td></tr>
+    <tr><td><kbd>q</kbd> 或 <kbd>Space</kbd><kbd>g</kbd><kbd>D</kbd></td><td>关闭 diffview</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>nvim: diffview 里面</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="diffview 按键">
+<table>
+  <thead><tr><th>键</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>Tab</kbd> <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>下 / 上一个文件</td></tr>
+    <tr><td><kbd>]</kbd><kbd>c</kbd> <kbd>[</kbd><kbd>c</kbd></td><td>下 / 上一处改动 (diff 窗口里通用)</td></tr>
+    <tr><td><kbd>-</kbd> · <kbd>S</kbd> · <kbd>U</kbd></td><td>文件列表里: stage 或 unstage 当前文件 · stage 全部 · unstage 全部</td></tr>
+    <tr><td><kbd>X</kbd></td><td>文件列表里: 把文件还原成左边的版本. 不能撤销.</td></tr>
+    <tr><td><kbd>g</kbd><kbd>f</kbd> · <kbd>Space</kbd><kbd>e</kbd> · <kbd>Space</kbd><kbd>b</kbd></td><td>在普通窗口里打开文件 · 跳到文件列表 · 显示 / 隐藏文件列表</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>nvim: fugitive status 窗口</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="fugitive 按键">
+<table>
+  <thead><tr><th>键</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>=</kbd></td><td>在原地展开 / 收起 diff</td></tr>
+    <tr><td><kbd>s</kbd> · <kbd>u</kbd> · <kbd>-</kbd></td><td>stage · unstage · 切换. 光标在展开的 hunk 上时只作用于这个 hunk</td></tr>
+    <tr><td><kbd>d</kbd><kbd>v</kbd></td><td>左右对比当前文件, 可以用 <kbd>d</kbd><kbd>o</kbd> / <kbd>d</kbd><kbd>p</kbd> 逐块移动</td></tr>
+    <tr><td><kbd>c</kbd><kbd>c</kbd> · <kbd>c</kbd><kbd>a</kbd></td><td>commit · amend (只用在没 push 的 commit 上)</td></tr>
+    <tr><td><kbd>X</kbd></td><td>丢弃改动. 不能撤销.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>nvim: 源文件里 (gitsigns)</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="gitsigns 按键">
+<table>
+  <thead><tr><th>键</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>]</kbd><kbd>h</kbd> <kbd>[</kbd><kbd>h</kbd></td><td>下 / 上一个 hunk. 在 diff 窗口里会自动改成 <kbd>]</kbd><kbd>c</kbd></td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>p</kbd> · <kbd>s</kbd> · <kbd>r</kbd></td><td>预览 · stage · 还原当前 hunk (可视模式下作用于选中行)</td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>b</kbd></td><td>当前行的 blame</td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>d</kbd> · <kbd>D</kbd></td><td>当前文件对比 index · 对比上一个 commit</td></tr>
+    <tr><td><kbd>Space</kbd><kbd>g</kbd><kbd>h</kbd><kbd>m</kbd></td><td>sign 的基准在 index 和 main 之间切换</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="theme-sec">外观</h2>
+<p>系统切换浅色 / 深色时, 所有工具都会跟着变, 你不用做任何事.</p>
+<ul>
+  <li><strong>hunk 和 tmux:</strong> 读 Ghostty 的调色板, 立即切换.</li>
+  <li><strong>nvim:</strong> tmux 的主题 hook 会通过 RPC 通知每个正在运行的 nvim. 只在 tmux 里有效.</li>
+  <li><strong>delta 和 bat:</strong> 下一次运行命令时读取系统设置.</li>
+  <li><strong>nvim 没有跟着变:</strong> 运行 <code>~/.config/tmux/nvim-theme.sh dark</code> (或 <code>light</code>). 也可以在 nvim 里 <code>:set background=dark</code>.</li>
+  <li><strong>只改 hunk:</strong> 在 hunk 里按 <kbd>t</kbd> 选主题, 只对这一次有效.</li>
+</ul>
+
+<h2 id="donts">不要做的事</h2>
+<ol class="rules">
+  <li><strong>不要用 <code>git diff main</code> 或 <code>:DiffviewOpen main</code></strong> 对比分支. 理由见 <a href="#cases">分支落后 main 很多</a>.</li>
+  <li><strong>不要用 <code>wt merge</code>.</strong> 它默认会 squash, rebase, stage 全部文件, 然后删除 worktree, 和 repo 规则冲突. 合并让 agent 做, 或者开 PR.</li>
+  <li><strong>不要在 monge 和 maesolvers 的主树里 <code>git switch</code>.</strong> 换分支就换 worktree: <code>wt switch &lt;branch&gt;</code>.</li>
+  <li><strong>不要通过 <code>$HOME</code> 的路径改 dotfiles.</strong> <code>sed -i</code> 和 <code>git config --global</code> 会把 symlink 换成普通文件. 之前 <code>~/.gitconfig</code> 就是这样和 repo 脱节的.</li>
+  <li><strong>不要在 note 还没被 agent 读到之前退出 hunk.</strong> note 不会保存.</li>
+</ol>
+
+<footer>
+  <p>相关配置: <code>git/.gitconfig</code> (pager, delta) · <code>hunk/.config/hunk/config.toml</code> · <code>nvim/.config/nvim/lua/plugins/{diffview,fugitive,gitsigns,snacks}.lua</code> · <code>tmux/.config/tmux/nvim-theme.sh</code> · <code>worktrunk/.config/worktrunk/config.toml</code> · <code>zsh/.config/zsh/zshrc.d/04-plugin.zsh</code></p>
+</footer>
+</main>
+</div>
+<script>
+  // Theme button: system → light → dark → system.
+  (function () {
+    var btn = document.getElementById("theme");
+    var labels = { system: "跟随系统", light: "浅色", dark: "深色" };
+    var mq = matchMedia("(prefers-color-scheme: dark)");
+    function mode() { return localStorage.getItem("theme") || "system"; }
+    function apply() {
+      var m = mode();
+      document.documentElement.dataset.theme = m === "system" ? (mq.matches ? "dark" : "light") : m;
+      btn.textContent = labels[m];
+      btn.setAttribute("aria-label", "主题: " + labels[m] + ". 点击切换");
+    }
+    btn.addEventListener("click", function () {
+      var next = { system: "light", light: "dark", dark: "system" }[mode()];
+      if (next === "system") localStorage.removeItem("theme"); else localStorage.setItem("theme", next);
+      apply();
+    });
+    mq.addEventListener("change", apply);
+    apply();
+  })();
+
+  // Narrow screens: copy the sidebar contents into the collapsible list.
+  document.getElementById("toc-mobile-list").innerHTML = document.getElementById("toc-list").innerHTML;
+
+  // Mark the section in view in the sidebar.
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll("#toc-list a"));
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute("href").slice(1)] = a; });
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (a) { a.removeAttribute("aria-current"); });
+        var a = byId[e.target.id];
+        if (a) a.setAttribute("aria-current", "true");
+      });
+    }, { rootMargin: "0px 0px -75% 0px" });
+    Object.keys(byId).forEach(function (id) { var el = document.getElementById(id); if (el) obs.observe(el); });
+  })();
+</script>
+</body>
+</html>
