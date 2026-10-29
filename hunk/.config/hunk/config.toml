@@ -2,6 +2,19 @@
 # Soft-wrap long diff lines instead of truncating them to one row; `w` toggles per session.
 wrap_lines = true
 
+# Ghostty's palette (Catppuccin Latte or Mocha); hunk repaints when the scheme switches.
+theme = "terminal"
+transparent_background = true
+
+# Split side by side from 100 columns, so a half-width tmux pane (~160) always splits.
+mode = "auto"
+auto_split_min_width = 100
+hunk_gap = 1
+
+# `hunk diff`: reload while an agent edits the working tree.
+[vcs]
+watch = true
+
 # Keys. A listed set replaces that command's defaults, so the defaults are repeated
 # where they stay. Ctrl-h/j/k/l and Alt-h/j/k/l never reach hunk: tmux takes them.
 [keybindings]

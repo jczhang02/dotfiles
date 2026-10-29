@@ -9,6 +9,7 @@
     program = /usr/bin/gpg
 [alias]
     logs = log --show-signature
+    rs = !hunk show
 
 [core]
     # delta-auto picks the latte or mocha feature below from the GNOME color scheme.
@@ -16,6 +17,10 @@
     editor = nvim
     # Global hooks: Conventional Commits check, then each repo's own hooks (see the dir).
     hooksPath = ~/.config/git/hooks
+
+[pager]
+    # hunk drops commit headers, so only diff uses it; show/log stay on delta.
+    diff = hunk pager
 
 [interactive]
     diffFilter = ~/.config/git/delta-auto --color-only
