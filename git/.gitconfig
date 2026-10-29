@@ -9,29 +9,68 @@
     program = /usr/bin/gpg
 [alias]
     logs = log --show-signature
-    rs = !hunk show
 
 [core]
-    pager = bat
+    # delta-auto picks the latte or mocha feature below from the GNOME color scheme.
+    pager = ~/.config/git/delta-auto
     editor = nvim
     # Global hooks: Conventional Commits check, then each repo's own hooks (see the dir).
     hooksPath = ~/.config/git/hooks
 
-[pager]
-    # hunk drops commit headers, so only diff uses it; show/log stay on bat.
-    diff = hunk pager
-
 [interactive]
-    diffFilter = delta --color-only
+    diffFilter = ~/.config/git/delta-auto --color-only
 
 [delta]
-    light = true       # fixed for the Catppuccin Latte terminal palette
+    navigate = true                  # n / N: next / previous file
+    line-numbers = true
+    pager = less -RF --mouse
+
+# Colors follow the Catppuccin palette of the terminal (backgrounds: 20% tint, emph 35%).
+[delta "latte"]
+    light = true
+    syntax-theme = Catppuccin Latte
+    file-style = bold "#1e66f5"
+    file-decoration-style = "#1e66f5" ul
+    hunk-header-style = line-number syntax
+    hunk-header-line-number-style = bold "#6c6f85"
+    hunk-header-decoration-style = "#7287fd" box
+    line-numbers-left-style = "#9ca0b0"
+    line-numbers-right-style = "#9ca0b0"
+    line-numbers-zero-style = "#9ca0b0"
+    line-numbers-minus-style = bold "#d20f39"
+    line-numbers-plus-style = bold "#40a02b"
+    minus-style = syntax "#e9c4cf"
+    minus-emph-style = syntax bold "#e5a2b3"
+    plus-style = syntax "#cce1cd"
+    plus-emph-style = syntax bold "#b2d5ae"
+    # Lines git's colorMoved marks as moved: old place mauve, new place teal.
+    map-styles = bold purple => syntax "#dcd0f4", bold cyan => syntax "#c8e0e4", bold blue => syntax "#c9d8f5", bold yellow => syntax "#ecdfce"
+
+[delta "mocha"]
+    dark = true
+    syntax-theme = Catppuccin Mocha
+    file-style = bold "#89b4fa"
+    file-decoration-style = "#89b4fa" ul
+    hunk-header-style = line-number syntax
+    hunk-header-line-number-style = bold "#a6adc8"
+    hunk-header-decoration-style = "#b4befe" box
+    line-numbers-left-style = "#6c7086"
+    line-numbers-right-style = "#6c7086"
+    line-numbers-zero-style = "#6c7086"
+    line-numbers-minus-style = bold "#f38ba8"
+    line-numbers-plus-style = bold "#a6e3a1"
+    minus-style = syntax "#493446"
+    minus-emph-style = syntax bold "#694459"
+    plus-style = syntax "#394545"
+    plus-emph-style = syntax bold "#4e6356"
+    map-styles = bold purple => syntax "#413956", bold cyan => syntax "#36454f", bold blue => syntax "#333c57", bold yellow => syntax "#4a4548"
 
 [merge]
-    conflictstyle = diff3
+    conflictstyle = zdiff3
 
 [diff]
     colorMoved = default
+    colorMovedWS = allow-indentation-change
 [init]
     defaultBranch = main
     # templatedir = ~/.config/git/git_template/template
@@ -52,3 +91,5 @@
 
 [includeIf "gitdir:~/dev/GingiCasc/**"]
 	path = ~/.gitconfig-gingicasc-lynn
+[gitbutler]
+	aiModelProvider = openai
