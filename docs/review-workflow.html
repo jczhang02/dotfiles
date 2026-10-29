@@ -261,7 +261,7 @@
   <li>在 pane 2 里进入同一个 worktree, 运行 <code>git diff</code>.</li>
   <li>按 <kbd>]</kbd> <kbd>[</kbd> 跳 hunk, 按 <kbd>.</kbd> <kbd>,</kbd> 换文件. LaTeX 长行会自动换行, 按 <kbd>w</kbd> 切换.</li>
   <li>看到问题, 按 <kbd>c</kbd> 写 note, 按 <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 保存. 这时先不要退出 hunk.</li>
-  <li>对 Claude 说下面的第一句. 它会用 <code>hunk session comment list</code> 读到你的 note.</li>
+  <li>对 Claude 说下面的第一句. 句子里带上命令, 因为新的 Claude session 不知道 hunk 有这个功能.</li>
 </ol>
 <h4>3. agent 问 "要 commit 吗?" 的时候 (时刻 A)</h4>
 <ol>
@@ -283,10 +283,10 @@
 <p><code>wt remove fix/xxx</code>: 删除 worktree. 分支已经合并时, 它会一起删掉分支. 分支还没合并时, 分支会保留, 要删得加 <code>-D</code>. 然后关掉对应的 tmux window.</p>
 <h4>可以直接对 Claude 说</h4>
 <ul class="say">
-  <li><q>读我在 hunk 里写的 note, 逐条修改, 改完告诉我每条怎么处理的.</q></li>
+  <li><q>读我在 hunk 里写的 note (hunk session comment list --repo . --type user), 逐条修改, 改完告诉我每条怎么处理的.</q></li>
   <li><q>在新 worktree 里做: 分支 fix/flow1-tables, 从 main 开.</q></li>
   <li><q>只 commit 已经 stage 的部分, 不要再 git add.</q></li>
-  <li><q>把你的每处改动的理由写成 hunk note.</q> <span class="muted">(要先在 pane 2 打开 hunk, 然后按 <kbd>a</kbd> 显示 agent 的 note.)</span></li>
+  <li><q>把你的每处改动的理由写成 hunk note (hunk session comment add, 第一条加 --focus).</q> <span class="muted">(要先在 pane 2 打开 hunk, 然后按 <kbd>a</kbd> 显示 agent 的 note.)</span></li>
   <li><q>build writing/reports/midterm, 再 just check, 都过了再问我 commit.</q></li>
 </ul>
 
@@ -370,7 +370,7 @@ flow1-exp:       f1──f2── … ──f80  + 未 commit 的改动</code></
 <h3>你和 agent 用 hunk note 来回讨论</h3>
 <ol>
   <li>你: 在 pane 2 里运行 <code>git diff</code>, 按 <kbd>c</kbd> 写 note, 按 <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 保存.</li>
-  <li>agent: 对它说 "读我在 hunk 里的 note". 它会运行 <code>hunk session comment list --repo . --type user</code>.</li>
+  <li>agent: 对它说 "读我在 hunk 里的 note, 用 <code>hunk session comment list --repo . --type user</code>". 命令要写出来, agent 默认不知道它.</li>
   <li>agent 也可以反过来写 note: <code>hunk session comment add</code>. 你按 <kbd>a</kbd> 显示 agent 的 note.</li>
   <li>note 只在 hunk 运行时存在. 退出 hunk, note 就没了. 所以要先让 agent 读完, 再退出.</li>
 </ol>
