@@ -1,6 +1,6 @@
 ---
 name: blog-post
-description: Draft a post for JC's blog (jczhang.cc, repo ~/dev/blog) from any working directory, usually about the current project, in JC's research-writing voice. Use when asked to write something up as a blog post (博客, 写成博客, blog post), or to revise a draft post.
+description: Draft a post for JC's blog (chengrui.dev, repo ~/dev/blog) from any working directory, usually about the current project, in JC's research-writing voice. Use when asked to write something up as a blog post (博客, 写成博客, blog post), or to revise a draft post.
 ---
 
 # Blog post
@@ -15,7 +15,7 @@ The blog is an Astro site in `~/dev/blog`. A post is one folder, `src/content/po
 
 3. **Load the voice.** Invoke the `jc-writing-style` skill and use its *paper* genre (`paper.md`): the blog is written as a research paper section is. The post's language follows JC's request; Chinese is the default (`zh.md`), and an English version is `en.md` in the same folder, rewritten for the language, not translated sentence by sentence.
 
-4. **Create the post.** In `~/dev/blog`: `bun run new <slug>` (add `--en` for `en.md`). The slug is short, lowercase, hyphenated English (`fno-burgers`). Fill the frontmatter: `title`, `description` (one or two sentences, shown as the abstract), `tags` (reuse existing ones: `grep -h '^tags:' src/content/posts/*/*.md`), and keep `draft: true`.
+4. **Create the post.** In `~/dev/blog`: `bun run new <slug>` (add `--en` for `en.md`). The slug is short, lowercase, hyphenated English (`fno-burgers`). Fill the frontmatter: `title`, `description` (one or two sentences, shown as the abstract), `tags` (reuse existing ones: `grep -h '^tags:' src/content/posts/*/*.md`), keep `draft: true`, and set `ai: true`. You write the text, so the post is AI-written, and the flag shows readers an AI badge on the date line. JC alone removes it, when the text has become his own.
 
 5. **Bring the assets.** Copy figures and videos into the post folder and link them relatively (`![...](./fig.png)`); the post must not point into the project directory. Prefer SVG for line art and PNG under about 2 MB for plots. A video over 25 MiB needs `bun run media:push` (it uploads to R2): leave that to JC and say so in the report.
 
@@ -23,7 +23,7 @@ The blog is an Astro site in `~/dev/blog`. A post is one folder, `src/content/po
 
 7. **Check the build.** Run `bun run build` in `~/dev/blog` (drafts are not published, but they are rendered and checked). Done when the output has no `[mathjax]`, `[cite]`, `[theorems]`, `[tikz]` or `[media]` line for your post. To look at the page, use the dev server if one is running (`bunx astro dev status` gives its URL; drafts appear at `/posts/<slug>/`); one project allows only one dev server, so do not start a second.
 
-8. **Report** to JC: the folder path, the preview URL (if a dev server runs), the open `[TODO]`s, and any step left to JC (large videos, missing facts).
+8. **Report** to JC: the folder path, that `ai: true` is set, the preview URL (if a dev server runs), the open `[TODO]`s, and any step left to JC (large videos, missing facts).
 
 ## Scope
 
