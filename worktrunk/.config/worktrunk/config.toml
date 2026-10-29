@@ -1,0 +1,6 @@
+# worktrunk (wt): `wt switch`, `wt list`, `wt remove`.
+# `wt merge` is not used: it squashes, rebases and stages everything by default.
+# Full option reference: `wt config create` writes a commented template.
+
+# Worktrees live inside the repository, as the repos' CLAUDE.md files expect.
+worktree-path = "{{ repo_path }}/.worktrees/{{ branch | sanitize }}"

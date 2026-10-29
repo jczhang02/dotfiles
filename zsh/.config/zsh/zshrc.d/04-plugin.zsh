@@ -51,6 +51,9 @@ if (( $+commands[zoxide] )); then
     alias z=j
 fi
 
+# The wt function lets `wt switch` cd this shell; its completion needs compinit above.
+(( $+commands[wt] )) && eval "$(command wt config shell init zsh)"
+
 if (( ${ZI_AVAILABLE:-0} )); then
     autoload -Uz _zi
     (( ${+_comps} )) && _comps[zi]=_zi
