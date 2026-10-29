@@ -3,4 +3,4 @@
 
 [tools]
 "github:Karmenzind/kd" = { version = "latest", bin = "kd" }
-rtk = "1.0.1"
+rtk = "1.1.0"
