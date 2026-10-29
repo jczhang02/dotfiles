@@ -21,10 +21,9 @@
     diffFilter = ~/.config/git/delta-auto --color-only
 
 [delta]
-    # No line numbers and no less --mouse, so a mouse selection copies only code.
-    # One-off numbers or two columns: DELTA_FEATURES=+line-numbers (or +side-by-side) git diff
     navigate = true                  # n / N: next / previous file
-    pager = less -RF
+    line-numbers = true
+    pager = less -RF --mouse
 
 # Colors follow the Catppuccin palette of the terminal (backgrounds: 20% tint, emph 35%).
 [delta "latte"]
