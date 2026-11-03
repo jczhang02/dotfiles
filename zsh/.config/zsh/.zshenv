@@ -40,3 +40,10 @@ export LESSHISTFILE="$XDG_STATE_HOME/lesshst"
 
 # rclone FUSE mount: stat 会触发 ~1.1s 的远程握手, 排除以免拖慢 zoxide/sesh picker
 export _ZO_EXCLUDE_DIRS="$HOME/Documents/sync/**"
+
+# Claude Code runs agent commands in zsh. EQUALS makes `echo ====` fail
+# ("= not found") and NOMATCH makes an unquoted glob with no match abort the
+# whole command chain; agents write bash-style commands, so turn both off.
+if [[ -n ${CLAUDECODE:-} ]]; then
+    unsetopt equals nomatch
+fi
