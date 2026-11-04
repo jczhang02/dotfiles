@@ -5,7 +5,7 @@
 [tools]
 "npm:@jackwener/opencli" = { version = "2.0.2", bun_args = "--trust" }
 "npm:@openai/codex" = "latest"
-"npm:agent-browser" = { version = "0.39.4", bun_args = "--trust" }
+"npm:agent-browser" = { version = "0.41.1", bun_args = "--trust" }
 "npm:czg" = "1.14.0"
 "npm:opencommit" = "3.3.11"
 "npm:create-tauri-app" = "4.7.5"

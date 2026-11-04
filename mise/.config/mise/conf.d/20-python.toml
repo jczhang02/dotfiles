@@ -3,10 +3,10 @@
 
 [tools]
 "pipx:yt-dlp" = "2026.10.26"
-"pipx:zotero-mcp-server" = "0.15.1"
-"pipx:pymupdf" = "2.0"
+"pipx:zotero-mcp-server" = "0.15.2"
+"pipx:pymupdf" = "2.1"
 "pipx:weasyprint" = "70.0"
 "pipx:pre-commit" = "4.7.0"
 "pipx:commitizen" = "4.19.3"
-"pipx:huggingface_hub" = "2.3.0"
-"pipx:gdown" = "6.4.2"
+"pipx:huggingface_hub" = "2.4.0"
+"pipx:gdown" = "6.5.1"

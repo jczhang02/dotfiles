@@ -6,7 +6,7 @@
 "go:github.com/go-delve/delve/cmd/dlv" = "1.27.2"
 "go:github.com/kisielk/errcheck" = "1.30.0"
 "go:github.com/davidrjenni/reftools/cmd/fillswitch" = "0.0.0-20250907133731-34b10582faa4"
-"go:github.com/onsi/ginkgo/v2/ginkgo" = "2.33.1"
+"go:github.com/onsi/ginkgo/v2/ginkgo" = "2.34.0"
 "go:github.com/abice/go-enum" = "0.9.5"
 "go:github.com/rogpeppe/godef" = "1.2.0"
 "go:mvdan.cc/gofumpt" = "0.12.0"
