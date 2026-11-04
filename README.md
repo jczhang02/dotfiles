@@ -162,7 +162,7 @@ plugin loader does not follow symlinks.
 | Area               | Packages                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
 | Desktop            | `gtk`, `fontconfig`, `fcitx`, `gnome-shell`                                                            |
-| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `atuin`, `ghostty`, `tmux`, `sesh`, `bat`, `eza`, `yazi`, `zathura`, `direnv`, `kd`  |
+| Shell and terminal | `zsh`, `bash`, `f-sy-h`, `atuin`, `ghostty`, `tmux`, `sesh`, `bat`, `glamour`, `eza`, `yazi`, `zathura`, `direnv`, `kd`  |
 | Editors and agents | `nvim`, `claude`, `agents`                                                                             |
 | Development        | `git`, `ssh`, `gnupg`, `mise`, `go`, `conda`, `npm`, `pnpm`, `latexmk`, `latexindent`                  |
 | Apps and media     | `mpv`, `firefox`                                                                                       |
