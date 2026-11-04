@@ -47,3 +47,6 @@ export FZF_ALT_C_OPTS="--preview 'fzf-preview {}' --preview-window=right:60%:wra
 
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 export MANROFFOPT='-c'
+# Extends Gentoo's /etc/env.d/70less (-R -M --shift 5). -F exits when the text fits one
+# screen, -i ignores case for lowercase searches, -j.3 puts a search hit 30% down the screen.
+export LESS='-R -M -F -i -j.3 --shift 5 --mouse --incsearch'
