@@ -9,10 +9,9 @@
 "npm:yaml-language-server"        = "latest"
 "npm:@delance/runtime"     = "latest"   # delance-langserver (Python)
 
-# ── LSP servers (cargo-based) ────────────────────────────────────────
-"cargo:texlab"                    = "latest"
-
 # ── LSP servers (GitHub release) ─────────────────────────────────────
+# texlab: crates.io stops at 4.3.2; releases are on GitHub only.
+"github:latex-lsp/texlab"            = "latest"
 "github:ltex-plus/ltex-ls-plus"      = { version = "latest", exe = "ltex-ls-plus" }
 
 # ── Formatters ───────────────────────────────────────────────────────
