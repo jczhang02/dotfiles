@@ -482,7 +482,9 @@ set -g update-environment[111] SSH_TTY
 # start in English (logic in ime.sh). fcitx5 keeps one state per Ghostty window
 # and cannot see pane, window or session switches inside tmux. The hook runs
 # synchronously, so saving the old pane and restoring the new one never overlap.
-set -g @ime_english_commands 'zsh bash sh dash fish ssh'
+# Not ssh: a remote pane may run an agent you type Chinese into; new panes start
+# in English anyway, as they have no @ime yet.
+set -g @ime_english_commands 'zsh bash sh dash fish'
 set-hook -g pane-focus-in[100] { run-shell "~/.config/tmux/ime.sh focus '#{pane_id}' '#{pane_current_command}' '#{@ime}' '#{@ime_english_commands}'" }
 # Prune @ime_last_<pid> of clients that left, or one stays per old client.
 set-hook -g client-detached[100] { run-shell "~/.config/tmux/ime.sh prune" }
