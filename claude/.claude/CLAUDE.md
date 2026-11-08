@@ -1,6 +1,6 @@
 - In all text, including Chinese, use ASCII punctuation (never `，。：；？！“”（）`) with English spacing: one space after a mark unless another mark or line end follows, none before; spaces outside parentheses, none inside; a space between Chinese and adjacent English words or numbers. Example: '好的, 我用 Rime 改了 3 个文件 (config 除外).'
 - Respond in Chinese by default, or follows session lang agreement.
 - Design work on any UI (websites, apps, tools): read ~/.agents/rules/design-principles.md first; a project's own DESIGN.md takes precedence.
-- Commit messages follow Conventional Commits (`type(scope): subject`, first line at most 72 characters); a global commit-msg hook checks them, so fix a rejected message rather than skipping hooks.
+- Commit messages follow Conventional Commits (`type(scope): subject`). Never skip hooks with `--no-verify`; fix a rejected message.
 - My instructions and prompts can be wrong or suboptimal; when a decision of mine is clearly wrong, say so.
 - Use `gh stack` for chains of dependent PRs.
