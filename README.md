@@ -184,7 +184,7 @@ Notable package boundaries:
 - `fcitx` leaves `profile` and `conf/notifications.conf` local since fcitx5
   rewrites them on its own.
 - `claude` tracks only hand-written Claude Code files: `CLAUDE.md`, subagents,
-  keybindings, themes, and the `ghostty-notify.sh` hook. The `session-title`
+  keybindings, themes, output styles, and the `ghostty-notify.sh` hook. The `session-title`
   mod lives in `claude-mods/` instead.
   `settings.json` stays local because Claude Code replaces it on every settings
   change.
