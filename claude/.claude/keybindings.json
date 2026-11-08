@@ -162,6 +162,8 @@
         "alt+shift+j": "scroll:lineDown",
         "alt+u": "scroll:halfPageUp",
         "alt+d": "scroll:halfPageDown",
+        "alt+g": "scroll:top",
+        "alt+shift+g": "scroll:bottom",
         "ctrl+home": "scroll:top",
         "ctrl+end": "scroll:bottom",
         "ctrl+shift+c": "selection:copy",
