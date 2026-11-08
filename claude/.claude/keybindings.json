@@ -46,7 +46,9 @@
     {
       "context": "Autocomplete",
       "bindings": {
-        "tab": "autocomplete:accept",
+        "tab": "autocomplete:next",
+        "shift+tab": "autocomplete:previous",
+        "enter": "autocomplete:accept",
         "escape": "autocomplete:dismiss",
         "up": "autocomplete:previous",
         "down": "autocomplete:next"
@@ -81,6 +83,8 @@
         "escape": "confirm:no",
         "up": "confirm:previous",
         "down": "confirm:next",
+        "k": "confirm:previous",
+        "j": "confirm:next",
         "tab": "confirm:nextField",
         "space": "confirm:toggle",
         "shift+tab": "confirm:cycleMode",
@@ -93,7 +97,9 @@
         "tab": "tabs:next",
         "shift+tab": "tabs:previous",
         "right": "tabs:next",
-        "left": "tabs:previous"
+        "left": "tabs:previous",
+        "l": "tabs:next",
+        "h": "tabs:previous"
       }
     },
     {
